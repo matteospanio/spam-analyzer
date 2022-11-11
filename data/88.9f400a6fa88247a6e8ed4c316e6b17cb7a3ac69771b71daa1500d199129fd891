@@ -1,0 +1,76 @@
+Delivered-To: user@gmail.com
+Received: by 2002:a17:90a:af97:0:0:0:0 with SMTP id w23csp960406pjq;
+        Thu, 14 Apr 2022 11:10:55 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJwnKt7YQdgToGtKL+z0JIdDl7MtJlA5jaYGjj5YofS2c/6OrunNdgafFrg/sO4crTOYkNSi
+X-Received: by 2002:a05:6870:d78d:b0:d4:4b29:7ccc with SMTP id bd13-20020a056870d78d00b000d44b297cccmr2075438oab.69.1649959855568;
+        Thu, 14 Apr 2022 11:10:55 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1649959855; cv=none;
+        d=google.com; s=arc-20160816;
+        b=szuGrmb85unJHetuIp4CRp2vzlM7MYhrVwGeZhexbFRoFqDzTk0XcmibILerVjzEUI
+         C1M0gHJeywxPSSV5v2tpHtgBCgv5924y9P43yzW9D0x1ccju8lRIiHqFmjZrpx1/qUCQ
+         j0cfvgbgQ21wSs82HAGAmZPuaadH8VpKVallt/Vl72lwuveNgF+/iX5p76HeAPjKBjFo
+         TB8rDoAP54N9QvekelQAyfwjKGxueV41xwZm1UEx1I6xMHPh5wF96Zi5Yy4EYgFXsAUK
+         17nzapOYcFaLgcAmtwLrcFrIlr8d4FTr4oCEJ8Psad2jAbFv9h3ddIvwFco1b3+PC8Rg
+         R8zg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;
+        h=content-transfer-encoding:date:message-id:mime-version:sender
+         :reply-to:from:to:subject;
+        bh=U+JBdpWmRHkuCAvi/ACFM1PJJtOBKh2CXvNmqpcgDCA=;
+        b=JLRj7v6osaSb3Zog1e+0FxECuQVbRSy64+PqLvg6pAzxQ9KhF2p7nd3kSWTjr+q2Gj
+         cxVEBMkc1qOugHdYCD7dkjHWVD5WQ741YwdxQbiHrWWwEENt0lr41jt+5GM0n4/MRE0W
+         v7gq0wQ7pg+Hjif9JH80lPPAY6qbWOEYqagyPojTncPZz8o4S3i1MpXosE+/8hYJX1ii
+         0x0s2PRxM0zMXKtTSBOkqbYAGI1WapXXtNl4UOiKCpPnGNItjBIhb5j+iLJ7cx4E2npl
+         4ILOwMZwGb4gPCE0LEC2qw8AJ7297004rtH9jss5He2OIW3ftMBPtw/V0eGMID24NhNN
+         ifig==
+ARC-Authentication-Results: i=1; mx.google.com;
+       spf=none 
+Return-Path: <support@osdev.org>
+Received: from 173.255.206.39  ([173.255.206.39])
+        by mx.google.com with ESMTP id n66-20020a4a4045000000b003246ed98690si405349ooa.3.2022.04.14.11.10.55
+        for <user@gmail.com>;
+        Thu, 14 Apr 2022 11:10:55 -0700 (PDT)
+Received-SPF: none 
+Authentication-Results: mx.google.com;
+       spf=none 
+Received: by 173.255.206.39 (Postfix) with ESMTP id 27BF5C13A for <user@gmail.com>; Thu, 14 Apr 2022 14:10:55 -0400 (EDT)
+Subject: Welcome to "OSDev.org"
+To: User <user@gmail.com>
+From: <support@smtp.osdev.org>
+Reply-To: <support@smtp.osdev.org>
+Sender: <support@stmp.osdev.org>
+MIME-Version: 1.0
+Message-ID: <47663db9662d733128f92c36ccac0964@forum.osdev.org>
+Date: Thu, 14 Apr 2022 13:10:54 -0500
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: phpBB3
+X-MimeOLE: phpBB3
+X-phpBB-Origin: phpbb://forum.osdev.org
+X-AntiAbuse: Board servername - forum.osdev.org
+X-AntiAbuse: User_id - 1
+X-AntiAbuse: Username - Anonymous
+X-AntiAbuse: User IP - 193.58.185.72
+
+Welcome to OSDev.org forums
+
+Please keep this e-mail for your records. Your account information is as
+follows:
+
+----------------------------
+Username: user
+
+Board URL: https://forum.osdev.org
+----------------------------
+
+Please visit the following link in order to activate your account:
+
+https://forum.osdev.org/ucp.php?mode=activate&u=87441&k=GL5CG4QUQA
+
+Your password has been securely stored in our database and cannot be
+retrieved. In the event that it is forgotten, you will be able to reset it
+using the email address associated with your account.
+
+Thank you for registering.
+

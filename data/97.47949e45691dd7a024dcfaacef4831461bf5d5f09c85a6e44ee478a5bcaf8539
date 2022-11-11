@@ -1,0 +1,47 @@
+Delivered-To: user@gmail.com
+Received: by 2002:a17:90a:e015:0:0:0:0 with SMTP id u21csp4441294pjy;
+        Tue, 14 Sep 2021 08:23:42 -0700 (PDT)
+Received: from mx.sendgrid.net (mx.sendgrid.net. [208.117.48.31])
+        by mx.google.com with ESMTPS id c190si1403625wma.211.2021.09.14.08.23.42
+        for <user@gmail.com>
+        (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
+        Tue, 14 Sep 2021 08:23:42 -0700 (PDT)
+Received: by mx.sendgrid.net (mx.sendgrid.net. [208.117.48.31]) with ESMTP id 8F9C4CA77E
+        Tue, 14 Sep 2021 08:23:42 -0700 (PDT)
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@github.com header.s=pf2014 header.b=JH6klUJi;
+       spf=pass (google.com: domain of noreply@github.com designates 192.30.252.204 as permitted sender) smtp.mailfrom=noreply@github.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=github.com
+Return-Path: <noreply@github.com>
+Received-SPF: pass (google.com: domain of noreply@github.com designates 192.30.252.204 as permitted sender) client-ip=192.30.252.204;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@github.com header.s=pf2014 header.b=JH6klUJi;
+       spf=pass (google.com: domain of noreply@github.com designates 192.30.252.204 as permitted sender) smtp.mailfrom=noreply@github.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=github.com
+Received: from github-lowworker-5fb2734.va3-iad.github.net (github-lowworker-5fb2734.va3-iad.github.net [10.48.19.27])
+	by smtp.github.com (Postfix) with ESMTP id 7DA40520497
+	for <user@gmail.com>; Tue, 14 Sep 2021 08:23:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=github.com;
+	s=pf2014; t=1631633021;
+	bh=6QORtYqQx680ZDqlDVnd0k0ctRnkTmgWtXmYHNVBGRA=;
+	h=Date:From:Reply-To:To:Cc:In-Reply-To:References:Subject:List-ID:
+	 List-Archive:List-Post:List-Unsubscribe:From;
+	b=JH6klUJioZ0TkEqi2XgHtiVOb+3FvIlXKqjcE4SFiQ/FkrqBx8ptvyJsKgJFvwRyS
+	 dgWYXFk5zm+FoBFxsQYGyGszW8Rmep57ec7Ou7e99/m3P4i0YySur6Li95MB4b1k8J
+	 /9sF1fQf+l0J9wrL4sssiVHAACTMEvCNma0H5AEg=
+Date: Tue, 14 Sep 2021 08:23:41 -0700
+From: Neovim <notifications@github.com>
+Reply-To: <noreply@github.com>
+Bcc: User <user@gmail.com>, 
+Message-ID: <neovim/neovim/issues/18093/1096900272@github.com>
+References: <neovim/neovim/issues/18093@github.com>
+In-Reply-To: <neovim/neovim/issues/18093@github.com>
+Subject: Re: [neovim/neovim] Use meaningful exit codes (#18093)
+Mime-Version: 1.0
+
+Unfortunately I am getting the same error, can you please fixt it? 
+
+-- 
+You are receiving this because you were mentioned.
+Reply to this email directly or view it on GitHub:
+https://shorturl.at/fqIOV

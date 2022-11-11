@@ -1,0 +1,30 @@
+Delivered-To: user@gmail.com
+Received: by 2002:a17:90a:af97:0:0:0:0 with SMTP id w23csp385640pjq;
+        Wed, 13 Apr 2022 11:34:39 -0700 (PDT)
+X-Received: by 2002:a05:6a00:2354:b0:505:c6c3:af87 with SMTP id j20-20020a056a00235400b00505c6c3af87mr149330pfj.78.1649874879466;
+        Wed, 13 Apr 2022 11:34:39 -0700 (PDT)
+Return-Path: <noreply@steampowered.com>
+Received: from mx.thecarl.com (mx.thecarl.com [198.54.119.106])
+        by mx.google.com with ESMTPS id mz4-20020a17090b378400b001ca9187cab3si13644191pjb.124.2022.04.13.11.34.39
+        for <user@gmail.com>
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 13 Apr 2022 11:34:39 -0700 (PDT)
+Received-SPF: none 
+Authentication-Results: 
+       spf=none
+Bcc: user@gmail.com
+From: Steam <noreply@steampowered.com>
+Reply-To: <mcp@thecarl.com>
+Errors-To: <noreply@steampowered.com>
+X-Steam-Message-Type: CEmailWishlistItemOnSale
+MIME-Version: 1.0
+Subject: Doom Eternal from your Steam wishlist is now on sale!
+Message-Id: <E1nehp9-0005kg-6U@smtp-10-tuk1.steampowered.com>
+Date: Wed, 13 Apr 2022 11:34:39 -0700
+
+Hello gamer!
+The following items on your wishlist are on sale:
+
+
+Doom: Eternal - 90% off!
+<http://rb.gy/yorwly/>

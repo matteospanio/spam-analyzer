@@ -1,0 +1,40 @@
+Return-Path: <noreply@answers.com>
+X-Original-To: lporton@webdev.com
+Delivered-To: lporton@webdev.com
+Received: by mx.webdev.com ([159.89.133.129])
+	  from a52136.amazonses.com ([199.255.192.54]) 
+	  with SMTP id y10csp847684pjm;
+          Mon, 14 Mar 2022 16:03:25 -0700 (PDT)
+Received-SPF: Pass( spf.google.com: domain of answers.com designates 34.238.173.235 as permitted sender)
+Authentication-results:spf=pass (sender IP is 209.182.198.223) smtp.mailfrom=superdomain.com; dkim=none (message not signed); dmarc=none (p=none dis=none)
+Received: by a52136.amazonses.com ([199.255.192.54]) with SMTP id y10csp847684pjm;
+	from mx.infotech.com
+        for <lporton@webdev.com>; Mon, 14 Mar 2022 16:03:23 -0700 (PDT)
+Received: from mx.answers.com ([34.238.173.235])
+        by a52136.amazonses.com with ESMTPS id s3-20020a170902c64300b00151f409112dsi14070489pls.343.2022.03.14.16.03.23
+        for <lporton@webdev.com>; Fri, 20 Oct 2020 06:05:47 -0400 (EDT)
+Received: by mx.answers.com ([34.238.173.235])
+        id BAFD05C8922; Fri, 20 Oct 2020 18:38:28 +0900 (JST)
+Reply-To: evil@asnwers.com
+To: lporton@webdev.com
+From: "Password change required" <it-dep@webdev.com>
+Date: Fri, 20 Oct 2020 18:38:28 +0900 (JST)
+Subject: "Phishing Campaign Advisory: Password check" 
+MIME-version: 1.0
+Content-Type: text/plain
+
+Hi Luke,
+
+Our department identified a phising campaign in act.
+
+We saw from a logged that you change the password during said campaign,
+in order to confirm you were not a victim could please reply to this mail with the following information:
+- Your current username
+- Your current password 
+
+In case you were a victim of the campaign we'll proceed to change your password and send you the new one.
+
+Don't panic the situation is already handled.
+
+Have a nice day!
+Lucille
