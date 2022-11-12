@@ -15,3 +15,6 @@ build:
 
 deploy:
 	twine upload --repository testpypi --skip-existing dist/*
+
+help:
+	$(info "Usage: make [setup|run|test|build-local|build|deploy|help]")

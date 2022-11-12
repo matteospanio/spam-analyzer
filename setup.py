@@ -1,20 +1,23 @@
 from setuptools import setup, find_packages
+import yaml
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
-with open("requirements.txt", "r", encoding="utf-8") as fh:
-    requirements = fh.read()
+with open('config.yaml') as f:
+    config = yaml.safe_load(f)
+with open("README.md", "r", encoding="utf-8") as f:
+    long_description = f.read()
+with open("requirements.txt", "r", encoding="utf-8") as f:
+    requirements = f.read()
 
 setup(
-    name = 'spam-detector',
-    version = '0.0.1',
-    author = 'Matteo Spanio',
-    author_email = 'matteo.spanio97@gmail.com',
-    license = 'GPLv3',
-    description = 'A tool to determine if an email is spam',
+    name = config['name'],
+    version = config['version'],
+    author = config['author'],
+    author_email = config['author_email'],
+    license = config['license'],
+    description = config['description'],
     long_description = long_description,
     long_description_content_type = "text/markdown",
-    url = 'matteospanio/spam-detector',
+    url = 'https://github.com/matteospanio/spam-detector',
     py_modules = ['spam-detector', 'app'],
     packages = find_packages(),
     install_requires = [requirements],

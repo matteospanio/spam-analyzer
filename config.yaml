@@ -1,0 +1,13 @@
+# package info
+name: 'spam-detector'
+version: '0.0.1'
+description: 'A program to detect spam'
+author: 'Matteo Spanio'
+author_email: 'matteo.spanio97@gmail.com'
+license: 'GPLv3'
+
+# constants values used across the app
+constants:
+  # path to the default spam words file
+  # wordlist source: https://gist.github.com/prasidhda/13c9303be3cbc4228585a7f1a06040a3
+  wordlist: 'assets/word_blacklist.txt'
