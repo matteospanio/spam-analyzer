@@ -3,7 +3,7 @@ import yaml
 from app import app, cli
 
 
-def main():    
+def main():
     with open('config.yaml') as f:
         config: dict = yaml.safe_load(f)
 
