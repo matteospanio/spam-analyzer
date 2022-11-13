@@ -1,5 +1,4 @@
-import argparse
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace, FileType
 
 def add_args(parser: ArgumentParser, config: dict) -> None:
     """Add arguments to the parser
@@ -9,7 +8,7 @@ def add_args(parser: ArgumentParser, config: dict) -> None:
         config (dict): a dictionary containing the configuration
     """
     parser.add_argument('-f', '--file', help='The file or directory to analyze', required=True)
-    parser.add_argument('-l', '--wordlist', help='A file containing the spam wordlist', default=config['constants']['wordlist'], type=argparse.FileType('r'))
+    parser.add_argument('-l', '--wordlist', help='A file containing the spam wordlist', default=config['constants']['wordlist'], type=FileType('r'))
     parser.add_argument('-H', '--ignore-headers', help="Don't check headers fields", action='store_true')
     parser.add_argument('-B', '--ignore-body', help="Don't parse body content", action='store_true')
     parser.add_argument('-v', '--verbose', help='More program output', action='store_true')
@@ -24,7 +23,7 @@ def parse_args(args, config: dict) -> Namespace:
     Returns:
         Namespace: a dictionary containing the arguments
     """
-    parser = argparse.ArgumentParser(
+    parser = ArgumentParser(
         prog=config['name'],
         description=config['description'],
         epilog='if you find any bug write an email to matteo.spanio97@gmail.com'
