@@ -15,7 +15,7 @@ def add_args(parser: ArgumentParser, config: dict) -> None:
     parser.add_argument('-v', '--verbose', help='More program output', action='store_true')
     parser.add_argument('-V', '--version', help='Show program version', action='version', version=f'%(prog)s {config["version"]}')
 
-def parse_args(config: dict) -> Namespace:
+def parse_args(args, config: dict) -> Namespace:
     """Read arguments from the command line
 
     Args:
@@ -30,4 +30,4 @@ def parse_args(config: dict) -> Namespace:
         epilog='if you find any bug write an email to matteo.spanio97@gmail.com'
     )
     add_args(parser, config)
-    return parser.parse_args()
+    return parser.parse_args(args)
