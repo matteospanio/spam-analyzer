@@ -1,4 +1,4 @@
-import yaml, pytest, importlib, sys
+import yaml, pytest, importlib
 
 spam_detector = importlib.import_module('spam-detector')
 
