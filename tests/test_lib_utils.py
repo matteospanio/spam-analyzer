@@ -23,10 +23,11 @@ def test_dmarc_pass():
 def test_get_domain():
     unknown_domain = 'the domain is unknown'
     real_domain = 'the domain is google.com'
+    ip_address = '127.0.0.1'
 
     assert utils.get_domain(unknown_domain) == Domain('unknown')
     assert utils.get_domain(real_domain) == Domain('google.com')
-    assert utils.get_domain(unknown_domain) == Domain('unknown')
+    assert utils.get_domain(ip_address) == Domain('localhost')
 
 def test_inspect_body():
     assert True is False
