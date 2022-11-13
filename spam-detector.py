@@ -1,6 +1,6 @@
 import yaml
 
-from app import app, cli
+from spamdetector import app, cli
 
 
 def main(args=None):

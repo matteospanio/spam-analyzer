@@ -1,7 +1,8 @@
 import os, sys
 
-from app.files import get_files_from_dir
-from app.lib.data_structures import MailAnalyzer
+from spamdetector.files import get_files_from_dir
+from spamdetector.lib.data_structures import MailAnalyzer
+
 
 def app(file: str, wordlist, ignore_headers: bool, ignore_body: bool, verbose: bool) -> None:
     wordlist = wordlist.read().splitlines()
@@ -24,7 +25,7 @@ def app(file: str, wordlist, ignore_headers: bool, ignore_body: bool, verbose: b
         sys.exit(1)
 
     for analysis in data:
-        print(analysis.file_path.split('/')[-1], analysis.is_spam())
+        print(analysis.file_path.split('.')[0], analysis.is_spam())
 
     spam = 0
     warning = 0
@@ -36,11 +37,6 @@ def app(file: str, wordlist, ignore_headers: bool, ignore_body: bool, verbose: b
             warning += 1
         if analysis.is_spam() == 'Trust':
             trust += 1
-    print('Spam: ', spam, 'su 100')
-    print('Warning: ', warning, 'su 100')
-    print('Trust: ', trust, 'su 100')
-
-    # if verbose:
-    #     summary(data)
-    # else:
-    #     short(data)
+    print('Spam: ', spam, 'su', len(data))
+    print('Warning: ', warning, 'su', len(data))
+    print('Trust: ', trust, 'su', len(data))

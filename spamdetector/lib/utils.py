@@ -1,6 +1,6 @@
 from enum import Enum
 import re
-import app.lib.data_structures as ds
+import spamdetector.lib.data_structures as ds
 
 
 class Regex(Enum):
@@ -120,7 +120,6 @@ def inspect_attachment():
     raise NotImplementedError
 
 def has_unsecure_links(body, domain) -> bool:
-    # TODO: add exception http://www.w3.org
     # TODO: add filter for redirect links
     if 'http://' in body:
         # if the domain is not in the received header, it's a spam

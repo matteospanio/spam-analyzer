@@ -2,7 +2,7 @@ import mailparser, socket
 from mailparser import MailParser
 from dataclasses import dataclass
 
-import app.lib.utils as utils
+import spamdetector.lib.utils as utils
 
 
 @dataclass
@@ -44,6 +44,7 @@ class Domain:
 
 @dataclass
 class MailAnalysis:
+    """A summary of the analysis of a mail"""
 
     file_path: str
 

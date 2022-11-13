@@ -18,7 +18,7 @@ setup(
     long_description = long_description,
     long_description_content_type = "text/markdown",
     url = config['url'],
-    py_modules = ['spam-detector', 'app'],
+    py_modules = ['spam-detector', 'spamdetector'],
     packages = find_packages(),
     install_requires = [requirements],
     python_requires = '>=3.8',
