@@ -1,9 +1,11 @@
 import os
 
-from app.files import get_wordlist_from_file
+from app.files import get_files_from_dir
 
-def test_open_wordlist():
-    with open(os.path.join(os.path.curdir, 'assets/word_blacklist.txt'), 'r') as f:
-        test_list = f.read().splitlines()
-        wordlist = get_wordlist_from_file('assets/word_blacklist.txt')
-        assert wordlist == test_list
+def test_get_files_from_directory():
+    # should get a list of files from `data` directory
+    file_list = get_files_from_dir(os.path.join(os.path.curdir, 'data'))
+    test_file = file_list[0]
+    assert type(file_list) == list
+    assert type(test_file) == str
+    assert os.path.isfile(test_file) is True
