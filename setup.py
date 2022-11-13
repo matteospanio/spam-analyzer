@@ -17,7 +17,7 @@ setup(
     description = config['description'],
     long_description = long_description,
     long_description_content_type = "text/markdown",
-    url = 'https://github.com/matteospanio/spam-detector',
+    url = config['url'],
     py_modules = ['spam-detector', 'app'],
     packages = find_packages(),
     install_requires = [requirements],
