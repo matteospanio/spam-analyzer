@@ -24,22 +24,29 @@ HEADER = [
 ]
 
 def print_output(data, output_format: str, verbose: bool) -> None:
+    """Prints the output of the MailAnalysis in the specified format (csv, json or default).
+    Args:
+        data (_type_): _description_
+        output_format (str): _description_
+        verbose (bool): _description_
+    """
     if output_format == 'csv':
-        print_to_csv(data)
+        _print_to_csv(data)
     elif output_format == 'json':
-        print_to_json(data)
+        _print_to_json(data)
     else:
-        print_default(data, verbose)
+        _print_default(data, verbose)
 
-def print_to_csv(data):
+def _print_to_csv(data):
     raise NotImplementedError
 
-def print_to_json(data):
+def _print_to_json(data):
     dict_data = [analysis.to_dict() for analysis in data]
     print(json.dumps(dict_data, indent=4))
 
-def print_default(data, verbose):
-    raise NotImplementedError
+def _print_default(data, verbose):
+    for analysis in data:
+        print(f"{analysis.file_path.split('.')[0]} {analysis.forbidden_words_percentage:.3f}", analysis.is_spam())
 
 def summary(data):
     warn = 0
