@@ -1,3 +1,7 @@
+"""
+.. include:: ../README.md
+"""
+
 import os, sys
 
 from spamdetector.files import get_files_from_dir
@@ -32,7 +36,6 @@ def app(file: str, wordlist, ignore_headers: bool, ignore_body: bool, verbose: b
     print_output(data, output_format=output_format, verbose=verbose)
 
     for analysis in data:
-        print(analysis.file_path.split('.')[0], analysis.is_spam())
         if analysis.is_spam() == 'Spam':
             spam += 1
         if analysis.is_spam() == 'Warning':
