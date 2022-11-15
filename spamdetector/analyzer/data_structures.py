@@ -110,7 +110,7 @@ class MailAnalysis:
             return 'Warning'
         else:
             return 'Trust'
-        
+
     def get_score(self, weights) -> int:
         """It evaluates the mail and return a score based on the presence of some headers and the content of the body.
         The points are assigned based on the `weights` parameter.
@@ -120,9 +120,11 @@ class MailAnalysis:
         has_dkim = 0 if self.has_dkim else weights['has_dkim']
         has_dmarc = 0 if self.has_dmarc else weights['has_dmarc']
         domain_matches = 0 if self.domain_matches else weights['domain_matches']
-        
+
         # body scoring
         forbidden_words_percentage = self.forbidden_words_percentage * weights['forbidden_words_percentage'] * 10
+
+        raise NotImplementedError
 
     def to_dict(self) -> dict:
         return {
@@ -132,12 +134,14 @@ class MailAnalysis:
                 "has_dkim": self.has_dkim,
                 "has_dmarc": self.has_dmarc,
                 "domain_matches": self.domain_matches,
-                "auth_warn": self.auth_warn
+                "auth_warn": self.auth_warn,
+                "has_suspect_subject": self.has_suspect_subject
             },
             "body": {
                 "contains_script": self.contains_script,
                 "contains_http_links": self.contains_http_links,
                 "forbidden_words_percentage": self.forbidden_words_percentage,
+                "contains_form": self.contains_form
             },
             "attachments": {
                 "has_attachments": self.has_attachments,
@@ -148,12 +152,10 @@ class MailAnalysis:
 
 
 class MailAnalyzer:
-    def __init__(self, wordlist, ignore_headers=False, ignore_body=False):
+    def __init__(self, wordlist):
         self.wordlist = wordlist
-        self.ignore_headers = ignore_headers
-        self.ignore_body = ignore_body
 
-    def analyze(self, email_path: str) -> MailAnalysis:
+    def analyze(self, email_path: str, add_headers) -> MailAnalysis:
         email = mailparser.parse_from_file(email_path)
 
         has_spf, has_dkim, has_dmarc, domain_matches, auth_warn = utils.inspect_headers(email.headers)
@@ -171,7 +173,9 @@ class MailAnalyzer:
             contains_script=contains_script,
             forbidden_words_percentage=forbidden_words_percentage,
             has_attachments=has_attachments,
-            is_attachment_executable=is_executable
+            is_attachment_executable=is_executable,
+            has_suspect_subject=True,
+            contains_form=True
         )
 
     def get_domain(self, email: MailParser) -> Domain:
@@ -181,4 +185,4 @@ class MailAnalyzer:
         return utils.get_domain(received)
 
     def __repr__(self):
-        return f'<MailAnalyzer(wordlist={self.wordlist}, ignore_headers={self.ignore_headers}, ignore_body={self.ignore_body})>'
+        return f'<MailAnalyzer(wordlist={self.wordlist})>'

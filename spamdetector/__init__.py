@@ -10,20 +10,20 @@ from spamdetector.analyzer.data_structures import MailAnalyzer
 from spamdetector.display import print_output
 
 
-def app(file: str, wordlist, ignore_headers: bool, ignore_body: bool, verbose: bool, output_format: str) -> None:
+def app(file: str, wordlist, add_headers: bool, verbose: bool, output_format: str) -> None:
     wordlist = wordlist.read().splitlines()
     data = []
 
-    analyzer = MailAnalyzer(wordlist, ignore_headers, ignore_body)
+    analyzer = MailAnalyzer(wordlist)
 
     if os.path.isdir(file):
         file_list = get_files_from_dir(file)
         for mail_path in file_list:
-            analysis = analyzer.analyze(mail_path)
+            analysis = analyzer.analyze(mail_path, add_headers)
             data.append(analysis)
 
     elif os.path.isfile(file):
-        analysis = analyzer.analyze(file)
+        analysis = analyzer.analyze(file, add_headers)
         data.append(analysis)
 
     else:
