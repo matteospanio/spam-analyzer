@@ -1,5 +1,6 @@
 attrs==22.1.0
 bleach==5.0.1
+build==0.9.0
 certifi==2022.9.24
 cffi==1.15.1
 charset-normalizer==2.1.1
@@ -12,10 +13,14 @@ importlib-metadata==5.0.0
 iniconfig==1.1.1
 jaraco.classes==3.2.3
 jeepney==0.8.0
+Jinja2==3.1.2
 keyring==23.11.0
 mail-parser==3.15.0
+MarkupSafe==2.1.1
 more-itertools==9.0.0
 packaging==21.3
+pdoc==12.3.0
+pep517==0.13.0
 pkginfo==1.8.3
 pluggy==1.0.0
 pycparser==2.21
@@ -32,6 +37,7 @@ SecretStorage==3.3.3
 simplejson==3.17.6
 six==1.16.0
 termtables==0.2.4
+toml==0.10.2
 tomli==2.0.1
 twine==4.0.1
 urllib3==1.26.12
