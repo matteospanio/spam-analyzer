@@ -1,0 +1,39 @@
+[project]
+name = "spam-detector"
+description = "A spam detector"
+version = "0.0.1"
+authors = [
+    {name = "Matteo Spanio", email = "matteo.spanio97@gmail.com"},
+]
+dynamic = ["dependencies", "readme"]
+license = { file="LICENSE" }
+requires-python = ">=3.8"
+keywords = ["spam", "spam-detector", "cybersecurity"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.scripts]
+spam-detector = "src.cli.run:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[project.urls]
+"Homepage" = "https://github.com/matteospanio/spam-detector"
+
+[tool.setuptools.dynamic]
+dependencies = {file = "requirements.txt"}
+readme = {file = ["README.md"]}
+
+[tool.setuptools.packages]
+find = {}
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

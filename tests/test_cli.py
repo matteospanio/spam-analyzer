@@ -1,6 +1,6 @@
-import yaml, pytest, importlib
+import yaml, pytest
 
-spam_detector = importlib.import_module('spam-detector')
+import src.cli.run as spam_detector
 
 with open('config.yaml') as f:
     config: dict = yaml.safe_load(f)

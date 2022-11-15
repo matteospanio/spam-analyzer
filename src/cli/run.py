@@ -1,13 +1,14 @@
 import yaml
 
-from spamdetector import app, cli
+from src import app
+from src.cli import parser
 
 
 def main(args=None):
     with open('config.yaml') as f:
         config: dict = yaml.safe_load(f)
 
-    args = cli.parse_args(args, config)
+    args = parser.parse_args(args, config)
 
     app(args.file, args.wordlist, args.ignore_headers, args.ignore_body, args.verbose, args.output_format)
 

@@ -1,5 +1,5 @@
-from spamdetector.lib.data_structures import Domain
-import spamdetector.lib.utils as utils
+from src.analyzer.data_structures import Domain
+import src.analyzer.utils as utils
 import mailparser
 
 trustable_mail = mailparser.parse_from_file('tests/samples/97.47949e45691dd7a024dcfaacef4831461bf5d5f09c85a6e44ee478a5bcaf8539.email')

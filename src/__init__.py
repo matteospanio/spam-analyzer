@@ -1,12 +1,13 @@
 """
 .. include:: ../README.md
+.. include:: ../docs/requirements.md
 """
 
 import os, sys
 
-from spamdetector.files import get_files_from_dir
-from spamdetector.lib.data_structures import MailAnalyzer
-from spamdetector.display import print_output
+from src.files import get_files_from_dir
+from src.analyzer.data_structures import MailAnalyzer
+from src.display import print_output
 
 
 def app(file: str, wordlist, ignore_headers: bool, ignore_body: bool, verbose: bool, output_format: str) -> None:

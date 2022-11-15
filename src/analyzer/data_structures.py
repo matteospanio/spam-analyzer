@@ -2,7 +2,7 @@ import mailparser, socket
 from mailparser import MailParser
 from dataclasses import dataclass
 
-import spamdetector.lib.utils as utils
+import src.analyzer.utils as utils
 
 
 @dataclass
@@ -57,6 +57,7 @@ class MailAnalysis:
 
     # attachments
     has_attachments: bool
+    is_attachment_executable: bool
 
     # data from body
     contains_script: bool
@@ -84,7 +85,6 @@ class MailAnalysis:
         # body scoring
         forbidden_words_percentage = self.forbidden_words_percentage * weights['forbidden_words_percentage'] * 10
 
-
     def to_dict(self) -> dict:
         return {
             "file_name": self.file_path,
@@ -101,7 +101,8 @@ class MailAnalysis:
                 "forbidden_words_percentage": self.forbidden_words_percentage,
             },
             "attachments": {
-                "has_attachments": self.has_attachments
+                "has_attachments": self.has_attachments,
+                "is_attachment_executable": self.is_attachment_executable
             },
             "is_spam": self.is_spam()
         }
@@ -118,7 +119,7 @@ class MailAnalyzer:
 
         has_spf, has_dkim, has_dmarc, domain_matches, auth_warn = utils.inspect_headers(email.headers)
         contains_http_links, contains_script, forbidden_words_percentage = utils.inspect_body(email.body, self.wordlist, self.get_domain(email))
-        has_attachments = utils.inspect_attachments(email.attachments)
+        has_attachments, is_executable = utils.inspect_attachments(email.attachments)
 
         return MailAnalysis(
             file_path=email_path,
@@ -130,7 +131,8 @@ class MailAnalyzer:
             contains_http_links=contains_http_links,
             contains_script=contains_script,
             forbidden_words_percentage=forbidden_words_percentage,
-            has_attachments=has_attachments
+            has_attachments=has_attachments,
+            is_attachment_executable=is_executable
         )
 
     def get_domain(self, email: MailParser) -> Domain:

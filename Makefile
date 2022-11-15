@@ -15,9 +15,6 @@ export PRINT_HELP_PYSCRIPT
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-prova:
-	echo $(MAKEFILE_LIST)
-
 clean: clean-build clean-pyc clean-test
 
 clean-build:
@@ -43,13 +40,13 @@ setup:
 	pip install -r requirements.txt
 
 run:
-	python spam-detector.py -f data/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a -v
+	python spamdetector/cli/run.py -f tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a -v
 
 test:
 	pytest
 
 build-local:
-	python setup.py develop
+	pip install --editable .
 
 build:
 	python setup.py sdist bdist_wheel

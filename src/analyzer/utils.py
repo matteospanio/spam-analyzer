@@ -1,7 +1,7 @@
 from enum import Enum
 from pprint import pprint
 import re
-import spamdetector.lib.data_structures as ds
+import src.analyzer.data_structures as ds
 
 
 class Regex(Enum):
@@ -137,9 +137,9 @@ def has_script_tag(body) -> bool:
 
 def inspect_attachments(attachments: list):
     has_attachments = len(attachments) > 0
-    
+    is_executable = False
     for attachment in attachments:
         a_type = attachment.get('mail_content_type')
         if a_type == 'application/octet-stream':
-            print(attachment)
-    return (has_attachments, )
+            is_executable = True
+    return (has_attachments, is_executable)
