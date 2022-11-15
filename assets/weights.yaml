@@ -1,0 +1,8 @@
+# headers
+has_spf: 1
+has_dkim: 1
+has_dmarc: 1
+has_mx: 1
+
+# body
+spam_words: 1

@@ -11,6 +11,7 @@ def add_args(parser: ArgumentParser, config: dict) -> None:
     parser.add_argument('-l', '--wordlist', help='A file containing the spam wordlist', default=config['constants']['wordlist'], type=FileType('r'))
     parser.add_argument('-H', '--ignore-headers', help="Don't check headers fields", action='store_true')
     parser.add_argument('-B', '--ignore-body', help="Don't parse body content", action='store_true')
+    parser.add_argument('-w', '--custom-weights', help='A file containing custom weights', default=config['constants']['weights'], type=FileType('r'))
     parser.add_argument('-v', '--verbose', help='More program output', action='store_true')
     parser.add_argument('-V', '--version', help='Show program version', action='version', version=f'%(prog)s {config["version"]}')
     parser.add_argument('-o', '--output-format', help='Format output in a different way', choices=['csv', 'json'], metavar='FORMAT', dest='output_format', default='')
