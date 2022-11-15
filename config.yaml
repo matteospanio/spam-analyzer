@@ -1,12 +1,3 @@
-# package info
-name: 'spam-detector'
-version: '0.0.1'
-description: 'A program to detect spam'
-author: 'Matteo Spanio'
-author_email: 'matteo.spanio97@gmail.com'
-url: 'https://github.com/matteospanio/spam-detector'
-license: 'GPLv3'
-
 # constants values used across the app
 constants:
   # path to the default spam words file

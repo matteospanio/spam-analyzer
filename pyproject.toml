@@ -19,7 +19,7 @@ classifiers = [
 ]
 
 [project.scripts]
-spam-detector = "src.cli.run:main"
+spam-detector = "spamdetector.cli.run:main"
 
 [tool.setuptools]
 include-package-data = true
@@ -29,7 +29,7 @@ include-package-data = true
 
 [tool.setuptools.dynamic]
 dependencies = {file = "requirements.txt"}
-readme = {file = ["README.md"]}
+readme = {file = ["README.md", "docs/requirements.md"]}
 
 [tool.setuptools.packages]
 find = {}

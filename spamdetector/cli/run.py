@@ -1,12 +1,11 @@
-import yaml
+import toml
 
-from src import app
-from src.cli import parser
+from spamdetector import app
+from spamdetector.cli import parser
 
 
 def main(args=None):
-    with open('config.yaml') as f:
-        config: dict = yaml.safe_load(f)
+    config= toml.load('pyproject.toml')
 
     args = parser.parse_args(args, config)
 
