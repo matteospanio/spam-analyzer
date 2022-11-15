@@ -1,4 +1,5 @@
 import termtables as tt
+import csv, json
 
 COLORS = {
     'red': '\033[31m',
@@ -21,6 +22,24 @@ HEADER = [
     'http link',
     'Trust'
 ]
+
+def print_output(data, output_format: str, verbose: bool) -> None:
+    if output_format == 'csv':
+        print_to_csv(data)
+    elif output_format == 'json':
+        print_to_json(data)
+    else:
+        print_default(data, verbose)
+
+def print_to_csv(data):
+    raise NotImplementedError
+
+def print_to_json(data):
+    dict_data = [analysis.to_dict() for analysis in data]
+    print(json.dumps(dict_data, indent=4))
+
+def print_default(data, verbose):
+    raise NotImplementedError
 
 def summary(data):
     warn = 0

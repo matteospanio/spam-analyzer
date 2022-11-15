@@ -13,6 +13,7 @@ def add_args(parser: ArgumentParser, config: dict) -> None:
     parser.add_argument('-B', '--ignore-body', help="Don't parse body content", action='store_true')
     parser.add_argument('-v', '--verbose', help='More program output', action='store_true')
     parser.add_argument('-V', '--version', help='Show program version', action='version', version=f'%(prog)s {config["version"]}')
+    parser.add_argument('-o', '--output-format', help='Format output in a different way', choices=['csv', 'json'], metavar='FORMAT', dest='output_format', default='')
 
 def parse_args(args, config: dict) -> Namespace:
     """Read arguments from the command line
