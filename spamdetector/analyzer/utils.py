@@ -1,7 +1,6 @@
 from enum import Enum
-from pprint import pprint
 import re
-import src.analyzer.data_structures as ds
+import spamdetector.analyzer.data_structures as ds
 
 
 class Regex(Enum):
