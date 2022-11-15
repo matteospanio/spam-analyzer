@@ -2,9 +2,10 @@ import os, sys
 
 from spamdetector.files import get_files_from_dir
 from spamdetector.lib.data_structures import MailAnalyzer
+from spamdetector.display import print_output
 
 
-def app(file: str, wordlist, ignore_headers: bool, ignore_body: bool, verbose: bool) -> None:
+def app(file: str, wordlist, ignore_headers: bool, ignore_body: bool, verbose: bool, output_format: str) -> None:
     wordlist = wordlist.read().splitlines()
     data = []
 
@@ -24,19 +25,21 @@ def app(file: str, wordlist, ignore_headers: bool, ignore_body: bool, verbose: b
         print('The file or directory doesn\'t exist')
         sys.exit(1)
 
-    for analysis in data:
-        print(analysis.file_path.split('.')[0], analysis.is_spam())
-
     spam = 0
     warning = 0
     trust = 0
+
+    print_output(data, output_format=output_format, verbose=verbose)
+
     for analysis in data:
+        print(analysis.file_path.split('.')[0], analysis.is_spam())
         if analysis.is_spam() == 'Spam':
             spam += 1
         if analysis.is_spam() == 'Warning':
             warning += 1
         if analysis.is_spam() == 'Trust':
             trust += 1
+
     print('Spam: ', spam, 'su', len(data))
     print('Warning: ', warning, 'su', len(data))
     print('Trust: ', trust, 'su', len(data))
