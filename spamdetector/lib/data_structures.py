@@ -61,17 +61,29 @@ class MailAnalysis:
     # data from body
     contains_script: bool
     contains_http_links: bool
-    contains_forbidden_words: bool
+    forbidden_words_percentage: float
 
     def is_spam(self) -> str:
         if self.contains_script or self.auth_warn:
             return 'Spam'
         if (not self.has_spf and not self.domain_matches):
             return 'Spam'
-        if (self.has_spf or self.domain_matches) and self.contains_http_links and self.contains_forbidden_words:
+        if (self.has_spf or self.domain_matches) and self.contains_http_links and self.forbidden_words_percentage > 0.05:
             return 'Warning'
         else:
-            return 'Trust' 
+            return 'Trust'
+        
+    def get_score(self, weights) -> int:
+        
+        # headers scoring
+        has_spf = 0 if self.has_spf else weights['has_spf']
+        has_dkim = 0 if self.has_dkim else weights['has_dkim']
+        has_dmarc = 0 if self.has_dmarc else weights['has_dmarc']
+        domain_matches = 0 if self.domain_matches else weights['domain_matches']
+        
+        # body scoring
+        forbidden_words_percentage = self.forbidden_words_percentage * weights['forbidden_words_percentage'] * 10
+
 
     def to_dict(self) -> dict:
         return {
@@ -86,7 +98,7 @@ class MailAnalysis:
             "body": {
                 "contains_script": self.contains_script,
                 "contains_http_links": self.contains_http_links,
-                "contains_forbidden_words": self.contains_forbidden_words
+                "forbidden_words_percentage": self.forbidden_words_percentage,
             },
             "attachments": {
                 "has_attachments": self.has_attachments
@@ -105,7 +117,7 @@ class MailAnalyzer:
         email = mailparser.parse_from_file(email_path)
 
         has_spf, has_dkim, has_dmarc, domain_matches, auth_warn = utils.inspect_headers(email.headers)
-        contains_forbidden_words, contains_http_links, contains_script = utils.inspect_body(email.body, self.wordlist, self.get_domain(email))
+        contains_http_links, contains_script, forbidden_words_percentage = utils.inspect_body(email.body, self.wordlist, self.get_domain(email))
         has_attachments = utils.inspect_attachments(email.attachments)
 
         return MailAnalysis(
@@ -115,9 +127,9 @@ class MailAnalyzer:
             has_dmarc=has_dmarc,
             domain_matches=domain_matches,
             auth_warn=auth_warn,
-            contains_forbidden_words=contains_forbidden_words,
             contains_http_links=contains_http_links,
             contains_script=contains_script,
+            forbidden_words_percentage=forbidden_words_percentage,
             has_attachments=has_attachments
         )
 

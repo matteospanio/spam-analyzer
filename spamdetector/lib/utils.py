@@ -1,4 +1,5 @@
 from enum import Enum
+from pprint import pprint
 import re
 import spamdetector.lib.data_structures as ds
 
@@ -6,6 +7,7 @@ import spamdetector.lib.data_structures as ds
 class Regex(Enum):
     DOMAIN = re.compile(r"([\-A-Za-z0-9]+\.)+[A-Za-z]{2,6}")
     IP = re.compile(r"(?:\d{1,3}\.){3}\d{1,3}")
+    MAILTO = re.compile(r"mailto:(\w+@\w+\.\w+)(\?subject=(.+))?")
     HTTP_LINK = re.compile(r'(http://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)')
     HTTPS_LINK = re.compile(r'(https://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)')
     SHORT_LINK = re.compile(r'(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)')
@@ -76,25 +78,27 @@ def get_domain(field: str):
 
 def inspect_body(body, wordlist, domain):
     body = body.lower()
-    has_forbidden_words = contains_forbidden_words(body, wordlist)
     has_http_links = has_unsecure_links(body, domain)
     has_script = has_script_tag(body)
+    forbidden_words_percentage = percentage_of_bad_words(body, wordlist)
 
-    return (has_forbidden_words, has_http_links, has_script)
+    return (has_http_links, has_script, forbidden_words_percentage)
 
-def contains_forbidden_words(body, wordlist):
+def percentage_of_bad_words(body, wordlist) -> float:
+    bad_words = 0
     for word in wordlist:
         if word in body:
-            return True
-    return False
+            bad_words += len(word.split(' '))
+    return bad_words / len(body.split(' ')) 
 
 def get_body_links(body) -> list[str]:
     links = []
 
     http = Regex.HTTP_LINK.value.findall(body)
     https = Regex.HTTPS_LINK.value.findall(body)
+    mailto = Regex.MAILTO.value.findall(body)
 
-    if http == [] and https == []:
+    if http == [] and https == [] and mailto == []:
         not_http = Regex.SHORT_LINK.value.findall(body)
         links = [link[0] for link in not_http]
 
@@ -104,6 +108,8 @@ def get_body_links(body) -> list[str]:
     for link in https:
         if 'spamassassin' not in link[0]:
             links.append(link[0])
+    for mail in mailto:
+        links.append(mail[0])
 
     return links
 
@@ -111,11 +117,6 @@ def https_only(links: list[str]) -> bool:
     for link in links:
         if 'https://' not in link:
             return False
-    return True
-
-def inspect_attachments(attachments: list):
-    if len(attachments) == 0:
-        return False
     return True
 
 def has_unsecure_links(body, domain) -> bool:
@@ -133,3 +134,12 @@ def has_script_tag(body) -> bool:
         if tag in body:
             return True
     return False
+
+def inspect_attachments(attachments: list):
+    has_attachments = len(attachments) > 0
+    
+    for attachment in attachments:
+        a_type = attachment.get('mail_content_type')
+        if a_type == 'application/octet-stream':
+            print(attachment)
+    return (has_attachments, )
