@@ -73,6 +73,27 @@ class MailAnalysis:
         else:
             return 'Trust' 
 
+    def to_dict(self) -> dict:
+        return {
+            "file_name": self.file_path,
+            "headers": {
+                "has_spf": self.has_spf,
+                "has_dkim": self.has_dkim,
+                "has_dmarc": self.has_dmarc,
+                "domain_matches": self.domain_matches,
+                "auth_warn": self.auth_warn
+            },
+            "body": {
+                "contains_script": self.contains_script,
+                "contains_http_links": self.contains_http_links,
+                "contains_forbidden_words": self.contains_forbidden_words
+            },
+            "attachments": {
+                "has_attachments": self.has_attachments
+            },
+            "is_spam": self.is_spam()
+        }
+
 
 class MailAnalyzer:
     def __init__(self, wordlist, ignore_headers=False, ignore_body=False):
