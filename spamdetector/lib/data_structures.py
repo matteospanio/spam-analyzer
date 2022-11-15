@@ -55,6 +55,9 @@ class MailAnalysis:
     domain_matches: bool
     auth_warn: bool
 
+    # attachments
+    has_attachments: bool
+
     # data from body
     contains_script: bool
     contains_http_links: bool
@@ -79,10 +82,10 @@ class MailAnalyzer:
 
     def analyze(self, email_path: str) -> MailAnalysis:
         email = mailparser.parse_from_file(email_path)
-        domain = self.get_domain(email)
 
         has_spf, has_dkim, has_dmarc, domain_matches, auth_warn = utils.inspect_headers(email.headers)
-        contains_forbidden_words, contains_http_links, contains_script = utils.inspect_body(email.body, self.wordlist, domain)
+        contains_forbidden_words, contains_http_links, contains_script = utils.inspect_body(email.body, self.wordlist, self.get_domain(email))
+        has_attachments = utils.inspect_attachments(email.attachments)
 
         return MailAnalysis(
             file_path=email_path,
@@ -93,7 +96,8 @@ class MailAnalyzer:
             auth_warn=auth_warn,
             contains_forbidden_words=contains_forbidden_words,
             contains_http_links=contains_http_links,
-            contains_script=contains_script
+            contains_script=contains_script,
+            has_attachments=has_attachments
         )
 
     def get_domain(self, email: MailParser) -> Domain:

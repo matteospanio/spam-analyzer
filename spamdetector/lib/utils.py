@@ -25,7 +25,7 @@ def spf_pass(headers: dict) -> bool:
         return True
     return False
 
-def dkim_pass(headers):
+def dkim_pass(headers: dict) -> bool:
     if headers.get('DKIM-Signature') is not None:
         return True
     dkim = headers.get('Authentication-Results') or headers.get('Authentication-results')
@@ -33,13 +33,13 @@ def dkim_pass(headers):
         return True
     return False
 
-def dmarc_pass(headers):
+def dmarc_pass(headers: dict) -> bool:
     dmarc = headers.get('Authentication-Results') or headers.get('Authentication-results')
     if dmarc is not None and 'dmarc=pass' in dmarc.lower():
         return True
     return False
 
-def has_auth_warning(headers):
+def has_auth_warning(headers: dict) -> bool:
     if headers.get('X-Authentication-Warning') is not None:
         return True
     return False
@@ -96,9 +96,7 @@ def get_body_links(body) -> list[str]:
 
     if http == [] and https == []:
         not_http = Regex.SHORT_LINK.value.findall(body)
-
-        for link in not_http:
-            links.append(link[0])
+        links = [link[0] for link in not_http]
 
     for link in http:
         if 'www.w3.org' not in link[0]:
@@ -115,9 +113,10 @@ def https_only(links: list[str]) -> bool:
             return False
     return True
 
-def inspect_attachment():
-    # TODO
-    raise NotImplementedError
+def inspect_attachments(attachments: list):
+    if len(attachments) == 0:
+        return False
+    return True
 
 def has_unsecure_links(body, domain) -> bool:
     # TODO: add filter for redirect links
