@@ -2,6 +2,7 @@
 .. include:: ../README.md
 .. include:: ../docs/requirements.md
 .. include:: ../docs/performance.md
+.. include:: ../CONTRIBUTING.md
 .. include:: ../docs/testing.md
 """
 

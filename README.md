@@ -8,6 +8,14 @@
 
 spam-detector is a CLI (Command Line Interface) application that aims be a viable alternative to spam filter services written in Python.
 
+This program can catalog the email given in inputs in spam or non-spam givin a score to each parameter analyzed, when the score exceeds a certain threshold it is recognized as spam.
+
+The main features of spam-detector are:
+
+1. spam recognition with the option to receive in output a detailed analysis of the email
+2. speed, analysis run in a paralelized way that drastically reduces waiting times
+3. it is written in python with its most modern features to ensure software correctness
+
 ## Use cases
 
 Basic usage and options samples:

@@ -6,9 +6,9 @@ For a better development flow I suggest to follow the TDD paradigm (_Test Driven
 
 ## Strategies
 
-1. __Bottom-up__: every single components should have a unit test covering its base and limit cases and then 
+1. **Bottom-up**: every single components should have a unit test covering its base and limit cases and then 
 
-2. __Black-box__: after testing how the code works we should ensure that it actually works, so at the end of the testing we consider the requirements and see if they are respected.
+2. **Black-box**: after testing how the code works we should ensure that it actually works, so at the end of the testing we consider the requirements and see if they are respected.
 
 ## Automation
 

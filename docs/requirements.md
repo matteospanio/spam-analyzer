@@ -19,7 +19,7 @@ Since those are three separated parts of the email, the analysis is done separat
 | 🚧 | Handle non-mail files | high | The app should gently handle non email files, notifying to the user a wrong input, but should not stop its execution |
 | 🚧 | Output spam score | high | The app should output a spam score for each analyzed email like spamassassin. |
 | 🚧 | Output the analysis results | high | The app should output the analysis results in varoius formats (currently only json is aviable) to make possible further analysis with other tools |
-| :x: | Assign custom weights for spam scoring | medium | The app should take in input a configuration file to assign custom weights for spam scoring
-| :x: | Modular rules | low | The app should take in input a configuration file to assign a custom set of rules for spam scoring
+| ❌ | Assign custom weights for spam scoring | medium | The app should take in input a configuration file to assign custom weights for spam scoring
+| ❌ | Modular rules | low | The app should take in input a configuration file to assign a custom set of rules for spam scoring
 
-✔️ = done | 🚧 = in progress | :x: = todo
+✔️ = done | 🚧 = in progress | ❌ = todo
