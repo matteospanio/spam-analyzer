@@ -39,9 +39,6 @@ clean-test:
 setup:
 	pip install -r requirements.txt
 
-run:
-	python spamdetector/cli/run.py -f tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a -v
-
 test:
 	pytest
 
