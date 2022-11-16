@@ -171,11 +171,11 @@ class MailAnalyzer:
     def __init__(self, wordlist):
         self.wordlist = wordlist
 
-    def analyze(self, email_path: str, add_headers) -> MailAnalysis:
+    def analyze(self, email_path: str, add_headers: bool = False) -> MailAnalysis:
         email = mailparser.parse_from_file(email_path)
 
         has_spf, has_dkim, has_dmarc, domain_matches, auth_warn, has_suspect_subject, send_date = utils.inspect_headers(email.headers)
-        contains_http_links, contains_script, forbidden_words_percentage, has_form = utils.inspect_body(email.body, self.wordlist, self.get_domain(email))
+        contains_http_links, contains_script, forbidden_words_percentage, has_form = utils.inspect_body(email.body, self.wordlist, self.get_domain(email_path))
         has_attachments, is_executable = utils.inspect_attachments(email.attachments)
 
         return MailAnalysis(
@@ -195,7 +195,8 @@ class MailAnalyzer:
             send_date=datetime.now() # TODO send_date
         )
 
-    def get_domain(self, email: MailParser) -> Domain:
+    def get_domain(self, email_path: str) -> Domain:
+        email = mailparser.parse_from_file(email_path)
         received = email.headers.get('Received')
         if received is None:
             return utils.get_domain('unknown')
