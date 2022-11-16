@@ -10,7 +10,7 @@ from spamdetector.analyzer.data_structures import MailAnalyzer
 from spamdetector.display import print_output
 
 
-def app(file: str, wordlist, add_headers: bool, verbose: bool, output_format: str) -> None:
+def _app(file: str, wordlist, add_headers: bool, verbose: bool, output_format: str) -> None:
     wordlist = wordlist.read().splitlines()
     data = []
 

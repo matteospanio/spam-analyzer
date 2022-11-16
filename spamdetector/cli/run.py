@@ -1,6 +1,6 @@
 import toml
 
-from spamdetector import app
+from spamdetector import _app
 from spamdetector.cli import parser
 
 
@@ -15,7 +15,7 @@ def main(args=None):
 
     args = parser.parse_args(args, config)
 
-    app(args.file, args.wordlist, args.add_headers, args.verbose, args.output_format)
+    _app(args.file, args.wordlist, args.add_headers, args.verbose, args.output_format)
 
 
 if __name__ == '__main__':
