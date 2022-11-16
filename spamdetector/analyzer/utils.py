@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 import re
 import spamdetector.analyzer.data_structures as ds
@@ -10,6 +11,8 @@ class Regex(Enum):
     HTTP_LINK = re.compile(r'(http://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)')
     HTTPS_LINK = re.compile(r'(https://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)')
     SHORT_LINK = re.compile(r'(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)')
+    GAPPY_WORDS = re.compile(r'([A-Za-z0-9]+(<!--*-->|\*|\-|\.))+')
+    HTML_FORM = re.compile(r'<form')
 
 
 def inspect_headers(headers: dict):
@@ -18,7 +21,10 @@ def inspect_headers(headers: dict):
     has_dmarc = dmarc_pass(headers)
     domain_matches = from_domain_matches_received(headers)
     auth_warn = has_auth_warning(headers)
-    return (has_spf, has_dkim, has_dmarc, domain_matches, auth_warn)
+    has_suspect_subject = analyze_subject(headers)
+    send_date = parse_send_date(headers)
+
+    return (has_spf, has_dkim, has_dmarc, domain_matches, auth_warn, has_suspect_subject, send_date)
 
 def spf_pass(headers: dict) -> bool:
     spf = headers.get('Received-SPF') or headers.get('Authentication-Results') or headers.get('Authentication-results')
@@ -44,6 +50,17 @@ def has_auth_warning(headers: dict) -> bool:
     if headers.get('X-Authentication-Warning') is not None:
         return True
     return False
+
+def analyze_subject(headers: dict) -> bool:
+    subject = headers.get('Subject')
+    if subject is not None:
+        print(Regex.GAPPY_WORDS.value.search(subject))
+    return False
+
+def parse_send_date(headers: dict): #-> datetime:
+    date = headers.get('Date')
+    assert date is not None
+    print(date)
 
 def from_domain_matches_received(headers: dict) -> bool:
     email_domain = get_domain(headers.get('From') or 'not found')
@@ -80,8 +97,12 @@ def inspect_body(body, wordlist, domain):
     has_http_links = has_unsecure_links(body, domain)
     has_script = has_script_tag(body)
     forbidden_words_percentage = percentage_of_bad_words(body, wordlist)
+    has_form = has_html_form(body)
 
-    return (has_http_links, has_script, forbidden_words_percentage)
+    return (has_http_links, has_script, forbidden_words_percentage, has_form)
+
+def has_html_form(body) -> bool:
+    return True if Regex.HTML_FORM.value.search(body) else False
 
 def percentage_of_bad_words(body, wordlist) -> float:
     bad_words = 0

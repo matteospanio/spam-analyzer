@@ -1,4 +1,5 @@
-import mailparser, socket
+from datetime import datetime
+import mailparser, socket, yaml
 from mailparser import MailParser
 from dataclasses import dataclass
 
@@ -61,17 +62,17 @@ class MailAnalysis:
     # data from headers
     has_spf: bool
     """It is `True` if the mail has a SPF header:
-    ## SPF: Sender Policy Framework
+    ### SPF: Sender Policy Framework
     The SPF record is a TXT record that contains a policy that specifies which mail servers are allowed to send email from a specified domain.
     """
     has_dkim: bool
     """IT is `True` if the mail has a DKIM header:
-    ## DKIM: DomainKeys Identified Mail
+    ### DKIM: DomainKeys Identified Mail
     The DKIM signature is a digital signature that is added to an email message to verify that the message has not been altered since it was signed.
     """
     has_dmarc: bool
     """It is `True` if the mail has a DMARC header:
-    ## DMARC: Domain-based Message Authentication, Reporting & Conformance
+    ### DMARC: Domain-based Message Authentication, Reporting & Conformance
     The DMARC record is a type of DNS record that is used to help email receivers determine whether an email is legitimate or not.
     """
     domain_matches: bool
@@ -80,6 +81,8 @@ class MailAnalysis:
     The Authentication-Warning header is used to indicate that the message has been modified in transit.
     """
     has_suspect_subject: bool
+
+    send_date: datetime
 
     # attachments
     has_attachments: bool
@@ -115,16 +118,28 @@ class MailAnalysis:
         """It evaluates the mail and return a score based on the presence of some headers and the content of the body.
         The points are assigned based on the `weights` parameter.
         """
+
+        score = 0
+
         # headers scoring
-        has_spf = 0 if self.has_spf else weights['has_spf']
-        has_dkim = 0 if self.has_dkim else weights['has_dkim']
-        has_dmarc = 0 if self.has_dmarc else weights['has_dmarc']
-        domain_matches = 0 if self.domain_matches else weights['domain_matches']
+        if self.has_spf or self.domain_matches:
+            pass
+        else:
+            if not self.has_spf:
+                score += weights['has_spf']
+            if not self.domain_matches:
+                score += weights['domain_matches']
+
+        # those fields are not so often used, they should have a minimal impact in score
+        score += 0 if self.has_dkim else weights['has_dkim']
+        score += 0 if self.has_dmarc else weights['has_dmarc']
+
+        score += weights['auth_warn'] if self.auth_warn else 0
 
         # body scoring
-        forbidden_words_percentage = self.forbidden_words_percentage * weights['forbidden_words_percentage'] * 10
+        score += self.forbidden_words_percentage * weights['forbidden_words_percentage'] * 10
 
-        raise NotImplementedError
+        return score
 
     def to_dict(self) -> dict:
         return {
@@ -135,7 +150,8 @@ class MailAnalysis:
                 "has_dmarc": self.has_dmarc,
                 "domain_matches": self.domain_matches,
                 "auth_warn": self.auth_warn,
-                "has_suspect_subject": self.has_suspect_subject
+                "has_suspect_subject": self.has_suspect_subject,
+                "send_date": self.send_date
             },
             "body": {
                 "contains_script": self.contains_script,
@@ -158,8 +174,8 @@ class MailAnalyzer:
     def analyze(self, email_path: str, add_headers) -> MailAnalysis:
         email = mailparser.parse_from_file(email_path)
 
-        has_spf, has_dkim, has_dmarc, domain_matches, auth_warn = utils.inspect_headers(email.headers)
-        contains_http_links, contains_script, forbidden_words_percentage = utils.inspect_body(email.body, self.wordlist, self.get_domain(email))
+        has_spf, has_dkim, has_dmarc, domain_matches, auth_warn, has_suspect_subject, send_date = utils.inspect_headers(email.headers)
+        contains_http_links, contains_script, forbidden_words_percentage, has_form = utils.inspect_body(email.body, self.wordlist, self.get_domain(email))
         has_attachments, is_executable = utils.inspect_attachments(email.attachments)
 
         return MailAnalysis(
@@ -174,8 +190,9 @@ class MailAnalyzer:
             forbidden_words_percentage=forbidden_words_percentage,
             has_attachments=has_attachments,
             is_attachment_executable=is_executable,
-            has_suspect_subject=True,
-            contains_form=True
+            has_suspect_subject=has_suspect_subject,
+            contains_form=has_form,
+            send_date=datetime.now() # TODO send_date
         )
 
     def get_domain(self, email: MailParser) -> Domain:
