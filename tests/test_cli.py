@@ -21,7 +21,7 @@ class TestCLI:
         except SystemExit:
             pass
         output = capsys.readouterr().out
-        assert self.config['version'] in output
+        assert self.config['project']['version'] in output
 
     @pytest.mark.parametrize("option", ("-v", "--verbose"))
     def test_verbose(self, capsys, option):

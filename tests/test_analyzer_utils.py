@@ -49,5 +49,5 @@ def test_forbidden_words():
     body = 'a string of trustable words'
     spam = 'spam is not a funny thing'
 
-    assert utils.contains_forbidden_words(body, forbidden_words) is False
-    assert utils.contains_forbidden_words(spam, forbidden_words) is True
+    assert utils.percentage_of_bad_words(body, forbidden_words) == 0
+    assert utils.percentage_of_bad_words(spam, forbidden_words) > 0
