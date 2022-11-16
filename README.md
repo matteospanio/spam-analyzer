@@ -1,5 +1,5 @@
 <p style="display:flex;align-items:center;justify-content:center">
-    <img src="assets/img/logo_transparent.png" width="300px" />
+    <img src="http://matteospanio.me/assets/images/spam-detector-logo_transparent.png" width="300px" />
 </p>
 
 > A fast spam filter written in Python inspired by SpamAssassin.
