@@ -8,7 +8,7 @@ end_of_line = lf
 insert_final_newline = false
 
 # Set default charset
-[*.{yml,py,json,txt,clj,md}]
+[*.{yaml,toml,yml,py,json,txt,clj,md}]
 charset = utf-8
 
 [*.py]
