@@ -1,6 +1,8 @@
 """
 .. include:: ../README.md
 .. include:: ../docs/requirements.md
+.. include:: ../docs/performance.md
+.. include:: ../docs/testing.md
 """
 
 import os, sys
