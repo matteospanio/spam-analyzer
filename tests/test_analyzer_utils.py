@@ -1,12 +1,75 @@
-from spamdetector.analyzer.data_structures import Domain
-import spamdetector.analyzer.utils as utils
 import mailparser
+import pytest
+import spamdetector.analyzer.utils as utils
+from spamdetector.analyzer.data_structures import Domain
 
 trustable_mail = mailparser.parse_from_file('tests/samples/97.47949e45691dd7a024dcfaacef4831461bf5d5f09c85a6e44ee478a5bcaf8539.email')
 spam = mailparser.parse_from_file('tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email')
 
-def test_inspect_headers():
-    assert False is True
+
+class TestInspectHeaders:
+
+    h_tuple = utils.inspect_headers(trustable_mail.headers)
+
+    def test_inspect_headers_method(self):
+        assert type(self.h_tuple) == tuple
+        with pytest.raises(IndexError):
+            self.h_tuple[7]
+
+    def test_inspect_headers_in_secure_email(self):
+        # spf
+        assert self.h_tuple[0] is True
+        # dkim
+        assert self.h_tuple[1] is True
+        # dmarc
+        assert self.h_tuple[2] is True
+        # same domain in from and received headers
+        assert self.h_tuple[3] is True
+        # authentication warnig
+        assert self.h_tuple[4] is False
+        # has suspect subject
+        assert self.h_tuple[5] is False
+        # send_date
+        assert True is False
+
+    def test_inspect_headers_in_spam(self):
+        # spf
+        assert self.h_tuple[0] is True
+        # dkim
+        assert self.h_tuple[1] is True
+        # dmarc
+        assert self.h_tuple[2] is True
+        # same domain in from and received headers
+        assert self.h_tuple[3] is True
+        # authentication warnig
+        assert self.h_tuple[4] is False
+        # has suspect subject
+        assert self.h_tuple[5] is False
+        # send_date
+        assert True is False
+
+
+class TestInspectBody:
+    with open('assets/word_blacklist.txt') as f:
+        wordlist = f.read().splitlines()
+
+    b_tuple = utils.inspect_body(trustable_mail.body, domain=Domain('github.com'), wordlist=wordlist)
+
+    def test_inspect_body_method(self):
+        assert type(self.b_tuple) == tuple
+        with pytest.raises(IndexError):
+            self.b_tuple[4]
+
+    def test_inspect_body_in_secure_email(self):
+        # has http links
+        assert self.b_tuple[0] == False
+        # has scripts
+        assert self.b_tuple[1] == False
+        # forbidden words percentage
+        assert self.b_tuple[2] == 0.0
+        # has form
+        assert self.b_tuple[3] == False
+
 
 def test_spf_pass():
     assert utils.spf_pass(trustable_mail.headers) is True
@@ -28,9 +91,6 @@ def test_get_domain():
     assert utils.get_domain(unknown_domain) == Domain('unknown')
     assert utils.get_domain(real_domain) == Domain('google.com')
     assert utils.get_domain(ip_address) == Domain('localhost')
-
-def test_inspect_body():
-    assert True is False
 
 def test_script_tag():
     secure_string = '<p>this string is secure</p>'
