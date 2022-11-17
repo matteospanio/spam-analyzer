@@ -1,7 +1,7 @@
 import os, sys
 
 from spamdetector.cli import parser
-from spamdetector.files import get_files_from_dir
+from spamdetector.files import get_files_from_dir, file_is_valid_email
 from spamdetector.analyzer.data_structures import MailAnalyzer
 from spamdetector.display import print_output
 
@@ -18,7 +18,7 @@ def app(file: str, wordlist, add_headers: bool, verbose: bool, output_format: st
             analysis = analyzer.analyze(mail_path, add_headers)
             data.append(analysis)
 
-    elif os.path.isfile(file):
+    elif os.path.isfile(file) and file_is_valid_email(file):
         analysis = analyzer.analyze(file, add_headers)
         data.append(analysis)
 
