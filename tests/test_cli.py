@@ -1,11 +1,8 @@
-import yaml, pytest
+import pytest
 import spamdetector.cli.run as spam_detector
 from spamdetector import __version__
 
 class TestCLI:
-
-    with open("assets/config.yaml", "r") as f:
-        config = yaml.safe_load(f)
     
     @pytest.mark.parametrize("option", ("-h", "--help"))
     def test_help(self, capsys, option):
