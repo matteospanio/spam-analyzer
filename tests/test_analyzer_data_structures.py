@@ -25,7 +25,7 @@ class TestMailAnalyzer:
 
     def test_get_domain(self):
         analyzer = MailAnalyzer(wordlist)
-        assert analyzer.get_domain(trustable_mail) == Domain('github.com')
+        assert analyzer.get_domain(trustable_mail) == Domain('github-lowworker-5fb2734.va3-iad.github.net')
 
 
 class TestMailAnalysis:
