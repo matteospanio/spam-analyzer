@@ -40,7 +40,7 @@ setup:
 	pip install -r requirements.txt
 
 test:
-	pytest
+	pytest -r A
 
 build-local:
 	pip install --editable .
