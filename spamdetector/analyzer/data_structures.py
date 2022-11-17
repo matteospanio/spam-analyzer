@@ -1,6 +1,4 @@
-from datetime import datetime
 import mailparser, socket, yaml
-from mailparser import MailParser
 from dataclasses import dataclass
 
 import spamdetector.analyzer.utils as utils
@@ -96,7 +94,7 @@ class MailAnalysis:
     """
     has_suspect_subject: bool
 
-    send_date: datetime
+    send_year: int
 
     # attachments
     has_attachments: bool
@@ -128,10 +126,14 @@ class MailAnalysis:
         else:
             return 'Trust'
 
-    def get_score(self, weights) -> int:
+    def get_score(self) -> int:       
         """It evaluates the mail and return a score based on the presence of some headers and the content of the body.
         The points are assigned based on the `weights` parameter.
         """
+        
+        # TODO: think where to pass config, we should use a dependency injection
+        with open('config.yaml', 'r') as f:
+            weights = yaml.safe_load(f)['weights']
 
         score = 0
 
@@ -144,6 +146,9 @@ class MailAnalysis:
             if not self.domain_matches:
                 score += weights['domain_matches']
 
+        score += 0 if self.contains_http_links and self.send_year < 2010 else weights['contains_http_links']
+        score += weights['bad_subject'] if self.has_suspect_subject else 0
+
         # those fields are not so often used, they should have a minimal impact in score
         score += 0 if self.has_dkim else weights['has_dkim']
         score += 0 if self.has_dmarc else weights['has_dmarc']
@@ -152,6 +157,12 @@ class MailAnalysis:
 
         # body scoring
         score += self.forbidden_words_percentage * weights['forbidden_words_percentage'] * 10
+        score += weights['has_html_form'] if self.contains_form else 0
+        score += weights['has_script'] if self.contains_script else 0
+
+        # attachments scoring
+        score += 0.2 if self.has_attachments else 0
+        score += 1 if self.is_attachment_executable else 0
 
         return score
 
@@ -165,7 +176,7 @@ class MailAnalysis:
                 "domain_matches": self.domain_matches,
                 "auth_warn": self.auth_warn,
                 "has_suspect_subject": self.has_suspect_subject,
-                "send_date": self.send_date.__str__()
+                "send_year": self.send_year
             },
             "body": {
                 "contains_script": self.contains_script,
@@ -178,7 +189,7 @@ class MailAnalysis:
                 "is_attachment_executable": self.is_attachment_executable
             },
             "is_spam": self.is_spam(),
-            # TODO: "score": self.get_score()
+            "score": self.get_score()
         }
 
 
@@ -189,7 +200,7 @@ class MailAnalyzer:
     def analyze(self, email_path: str, add_headers: bool = False) -> MailAnalysis:
         email = mailparser.parse_from_file(email_path)
 
-        has_spf, has_dkim, has_dmarc, domain_matches, auth_warn, has_suspect_subject, send_date = utils.inspect_headers(email.headers)
+        has_spf, has_dkim, has_dmarc, domain_matches, auth_warn, has_suspect_subject, send_year = utils.inspect_headers(email.headers)
         contains_http_links, contains_script, forbidden_words_percentage, has_form = utils.inspect_body(email.body, self.wordlist, self.get_domain(email_path))
         has_attachments, is_executable = utils.inspect_attachments(email.attachments)
 
@@ -207,7 +218,7 @@ class MailAnalyzer:
             is_attachment_executable=is_executable,
             has_suspect_subject=has_suspect_subject,
             contains_form=has_form,
-            send_date=datetime.now() # TODO send_date
+            send_year=send_year
         )
 
     def get_domain(self, email_path: str) -> Domain:

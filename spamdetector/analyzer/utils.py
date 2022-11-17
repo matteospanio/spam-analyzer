@@ -1,4 +1,3 @@
-from datetime import datetime
 from enum import Enum
 import re
 import spamdetector.analyzer.data_structures as ds
@@ -22,9 +21,9 @@ def inspect_headers(headers: dict):
     domain_matches = from_domain_matches_received(headers)
     auth_warn = has_auth_warning(headers)
     has_suspect_subject = analyze_subject(headers)
-    send_date = parse_send_date(headers)
+    send_year = parse_send_year(headers)
 
-    return (has_spf, has_dkim, has_dmarc, domain_matches, auth_warn, has_suspect_subject, send_date)
+    return (has_spf, has_dkim, has_dmarc, domain_matches, auth_warn, has_suspect_subject, send_year)
 
 def spf_pass(headers: dict) -> bool:
     spf = headers.get('Received-SPF') or headers.get('Authentication-Results') or headers.get('Authentication-results')
@@ -54,13 +53,20 @@ def has_auth_warning(headers: dict) -> bool:
 def analyze_subject(headers: dict) -> bool:
     subject = headers.get('Subject')
     if subject is not None:
-        print(Regex.GAPPY_WORDS.value.search(subject))
+        matches = Regex.GAPPY_WORDS.value.search(subject)
+        if matches != []:
+            return True
     return False
 
-def parse_send_date(headers: dict): #-> datetime:
+def parse_send_year(headers: dict):
     date = headers.get('Date')
-    assert date is not None
-    print(date)
+    # the date is in the format: 'Wed, 21 Oct 2015 07:28:00 -0700'
+    year = date.split(' ')[3]
+    if len(year) == 4:
+        return int(year)
+    else:
+        # it assumes that the year is 20xx
+        return int('20' + year)
 
 def from_domain_matches_received(headers: dict) -> bool:
     email_domain = get_domain(headers.get('From') or 'not found')
@@ -128,8 +134,6 @@ def get_body_links(body) -> list[str]:
     for link in https:
         if 'spamassassin' not in link[0]:
             links.append(link[0])
-    for mail in mailto:
-        links.append(mail[0])
 
     return links
 
