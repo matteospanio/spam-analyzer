@@ -1,9 +1,0 @@
-# headers
-has_spf: 1
-has_dkim: 0.5
-has_dmarc: 0.5
-has_mx: 0.5
-spam_words_in_subject: 0.5
-
-# body
-spam_words: 1
