@@ -1,11 +1,10 @@
 [project]
 name = "spam-detector"
 description = "A spam detector"
-version = "0.0.1"
 authors = [
     {name = "Matteo Spanio", email = "matteo.spanio97@gmail.com"},
 ]
-dynamic = ["dependencies", "readme"]
+dynamic = ["dependencies", "readme", "version"]
 license = { file="LICENSE" }
 requires-python = ">=3.8"
 keywords = ["spam", "spam-detector", "cybersecurity"]
@@ -30,6 +29,7 @@ include-package-data = true
 [tool.setuptools.dynamic]
 dependencies = {file = "requirements.txt"}
 readme = {file = ["README.md", "docs/requirements.md"]}
+version = {attr = "spamdetector.__version__"}
 
 [tool.setuptools.packages]
 find = {}
