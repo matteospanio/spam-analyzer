@@ -14,6 +14,20 @@ class Domain:
 
     name: str
 
+    def __init__(self, name) -> None:
+        """The constructor resolves any domain alias to the real domain name:
+        in fact common domain names are aliases for more complex server names that would be difficult to remember for common users,
+        since there is not a direct method in the `socket` module to resolve domain aliases, we use the `gethostbyname` chained with the `gethostbyaddr` methods
+        this way makes the instatiation of the class slower, but it is the only way to get the real domain name.
+        """
+        # TODO: add a cache for the domain names or find a better way to resolve domain aliases
+        try:
+            ip = socket.gethostbyname(name)
+            self.name = socket.gethostbyaddr(ip)[0]
+        except Exception:
+            # if the name is not a valid domain name, we just use it
+            self.name = name
+
     @staticmethod
     def from_string(domain_str: str):
         """
@@ -30,7 +44,7 @@ class Domain:
     @staticmethod
     def from_ip(ip_addr: str):
         """Create a Domain object from an ip address.
-        It translate the ip address to its domain name with the `socket.gethostbyaddr` method
+        It translate the ip address to its domain name via the `socket.gethostbyaddr` method
 
         Args:
             ip_addr (str): the targetted ip address
@@ -151,7 +165,7 @@ class MailAnalysis:
                 "domain_matches": self.domain_matches,
                 "auth_warn": self.auth_warn,
                 "has_suspect_subject": self.has_suspect_subject,
-                "send_date": self.send_date
+                "send_date": self.send_date.__str__()
             },
             "body": {
                 "contains_script": self.contains_script,
@@ -163,7 +177,8 @@ class MailAnalysis:
                 "has_attachments": self.has_attachments,
                 "is_attachment_executable": self.is_attachment_executable
             },
-            "is_spam": self.is_spam()
+            "is_spam": self.is_spam(),
+            # TODO: "score": self.get_score()
         }
 
 
