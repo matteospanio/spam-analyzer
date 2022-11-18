@@ -10,7 +10,7 @@ class Regex(Enum):
     HTTP_LINK = re.compile(r'(http://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)')
     HTTPS_LINK = re.compile(r'(https://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)')
     SHORT_LINK = re.compile(r'(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)')
-    GAPPY_WORDS = re.compile(r'([A-Za-z0-9]+(<!--*-->|\*|\-|\.))+')
+    GAPPY_WORDS = re.compile(r'([A-Za-z0-9]+(<!--*-->|\*|\-))+')
     HTML_FORM = re.compile(r'<form')
 
 
