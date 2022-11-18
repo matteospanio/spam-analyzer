@@ -1,7 +1,9 @@
 import json
 import rich
 from rich.panel import Panel
+from rich.text import Text
 from rich.console import Console, Group
+from rich.columns import Columns
 from rich.table import Table
 from spamdetector import MailAnalysis
 
@@ -53,15 +55,23 @@ def _print_default(data, verbose):
     count = 0
     total_spam_score = 0
     total_ok_score = 0
+
+    console = Console()
+    renderables = []
     for analysis in data:
         score = analysis.get_score()
-        if score <= 4.1:
+        if score <= 3.1:
             count += 1
             total_ok_score += score
         else:
             total_spam_score += score
         if verbose:
-            _print_details(analysis)
+            renderables.append(_print_details(analysis))
+
+    if verbose:
+        with console.pager(styles=True):
+            console.print(Columns(renderables, equal=True))
+
     _print_summary(count, len(data) - count, total_ok_score, total_spam_score)
 
 def _print_summary(ok_count, spam_count, total_ok_score, total_spam_score) -> None:
@@ -80,30 +90,70 @@ def _print_summary(ok_count, spam_count, total_ok_score, total_spam_score) -> No
 def _print_details(email: MailAnalysis):
     mail_dict = email.to_dict()
     score, headers, body, attachments = _stringify_email(mail_dict)
-    console = Console()
 
     panel_group = Group(
-        score,
+        Text(score, justify="center"),
         Panel(headers, title="Headers", border_style="light_coral"),
         Panel(body, title="Body", border_style="light_coral"),
         Panel(attachments, title="Attachments", border_style="light_coral"),
     )
 
-    console.print(
+    return (
         Panel(
             panel_group,
-            title=f"[grey70]{mail_dict['file_name'].split('/')[-1]}[/grey70]",
+            title=f"[bold]{mail_dict['file_name'].split('/')[-1][0:20]}[/bold]",
             border_style="cyan"
             )
         )
 
 def _stringify_email(email: dict):
     header = email['headers']
-    body = email['body']
+    bd = email['body']
     att = email['attachments']
-    score = f"spam:{email['is_spam']}\tscore: {email['score']:.2f}"
-    headers = f"SPF: {header['has_spf']}\tDKIM: {header['has_dkim']}\tDMARC: {header['has_dmarc']}"
-    body_str = f"contains scripts: {body['contains_script']}\nspam word %: {body['forbidden_words_percentage']}\nform: {body['contains_form']}\nhttp link: {body['contains_http_links']}"
-    attachments = f"attachments: {att['has_attachments']}"
 
-    return (score, headers, body_str, attachments)
+    headers = ""
+    body = ""
+    attachments = ""
+    
+    for key, value in header.items():
+        pkey = key.removeprefix('has_')
+        pkey = pkey.replace('_', ' ')
+        pkey = pkey.capitalize()
+
+        if value == True:
+            value = f"[green]{value}[/green]"
+        elif value == False:
+            value = f"[red]{value}[/red]"
+
+        headers += f"{pkey}: [bold]{value}[/bold]\n"
+    
+    for key, value in bd.items():
+        pkey = key.removeprefix('contains_')
+        pkey = pkey.replace('_', ' ')
+        pkey = pkey.replace('percentage', '%')
+        pkey = pkey.capitalize()
+
+        if value == True:
+            value = f"[green]{value}[/green]"
+        elif value == False:
+            value = f"[red]{value}[/red]"
+
+        if type(value) == float:
+            value = f"{value:.4f}"
+        
+        body += f"{pkey}: [bold]{value}[/bold]\n"
+    
+    for key, value in att.items():
+        pkey = key.replace('_', ' ')
+        pkey = pkey.capitalize()
+
+        if value == True:
+            value = f"[green]{value}[/green]"
+        elif value == False:
+            value = f"[red]{value}[/red]"
+
+        attachments += f"{pkey}: [bold]{value}[/bold]\n"
+    
+    score = f"\nspam: {email['is_spam']}\tscore: {email['score']:.2f}\n"
+
+    return (score, headers, body, attachments)
