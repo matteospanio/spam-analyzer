@@ -22,11 +22,11 @@ class TestCLI:
         output = capsys.readouterr().out
         assert __version__ in output
 
-    @pytest.mark.parametrize("option", ("-v", "--verbose"))
-    def test_verbose(self, capsys, option):
+    @pytest.mark.parametrize("file, option", [("-f tests/samples/invalid_file.txt", "--verbose"), ("-f tests/samples/invalid_file.txt", "-v")])
+    def test_verbose_with_not_analyzable_single_file(self, capsys, file, option):
         try:
-            spam_detector.main([option])
+            spam_detector.main([file, option])
         except SystemExit:
             pass
         output = capsys.readouterr().out
-        assert True is False
+        assert "The file is not analyzable" in output
