@@ -1,5 +1,5 @@
-import termtables as tt
-import csv, json
+import shutil
+import json
 
 COLORS = {
     'red': '\033[31m',
@@ -25,10 +25,11 @@ HEADER = [
 
 def print_output(data, output_format: str, verbose: bool) -> None:
     """Prints the output of the MailAnalysis in the specified format (csv, json or default).
+
     Args:
-        data (_type_): _description_
-        output_format (str): _description_
-        verbose (bool): _description_
+        data (list): a list of data to output
+        output_format (str): the type of output (csv | json | default)
+        verbose (bool): valid only for `default` output_format, it prints a description for each element of the list
     """
     if output_format == 'csv':
         _print_to_csv(data)
@@ -45,76 +46,14 @@ def _print_to_json(data):
     print(json.dumps(dict_data, indent=4))
 
 def _print_default(data, verbose):
+    count = 0
     for analysis in data:
-        print(f"{analysis.file_path.split('.')[0]} {analysis.forbidden_words_percentage:.3f}", analysis.is_spam())
+        score = analysis.get_score() <= 4.1
+        if score:
+            count += 1
+        print(f"{analysis.file_path.split('.')[0]}: {analysis.is_spam()}\t{score} {analysis.get_score()}")
+    print(count)
 
-def summary(data):
-    warn = 0
-    spam = 0
-    trust = 0
-    for row in data:
-        if row[1] is True:
-            row[1] = '\033[1;32m' + str(row[1]) + '\033[0;0m'
-        if row[2] is True:
-            row[2] = '\033[1;32m' + str(row[2]) + '\033[0;0m'
-        if row[1] is False and row[2] is False:
-            row[1] = '\033[1;31m' + str(row[1]) + '\033[0;0m'
-            row[2] = '\033[1;31m' + str(row[2]) + '\033[0;0m'
-        if row[3] is True:
-            row[3] = '\033[1;32m' + str(row[3]) + '\033[0;0m'
-
-        if row[4] is True:
-            row[4] = '\033[1;32m' + str(row[4]) + '\033[0;0m'
-
-        if row[5] is True:
-            row[5] = '\033[1;31m' + str(row[5]) + '\033[0;0m'
-        if row[5] is False:
-            row[5] = '\033[1;32m' + str(row[5]) + '\033[0;0m'
-        if row[6] is True:
-            row[6] = '\033[1;31m' + str(row[6]) + '\033[0;0m'
-        if row[6] is False:
-            row[6] = '\033[1;32m' + str(row[6]) + '\033[0;0m'
-        if row[7] is True:
-            row[7] = '\033[1;31m' + str(row[7]) + '\033[0;0m'
-        if row[7] is False:
-            row[7] = '\033[1;32m' + str(row[7]) + '\033[0;0m'
-        if row[8] is True:
-            row[8] = '\033[1;31m' + str(row[8]) + '\033[0;0m'
-        if row[8] is False:
-            row[8] = '\033[1;32m' + str(row[8]) + '\033[0;0m'
-        if row[9] == 'Trust':
-            row[9] = '\033[1;32m' + str(row[9]) + '\033[0;0m'
-            trust += 1
-        if row[9] == 'Warning':
-            row[9] = '\033[1;33m' + str(row[9]) + '\033[0;0m'
-            warn += 1
-        if row[9] == 'Spam':
-            row[9] = '\033[1;31m' + str(row[9]) + '\033[0;0m'
-            spam += 1
-
-    tt.print(data, header=HEADER, style=tt.styles.rounded)
-    print(f'{spam} out of {len(data)} emails are spam')
-    print(f'{warn} out of {len(data)} emails raised a warning')
-    print(f'{trust} out of {len(data)} emails are trustable')
-
-def short(data):
-    warn = 0
-    spam = 0
-    trust = 0
-    short_data = []
-    for row in data:
-        if row[-1] == 'Trust':
-            row[-1] = '\033[1;32m' + str(row[-1]) + '\033[0;0m'
-            trust += 1
-        if row[-1] == 'Warning':
-            row[-1] = '\033[1;33m' + str(row[-1]) + '\033[0;0m'
-            warn += 1
-        if row[-1] == 'Spam':
-            row[-1] = '\033[1;31m' + str(row[-1]) + '\033[0;0m'
-            spam += 1
-        short_data.append([row[0], row[-1]])
-
-    tt.print(short_data, header=['File', 'Trust'])
-    print(f'{spam} out of {len(data)} emails are spam')
-    print(f'{warn} out of {len(data)} emails raised a warning')
-    print(f'{trust} out of {len(data)} emails are trustable')
+def _print_center(text: str, char: str) -> None:
+    col, _ = shutil.get_terminal_size()
+    print(text.center(col, char))
