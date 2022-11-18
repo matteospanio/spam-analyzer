@@ -14,13 +14,13 @@ class Regex(Enum):
     HTML_FORM = re.compile(r'<form')
 
 
-def inspect_headers(headers: dict):
+def inspect_headers(headers: dict, wordlist):
     has_spf = spf_pass(headers)
     has_dkim = dkim_pass(headers)
     has_dmarc = dmarc_pass(headers)
     domain_matches = from_domain_matches_received(headers)
     auth_warn = has_auth_warning(headers)
-    has_suspect_subject = analyze_subject(headers)
+    has_suspect_subject = analyze_subject(headers, wordlist)
     send_year = parse_send_year(headers)
 
     return (has_spf, has_dkim, has_dmarc, domain_matches, auth_warn, has_suspect_subject, send_year)
@@ -50,11 +50,15 @@ def has_auth_warning(headers: dict) -> bool:
         return True
     return False
 
-def analyze_subject(headers: dict) -> bool:
+def analyze_subject(headers: dict, wordlist) -> bool:
     subject = headers.get('Subject')
     if subject is not None:
         matches = Regex.GAPPY_WORDS.value.search(subject)
-        if matches != []:
+        if matches is not None:
+            return True
+
+    for word in wordlist:
+        if word in subject:
             return True
     return False
 
@@ -69,8 +73,8 @@ def parse_send_year(headers: dict):
         return int('20' + year)
 
 def from_domain_matches_received(headers: dict) -> bool:
-    email_domain = get_domain(headers.get('From') or 'not found')
-    server_domain = get_domain(headers.get('Received') or 'unknown')
+    email_domain = get_domain(headers.get('From'))
+    server_domain = get_domain(headers.get('Received'))
 
     if len(email_domain.name) < len(server_domain.name):
         result = email_domain.name in server_domain.name
