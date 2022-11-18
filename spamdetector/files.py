@@ -16,6 +16,7 @@ def get_files_from_dir(directory: str, verbose: bool = False) -> list[str]:
             if verbose:
                 print("Invalid file found: {}".format(mail_path))
 
+    file_list.sort()
     return file_list
 
 def file_is_valid_email(file_path: str) -> bool:
@@ -44,6 +45,6 @@ def handle_configuration_files():
         if not path.exists(wordlist_path):
             shutil.copy(wordlist, wordlist_path)
     except Exception:
-        raise Exception('Error while loading wordlist file path from config file')
+        raise Exception('Error while loading wordlist at the file path specified in the config file')
 
     return (config, wordlist_path)
