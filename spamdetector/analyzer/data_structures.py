@@ -132,7 +132,7 @@ class MailAnalysis:
         """
         
         # TODO: think where to pass config, we should use a dependency injection
-        with open('config.yaml', 'r') as f:
+        with open('conf/config.yaml', 'r') as f:
             weights = yaml.safe_load(f)['weights']
 
         score = 0
