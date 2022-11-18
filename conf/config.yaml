@@ -1,13 +1,12 @@
 # constants values used across the app
 files:
-  # path to the default spam words file
+  # absolute path to the spam words file
   # wordlist source: https://gist.github.com/prasidhda/13c9303be3cbc4228585a7f1a06040a3
-  wordlist: 'word_blacklist.txt'
+  wordlist: '$HOME/.config/spamdetector/word_blacklist.txt'
 
-threshold:
-  # threshold for the spam score
-  # if the score is above this value, the message is considered spam
-  score: 3.0
+# threshold for the spam score
+# if the score is above this value, the message is considered spam
+threshold: 4.0
 
 weights:
   # headers
