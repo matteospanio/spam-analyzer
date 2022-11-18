@@ -1,13 +1,14 @@
 from os import path, listdir, makedirs
 from importlib.resources import files
 from spamdetector import __defaults__
+from rich.progress import track
 import mailparser
 import shutil
 import yaml
 
 def get_files_from_dir(directory: str, verbose: bool = False) -> list[str]:
     file_list = []
-    for filename in listdir(directory):
+    for filename in track(listdir(directory), description='Reading files from directory'):
         mail_path = path.join(directory, filename)
         if file_is_valid_email(mail_path):
             file_list.append(mail_path)
