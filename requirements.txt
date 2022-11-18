@@ -36,7 +36,6 @@ rich==12.6.0
 SecretStorage==3.3.3
 simplejson==3.17.6
 six==1.16.0
-termtables==0.2.4
 toml==0.10.2
 tomli==2.0.1
 twine==4.0.1
