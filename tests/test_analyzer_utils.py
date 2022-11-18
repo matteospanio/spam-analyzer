@@ -50,7 +50,7 @@ class TestInspectHeaders:
 
 
 class TestInspectBody:
-    with open('assets/word_blacklist.txt') as f:
+    with open('conf/word_blacklist.txt') as f:
         wordlist = f.read().splitlines()
 
     b_tuple = utils.inspect_body(trustable_mail.body, domain=Domain('github.com'), wordlist=wordlist)

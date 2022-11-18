@@ -3,7 +3,7 @@ from spamdetector.analyzer.data_structures import Domain, MailAnalysis, MailAnal
 trustable_mail = 'tests/samples/97.47949e45691dd7a024dcfaacef4831461bf5d5f09c85a6e44ee478a5bcaf8539.email'
 spam = 'tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email'
 
-with open('assets/word_blacklist.txt', 'r') as f:
+with open('conf/word_blacklist.txt', 'r') as f:
     wordlist = f.read().splitlines()
 
 
