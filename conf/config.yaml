@@ -23,3 +23,4 @@ weights:
   contains_http_links: 0.5
   has_html_form: 0.5
   has_script: 1
+  has_html: 0.5

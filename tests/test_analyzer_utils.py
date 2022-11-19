@@ -9,7 +9,11 @@ spam = mailparser.parse_from_file('tests/samples/00.1d30d499c969369915f69e7cf1f5
 
 class TestInspectHeaders:
 
-    h_tuple = utils.inspect_headers(trustable_mail.headers)
+    with open('conf/word_blacklist.txt') as f:
+        wordlist = f.read().splitlines()
+
+    h_tuple = utils.inspect_headers(trustable_mail.headers, wordlist)
+    b_tuple = utils.inspect_headers(spam.headers, wordlist)
 
     def test_inspect_headers_method(self):
         assert type(self.h_tuple) == tuple
@@ -30,23 +34,23 @@ class TestInspectHeaders:
         # has suspect subject
         assert self.h_tuple[5] is False
         # send_date
-        assert True is False
+        assert self.h_tuple[6] == 2021
 
     def test_inspect_headers_in_spam(self):
         # spf
-        assert self.h_tuple[0] is True
+        assert self.b_tuple[0] is False
         # dkim
-        assert self.h_tuple[1] is True
+        assert self.b_tuple[1] is False
         # dmarc
-        assert self.h_tuple[2] is True
+        assert self.b_tuple[2] is False
         # same domain in from and received headers
-        assert self.h_tuple[3] is True
+        assert self.b_tuple[3] is False
         # authentication warnig
-        assert self.h_tuple[4] is False
+        assert self.b_tuple[4] is False
         # has suspect subject
-        assert self.h_tuple[5] is False
+        assert self.b_tuple[5] is False
         # send_date
-        assert True is False
+        assert self.b_tuple[6] < 2015
 
 
 class TestInspectBody:
@@ -58,7 +62,7 @@ class TestInspectBody:
     def test_inspect_body_method(self):
         assert type(self.b_tuple) == tuple
         with pytest.raises(IndexError):
-            self.b_tuple[4]
+            self.b_tuple[5]
 
     def test_inspect_body_in_secure_email(self):
         # has http links
@@ -103,6 +107,13 @@ def test_script_tag():
 
 def test_http_links():
     assert True is False
+
+def test_has_html():
+    html_text = '<html><body><p>some text</p></body></html>'
+    plain_text = 'this is a plain text'
+    
+    assert utils.has_html(html_text) is True
+    assert utils.has_html(plain_text) is False
 
 def test_forbidden_words():
     forbidden_words = ['egg', 'spam']

@@ -111,6 +111,7 @@ class MailAnalysis:
     The formula is: `forbidden_words_count / total_bodyy_words_count`
     """
     contains_form: bool
+    contains_html: bool
 
     def is_spam(self) -> str:
         """Determine if the email is spam based on the score and the threshold set in the `config.yaml` file
@@ -124,7 +125,7 @@ class MailAnalysis:
         if (self.has_spf or self.domain_matches) and self.contains_http_links and self.forbidden_words_percentage > 0.05:
             return 'Warning'
         else:
-            return 'Trust'
+            return 'Ham'
 
     def get_score(self) -> int:       
         """It evaluates the mail and return a score based on the presence of some headers and the content of the body.
@@ -159,6 +160,7 @@ class MailAnalysis:
         score += self.forbidden_words_percentage * weights['forbidden_words_percentage'] * 10
         score += weights['has_html_form'] if self.contains_form else 0
         score += weights['has_script'] if self.contains_script else 0
+        score += weights['has_html'] if self.contains_html else 0
 
         # attachments scoring
         score += 0.2 if self.has_attachments else 0
@@ -182,7 +184,8 @@ class MailAnalysis:
                 "contains_script": self.contains_script,
                 "contains_http_links": self.contains_http_links,
                 "forbidden_words_percentage": self.forbidden_words_percentage,
-                "contains_form": self.contains_form
+                "contains_html": self.contains_html,
+                "contains_form": self.contains_form,
             },
             "attachments": {
                 "has_attachments": self.has_attachments,
@@ -201,7 +204,7 @@ class MailAnalyzer:
         email = mailparser.parse_from_file(email_path)
 
         has_spf, has_dkim, has_dmarc, domain_matches, auth_warn, has_suspect_subject, send_year = utils.inspect_headers(email.headers, self.wordlist)
-        contains_http_links, contains_script, forbidden_words_percentage, has_form = utils.inspect_body(email.body, self.wordlist, self.get_domain(email_path))
+        contains_http_links, contains_script, forbidden_words_percentage, has_form, contains_html = utils.inspect_body(email.body, self.wordlist, self.get_domain(email_path))
         has_attachments, is_executable = utils.inspect_attachments(email.attachments)
 
         return MailAnalysis(
@@ -218,7 +221,8 @@ class MailAnalyzer:
             is_attachment_executable=is_executable,
             has_suspect_subject=has_suspect_subject,
             contains_form=has_form,
-            send_year=send_year
+            send_year=send_year,
+            contains_html=contains_html
         )
 
     def get_domain(self, email_path: str) -> Domain:
