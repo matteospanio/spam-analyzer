@@ -1,5 +1,6 @@
 from enum import Enum
 import re
+import requests
 import spamdetector.analyzer.data_structures as ds
 
 
@@ -12,9 +13,27 @@ class Regex(Enum):
     SHORT_LINK = re.compile(r'(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)')
     GAPPY_WORDS = re.compile(r'([A-Za-z0-9]+(<!--*-->|\*|\-))+')
     HTML_FORM = re.compile(r'<form')
+    HTML_TAG = re.compile(r'<[^>]+>')
 
 
 def inspect_headers(headers: dict, wordlist):
+    """A detailed analysis of the email headers
+
+    Args:
+        headers (dict): a dictionary containing parsed email headers
+        wordlist (list[str]): a list of words to be used as a spam filter in the subject field
+
+    Returns:
+        tuple: a tuple containing all the results of the analysis
+        
+    - has_spf (bool): True if the email has a SPF record
+    - has_dkim (bool): True if the email has a DKIM record
+    - has_dmarc (bool): True if the email has a DMARC record
+    - domain_matches (bool): True if the domain of the sender matches the domain of the server
+    - has_auth_warning (bool): True if the email has an authentication warning
+    - has_suspect_words (bool): True if the email has gappy words or forbidden words in the subject
+    - send_year (int): the year in which the email was sent (in future versions should be a datetime object)
+    """
     has_spf = spf_pass(headers)
     has_dkim = dkim_pass(headers)
     has_dmarc = dmarc_pass(headers)
@@ -26,12 +45,28 @@ def inspect_headers(headers: dict, wordlist):
     return (has_spf, has_dkim, has_dmarc, domain_matches, auth_warn, has_suspect_subject, send_year)
 
 def spf_pass(headers: dict) -> bool:
+    """Checks if the email has a SPF record
+
+    Args:
+        headers (dict): a dictionary containing parsed email headers
+
+    Returns:
+        bool: True if the email has a SPF record
+    """
     spf = headers.get('Received-SPF') or headers.get('Authentication-Results') or headers.get('Authentication-results')
     if spf is not None and 'pass' in spf.lower():
         return True
     return False
 
 def dkim_pass(headers: dict) -> bool:
+    """Checks if the email has a DKIM record
+
+    Args:
+        headers (dict): a dictionary containing parsed email headers
+
+    Returns:
+        bool: True if the email has a DKIM record
+    """
     if headers.get('DKIM-Signature') is not None:
         return True
     dkim = headers.get('Authentication-Results') or headers.get('Authentication-results')
@@ -40,17 +75,42 @@ def dkim_pass(headers: dict) -> bool:
     return False
 
 def dmarc_pass(headers: dict) -> bool:
+    """Checks if the email has a DMARC record
+
+    Args:
+        headers (dict): a dictionary containing parsed email headers
+
+    Returns:
+        bool: True if the email has a DMARC record
+    """
     dmarc = headers.get('Authentication-Results') or headers.get('Authentication-results')
     if dmarc is not None and 'dmarc=pass' in dmarc.lower():
         return True
     return False
 
 def has_auth_warning(headers: dict) -> bool:
+    """Checks if the email has an authentication warning
+
+    Args:
+        headers (dict): a dictionary containing parsed email headers
+
+    Returns:
+        bool: True if the email has an authentication warning
+    """
     if headers.get('X-Authentication-Warning') is not None:
         return True
     return False
 
 def analyze_subject(headers: dict, wordlist) -> bool:
+    """Checks if the email has gappy words or forbidden words in the subject
+
+    Args:
+        headers (dict): a dictionary containing parsed email headers
+        wordlist (list[str]): a list of words to be used as a spam filter in the subject field
+
+    Returns:
+        bool: True if the email has gappy words or forbidden words in the subject
+    """
     subject = headers.get('Subject')
     if subject is not None:
         matches = Regex.GAPPY_WORDS.value.search(subject)
@@ -65,12 +125,15 @@ def analyze_subject(headers: dict, wordlist) -> bool:
 def parse_send_year(headers: dict):
     date = headers.get('Date')
     # the date is in the format: 'Wed, 21 Oct 2015 07:28:00 -0700'
-    year = date.split(' ')[3]
-    if len(year) == 4:
-        return int(year)
-    else:
-        # it assumes that the year is 20xx
-        return int('20' + year)
+    try:
+        year = date.split(' ')[3]
+        if len(year) == 4:
+            return int(year)
+        else:
+            # it assumes that the year is 20xx
+            return int('20' + year)
+    except Exception:
+        return 2005
 
 def from_domain_matches_received(headers: dict) -> bool:
     email_domain = get_domain(headers.get('From'))
@@ -84,7 +147,16 @@ def from_domain_matches_received(headers: dict) -> bool:
     return ( email_domain == server_domain ) or result
 
 def get_domain(field: str):
+    """Extracts the domain from a field
+
+    Args:
+        field (str): a string expected to contain a domain
+
+    Returns:
+        Domain: a Domain object containing the domain name and the TLD
+    """
     # TODO: should take in consideration only the string before 'by word'
+    # TODO: refactor with dnspython library
 
     if 'unknown' in field:
         return ds.Domain('unknown')
@@ -103,18 +175,65 @@ def get_domain(field: str):
     return ds.Domain('unknown')
 
 def inspect_body(body, wordlist, domain):
+    """
+    A detailed analysis of the email body
+    
+    Args:
+        body (str): the body of the email
+        wordlist (list[str]): a list of words to be used as a spam filter in the body
+        domain (Domain): the domain of the sender
+        
+    Returns:
+        tuple: a tuple containing the following information:
+        
+    - has_http_links (bool): True if the email has http links
+    - has_script (bool): True if the email has script tags or javascript code
+    - forbidden_words_percentage (float): the percentage of forbidden words in the body
+    - has_form (bool): True if the email has a form
+    - contains_html (bool): True if the email contains html tags
+    
+    """
     body = body.lower()
     has_http_links = has_unsecure_links(body, domain)
     has_script = has_script_tag(body)
     forbidden_words_percentage = percentage_of_bad_words(body, wordlist)
     has_form = has_html_form(body)
+    contains_html = has_html(body)
 
-    return (has_http_links, has_script, forbidden_words_percentage, has_form)
+    return (has_http_links, has_script, forbidden_words_percentage, has_form, contains_html)
+    
+def has_html(body):
+    """Checks if the email contains html tags
+
+    Args:
+        body (str): the body of the email
+
+    Returns:
+        bool: True if the email contains html tags
+    """
+    return True if Regex.HTML_TAG.value.search(body) else False
 
 def has_html_form(body) -> bool:
+    """Checks if the email has a form
+    
+    Args:
+        body (str): the body of the email
+        
+    Returns:
+        bool: True if the email has a form
+    """
     return True if Regex.HTML_FORM.value.search(body) else False
 
 def percentage_of_bad_words(body, wordlist) -> float:
+    """Calculates the percentage of forbidden words in the body
+
+    Args:
+        body (str): the body of the email
+        wordlist (list[str]): a list of words to be used as a spam filter in the body
+
+    Returns:
+        float: the percentage of forbidden words in the body
+    """
     bad_words = 0
     for word in wordlist:
         if word in body:
@@ -138,8 +257,41 @@ def get_body_links(body) -> list[str]:
     for link in https:
         if 'spamassassin' not in link[0]:
             links.append(link[0])
+    for link in mailto:
+        links.append(link[0])
 
     return links
+
+def has_unsecure_links(body, domain) -> bool:
+    links = get_body_links(body)
+    bad_links = scan_links(links, domain)
+    
+        
+    return False
+
+def scan_links(links, domain) -> list[str]:
+    bad_links = []
+    for link in links:
+        if 'http' in link:
+            if not is_secure(link):
+                bad_links.append(link)
+        # elif 'www' in link:
+        #     if not is_secure('http://' + link):
+        #         bad_links.append(link)
+        else:
+            if not is_secure('http://www.' + link):
+                bad_links.append(link)
+    return bad_links
+
+def is_secure(link) -> bool:
+    try:
+        response = requests.get(link, timeout=10)
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+    except Exception:
+        return False
 
 def https_only(links: list[str]) -> bool:
     for link in links:
@@ -157,6 +309,14 @@ def has_unsecure_links(body, domain) -> bool:
     return False
 
 def has_script_tag(body) -> bool:
+    """Checks if the email has script tags or javascript code
+
+    Args:
+        body (str): the body of the email
+
+    Returns:
+        bool: True if the email has script tags or javascript code
+    """
     unsecure_tags = ['<script>', '</script>', 'onload', 'onerror']
     for tag in unsecure_tags:
         if tag in body:
