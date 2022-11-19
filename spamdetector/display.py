@@ -7,15 +7,6 @@ from rich.columns import Columns
 from rich.table import Table
 from spamdetector import MailAnalysis
 
-COLORS = {
-    'red': '\033[31m',
-    'green': '\033[32m',
-    'yellow': '\033[33m',
-    'blue': '\033[34m',
-    'magenta': '\033[35m',
-    'cyan': '\033[36m',
-}
-
 HEADER = [
     'File',
     'Domain',
@@ -60,7 +51,7 @@ def _print_default(data, verbose):
     renderables = []
     for analysis in data:
         score = analysis.get_score()
-        if score <= 3.1:
+        if score <= 3.00:
             count += 1
             total_ok_score += score
         else:
@@ -68,7 +59,7 @@ def _print_default(data, verbose):
         if verbose:
             renderables.append(_print_details(analysis))
 
-    if verbose:
+    if verbose and len(renderables) > 0:
         with console.pager(styles=True):
             console.print(Columns(renderables, equal=True))
 
@@ -81,7 +72,7 @@ def _print_summary(ok_count, spam_count, total_ok_score, total_spam_score) -> No
     table.add_column("Quantity", justify="center")
     table.add_column("Mean score", justify="center")
     
-    table.add_row("[green][bold]OK[/bold][/green]", str(ok_count), str(total_ok_score / (ok_count if ok_count > 0 else 1)))
+    table.add_row("[green][bold]HAM[/bold][/green]", str(ok_count), str(total_ok_score / (ok_count if ok_count > 0 else 1)))
     table.add_row("[red][bold]SPAM[/bold][/red]", str(spam_count), str(total_spam_score / (spam_count if spam_count > 0 else 1)))
 
     console = Console()
@@ -116,44 +107,37 @@ def _stringify_email(email: dict):
     attachments = ""
     
     for key, value in header.items():
-        pkey = key.removeprefix('has_')
-        pkey = pkey.replace('_', ' ')
-        pkey = pkey.capitalize()
+        k, v = _format_output(key, value)
+        k = k.removeprefix('has_')
 
-        if value == True:
-            value = f"[green]{value}[/green]"
-        elif value == False:
-            value = f"[red]{value}[/red]"
-
-        headers += f"{pkey}: [bold]{value}[/bold]\n"
+        headers += f"{k}: [bold]{v}[/bold]\n"
     
     for key, value in bd.items():
-        pkey = key.removeprefix('contains_')
-        pkey = pkey.replace('_', ' ')
-        pkey = pkey.replace('percentage', '%')
-        pkey = pkey.capitalize()
+        k, v = _format_output(key, value)
+        k = k.removeprefix('contains_')
+        k = k.replace('percentage', '%')
 
-        if value == True:
-            value = f"[green]{value}[/green]"
-        elif value == False:
-            value = f"[red]{value}[/red]"
-
-        if type(value) == float:
-            value = f"{value:.4f}"
-        
-        body += f"{pkey}: [bold]{value}[/bold]\n"
+        body += f"{k}: [bold]{v}[/bold]\n"
     
     for key, value in att.items():
-        pkey = key.replace('_', ' ')
-        pkey = pkey.capitalize()
+        k, v = _format_output(key, value)
 
-        if value == True:
-            value = f"[green]{value}[/green]"
-        elif value == False:
-            value = f"[red]{value}[/red]"
-
-        attachments += f"{pkey}: [bold]{value}[/bold]\n"
+        attachments += f"{k}: [bold]{v}[/bold]\n"
     
     score = f"\nspam: {email['is_spam']}\tscore: {email['score']:.2f}\n"
 
     return (score, headers, body, attachments)
+
+def _format_output(k: str, v):
+    key = k.replace('_', ' ')
+    key = key.capitalize()
+    
+    if v == True:
+        v = f"[green]{v}[/green]"
+    elif v == False:
+        v = f"[red]{v}[/red]"
+    
+    if type(v) == float:
+        v = f"{v:.4f}"
+
+    return (key, v)
