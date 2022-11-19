@@ -32,18 +32,6 @@ class TestMailAnalyzer:
 
 class TestMailAnalysis:
 
-    weights = {
-        "has_spf": 0.5,
-        "has_spf": 1,
-        "has_dkim": 0.5,
-        "has_dmarc": 0.5,
-        "has_mx": 0.5,
-        "spam_words_in_subject": 0.5,
-        "spam_words": 1,
-        "domain_matches": 0.5,
-        "forbidden_words_percentage": 0.5,
-    }
-
     analyzer = MailAnalyzer(wordlist)
 
     mail_ok_an = analyzer.analyze(trustable_mail)
@@ -58,4 +46,4 @@ class TestMailAnalysis:
         assert self.mail_ok_an.is_spam() == 'Trust'
     
     def test_mail_analysis_get_score(self):
-        assert self.mail_ok_an.get_score(self.weights) == 0.0
+        assert self.mail_ok_an.get_score() == 0.0
