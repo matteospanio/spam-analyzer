@@ -21,12 +21,19 @@ HEADER = [
 ]
 
 def print_output(data, output_format: str, verbose: bool) -> None:
-    """Prints the output of the MailAnalysis in the specified format (csv, json or default).
+    """Prints the output of the `MailAnalysis` in the specified format (csv, json or default).
 
     Args:
-        data (list): a list of data to output
-        output_format (str): the type of output (csv | json | default)
-        verbose (bool): valid only for `default` output_format, it prints a description for each element of the list
+        data (`list`): a list of data to output
+        output_format (`str`): the type of output (csv | json | default)
+        verbose (`bool`): valid only for `default` output_format, it prints a description for each element of the list
+        
+    Often when we work with data we want to output it in a specific format, this function handles the output of the data in the specified format,
+    at the moment it supports only json and default stdout which will print a whit the rich library a card for each email analyzed
+    in the default pager of the terminal; outside the pager the output will be a table with the summary of the analysis where
+    are reported the number of spam and ham emails and the mean score of each class.
+
+    > Return later: future versions of spamdetector will support csv output format
     """
     if output_format == 'csv':
         _print_to_csv(data)
