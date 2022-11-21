@@ -9,13 +9,13 @@ with open('conf/word_blacklist.txt', 'r') as f:
 
 
 class TestDomainMethods:
-    
+
     domain = Domain('google.com')
     ip_addr = socket.gethostbyname('google.com')
 
     def test_from_string(self):
         assert self.domain == Domain.from_string('google.com')
-        
+
     def test_from_ip(self):
         assert self.domain == Domain.from_ip(self.ip_addr)
 
@@ -43,7 +43,7 @@ class TestMailAnalysis:
         assert self.mail_ok_an.file_path == trustable_mail
 
     def test_mail_analysis_is_spam(self):
-        assert self.mail_ok_an.is_spam() == 'Trust'
-    
+        assert self.mail_ok_an.is_spam() == 'Ham'
+
     def test_mail_analysis_get_score(self):
         assert self.mail_ok_an.get_score() == 0.0
