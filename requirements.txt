@@ -6,6 +6,7 @@ cffi==1.15.1
 charset-normalizer==2.1.1
 commonmark==0.9.1
 cryptography==38.0.3
+dnspython==2.2.1
 docutils==0.19
 exceptiongroup==1.0.1
 idna==3.4
