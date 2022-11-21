@@ -58,7 +58,7 @@ def _print_default(data, verbose):
     renderables = []
     for analysis in data:
         score = analysis.get_score()
-        if score <= 3.00:
+        if score <= 3.50:
             count += 1
             total_ok_score += score
         else:
@@ -131,7 +131,7 @@ def _stringify_email(email: dict):
 
         attachments += f"{k}: [bold]{v}[/bold]\n"
     
-    score = f"\nspam: {email['is_spam']}\tscore: {email['score']:.2f}\n"
+    score = f"\nspamassassin: {email['spamassassin']}\tscore: {email['score']:.2f}\n"
 
     return (score, headers, body, attachments)
 
