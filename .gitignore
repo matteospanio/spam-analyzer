@@ -149,3 +149,4 @@ dmypy.json
 /docs/*.xdv
 
 dataset
+tests/spamassassin_test
