@@ -15,7 +15,9 @@ weights:
   has_dmarc: 0.5
   domain_matches: 1
   bad_subject: 1.5
+  uppercase_subject: 0.5
   auth_warn: 1
+  invalid_date: 1
 
   # body
   forbidden_words_percentage: 1
