@@ -118,7 +118,7 @@ def analyze_subject(headers: dict, wordlist) -> tuple[bool, bool]:
     for word in wordlist:
         if word in subject:
             return True, subject.isupper()
-    return False, False
+    return False, subject.isupper()
 
 def is_valid_tz(date: datetime.datetime):
     try:
@@ -180,7 +180,7 @@ def get_domain(field: str):
 
     return ds.Domain('unknown')
 
-def inspect_body(body, wordlist, domain):
+def inspect_body(body: str, wordlist, domain):
     """
     A detailed analysis of the email body
     
