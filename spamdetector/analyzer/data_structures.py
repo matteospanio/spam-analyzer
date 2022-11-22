@@ -127,7 +127,7 @@ class MailAnalysis:
     contains_form: bool
     contains_html: bool
 
-    def is_spam(self) -> str:
+    def is_spam(self) -> bool:
         """Determine if the email is spam based on the score and the threshold set in the `config.yaml` file
         ## Spam detection
         The mail gain a score based on the presence of some headers and the content of the body.
@@ -160,6 +160,9 @@ class MailAnalysis:
                 score += weights['has_spf']
             if not self.domain_matches:
                 score += weights['domain_matches']
+
+        if not self.has_spf and not self.domain_matches and not self.contains_script and not self.contains_form and not self.contains_links:
+            score += -0.5
 
         # verify send date
         # if the date has valid format
@@ -229,6 +232,32 @@ class MailAnalysis:
             "score": self.get_score(),
             "spamassassin": self.spamassassin
         }
+
+    def _date_is_valid(self) -> bool:
+        """It checks if the date is in RFC 2822 format"""
+        return type(self.send_date) is datetime
+
+
+    def to_list(self) -> list:
+        lista = [self.file_path,
+                 self.has_spf,
+                 self.has_dkim,
+                 self.has_dmarc,
+                 self.domain_matches,
+                 self.has_suspect_subject,
+                 self.subject_is_uppercase,
+                 self.send_date,
+                 self._date_is_valid(),
+                 self.contains_script,
+                 self.https_only,
+                 self.contains_mailto_links,
+                 self.contains_links,
+                 self.forbidden_words_percentage,
+                 self.contains_html,
+                 self.contains_form,
+                 self.has_attachments,
+                 self.is_attachment_executable]
+        return lista
 
 
 class MailAnalyzer:
