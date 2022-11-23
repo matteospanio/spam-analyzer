@@ -140,7 +140,7 @@ class MailAnalysis:
             if not self.headers["domain_matches"]:
                 score += weights['domain_matches']
 
-        if not self.headers["has_spf"] and not self.headers["domain_matches"] and not self.contains_script and not self.contains_form and not self.contains_links:
+        if not self.headers["has_spf"] and not self.headers["domain_matches"] and not self.body["contains_script"] and not self.body["contains_form"] and not self.body["has_links"]:
             score += -0.5
 
         # verify send date
@@ -196,7 +196,6 @@ class MailAnalysis:
             "headers": self.headers,
             "body": self.body,
             "attachments": self.attachments,
-            "is_spam": self.is_spam(),
             "score": self.get_score(),
         }
 
