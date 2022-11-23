@@ -115,10 +115,13 @@ def analyze_subject(headers: dict, wordlist) -> tuple[bool, bool]:
         if matches is not None:
             return True, subject.isupper()
 
-    for word in wordlist:
-        if word in subject:
-            return True, subject.isupper()
-    return False, subject.isupper()
+        for word in wordlist:
+            if word in subject:
+                return True, subject.isupper()
+        
+        return False, subject.isupper()
+
+    return False, False
 
 def is_valid_tz(date: datetime.datetime):
     try:
