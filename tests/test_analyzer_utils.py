@@ -89,12 +89,15 @@ class TestStringAnalysis:
     html_form = '<form action="https://github.com" method="post"><input type="text" name="username" /></form>'
     plain_text = 'this is a plain text'
     unsecure_string = 'a malicious executable script <script>function foo() {}</script>'
+    image_string = 'this is <img src="https://github.com" />'
     empty_string = ''
 
     def test_has_html(self):
         assert utils.has_html(self.empty_string) is False
         assert utils.has_html(self.html_text) is True
         assert utils.has_html(self.plain_text) is False
+        assert utils.has_html(self.html_form) is True
+        assert utils.has_html(self.image_string) is True
 
     def test_has_html_form(self):
         assert utils.has_html_form(self.empty_string) is False
@@ -112,6 +115,13 @@ class TestStringAnalysis:
         assert utils.parse_html(self.empty_string) == ''
         assert utils.parse_html(self.html_text) == 'some text'
         assert utils.parse_html(self.plain_text) == 'this is a plain text'
+    
+    def test_has_images(self):
+        assert utils.has_images(self.empty_string) is False
+        assert utils.has_images(self.html_text) is False
+        assert utils.has_images(self.plain_text) is False
+        assert utils.has_images(self.html_form) is False
+        assert utils.has_images(self.image_string) is True
 
 
 class TestLinks:

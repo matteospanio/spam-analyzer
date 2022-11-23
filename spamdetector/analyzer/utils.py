@@ -15,6 +15,7 @@ class Regex(Enum):
     GAPPY_WORDS = re.compile(r'([A-Za-z0-9]+(<!--*-->|\*|\-))+')
     HTML_FORM = re.compile(r'<form')
     HTML_TAG = re.compile(r'<[^>]+>')
+    IMAGE_TAG = re.compile(r'<img')
 
 
 def inspect_headers(headers: dict, wordlist):
@@ -207,16 +208,21 @@ def inspect_body(body: str, wordlist, domain):
 
     """
     body = body.lower()
-    has_links, has_mailto, https_only = check_links(body)
+    links = check_links(body)
     has_script = has_script_tag(body)
-    forbidden_words_percentage = percentage_of_bad_words(body, wordlist)
     has_form = has_html_form(body)
     contains_html = has_html(body)
 
+    if contains_html:
+        forbidden_words_percentage = percentage_of_bad_words(parse_html(body), wordlist)
+    else:
+        forbidden_words_percentage = percentage_of_bad_words(body, wordlist)
+
     return {
-        "has_links": has_links,
-        "has_mailto": has_mailto,
-        "https_only": https_only,
+        "has_links": links["has_links"],
+        "has_mailto": links["mailto"],
+        "has_images": has_images(body),
+        "https_only": links["https_only"],
         "contains_script": has_script,
         "forbidden_words_percentage": forbidden_words_percentage,
         "contains_form": has_form,
@@ -238,6 +244,16 @@ def has_html(body):
     """
     return True if Regex.HTML_TAG.value.search(body) else False
 
+def has_images(body):
+    """Checks if the email contains images
+
+    Args:
+        body (str): the body of the email
+
+    Returns:
+        bool: True if the email contains images
+    """
+    return True if Regex.IMAGE_TAG.value.search(body) else False
 
 def has_html_form(body) -> bool:
     """Checks if the email has a form
