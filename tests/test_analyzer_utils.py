@@ -12,67 +12,53 @@ class TestInspectHeaders:
     with open('conf/word_blacklist.txt') as f:
         wordlist = f.read().splitlines()
 
-    h_tuple = utils.inspect_headers(trustable_mail.headers, wordlist)
-    b_tuple = utils.inspect_headers(spam.headers, wordlist)
+    headers_ok = utils.inspect_headers(trustable_mail.headers, wordlist)
+    bad_headers = utils.inspect_headers(spam.headers, wordlist)
 
     def test_inspect_headers_method(self):
-        assert type(self.h_tuple) == tuple
-        with pytest.raises(IndexError):
-            self.h_tuple[7]
+        assert type(self.headers_ok) == dict
+        with pytest.raises(KeyError):
+            self.headers_ok[7]
 
     def test_inspect_headers_in_secure_email(self):
-        # spf
-        assert self.h_tuple[0] is True
-        # dkim
-        assert self.h_tuple[1] is True
-        # dmarc
-        assert self.h_tuple[2] is True
-        # same domain in from and received headers
-        assert self.h_tuple[3] is True
-        # authentication warnig
-        assert self.h_tuple[4] is False
-        # has suspect subject
-        assert self.h_tuple[5] is False
-        # send_date
-        assert self.h_tuple[6] == 2021
+        assert self.headers_ok["has_spf"] is True
+        assert self.headers_ok["has_dkim"] is True
+        assert self.headers_ok["has_dmarc"] is True
+        assert self.headers_ok["domain_matches"] is True
+        assert self.headers_ok["auth_warn"] is False
+        assert self.headers_ok["has_suspect_subject"] is False
+        assert self.headers_ok["send_date"] == 2021
 
     def test_inspect_headers_in_spam(self):
-        # spf
-        assert self.b_tuple[0] is False
-        # dkim
-        assert self.b_tuple[1] is False
-        # dmarc
-        assert self.b_tuple[2] is False
-        # same domain in from and received headers
-        assert self.b_tuple[3] is False
-        # authentication warnig
-        assert self.b_tuple[4] is False
-        # has suspect subject
-        assert self.b_tuple[5] is False
-        # send_date
-        assert self.b_tuple[6] < 2015
+        assert self.bad_headers["has_spf"] is False
+        assert self.bad_headers["has_dkim"] is False
+        assert self.bad_headers["has_dmarc"] is False
+        assert self.bad_headers["domain_matches"] is False
+        assert self.bad_headers["auth_warn"] is False
+        assert self.bad_headers["has_suspect_subject"] is False
+        assert self.bad_headers["send_date"] < 2015
 
 
 class TestInspectBody:
+
     with open('conf/word_blacklist.txt') as f:
         wordlist = f.read().splitlines()
 
-    b_tuple = utils.inspect_body(trustable_mail.body, domain=Domain('github.com'), wordlist=wordlist)
+    body_ok = utils.inspect_body(trustable_mail.body, domain=Domain('github.com'), wordlist=wordlist)
 
     def test_inspect_body_method(self):
-        assert type(self.b_tuple) == tuple
-        with pytest.raises(IndexError):
-            self.b_tuple[5]
+        assert type(self.body_ok) == dict
+        with pytest.raises(KeyError):
+            self.body_ok[5]
 
     def test_inspect_body_in_secure_email(self):
-        # has http links
-        assert self.b_tuple[0] == False
-        # has scripts
-        assert self.b_tuple[1] == False
-        # forbidden words percentage
-        assert self.b_tuple[2] == 0.0
-        # has form
-        assert self.b_tuple[3] == False
+        assert self.body_ok["has_links"] is True
+        assert self.body_ok["has_mailto"] is False
+        assert self.body_ok["https_only"] is False
+        assert self.body_ok["contains_script"] is False
+        assert self.body_ok["forbidden_words_percentage"] == 0.0
+        assert self.body_ok["contains_form"] is False
+        assert self.body_ok["contains_html"] is False
 
 
 def test_spf_pass():
@@ -96,24 +82,61 @@ def test_get_domain():
     assert utils.get_domain(real_domain) == Domain('google.com')
     assert utils.get_domain(ip_address) == Domain('localhost')
 
-def test_script_tag():
-    secure_string = '<p>this string is secure</p>'
-    falsy_unsecure_string = 'string with script'
-    unsecure_string = 'a malicious executable script <script>function foo() {}</script>'
 
-    assert utils.has_script_tag(secure_string) is False
-    assert utils.has_script_tag(falsy_unsecure_string) is False
-    assert utils.has_script_tag(unsecure_string) is True
+class TestStringAnalysis:
 
-def test_http_links():
-    assert True is False
-
-def test_has_html():
     html_text = '<html><body><p>some text</p></body></html>'
+    html_form = '<form action="https://github.com" method="post"><input type="text" name="username" /></form>'
     plain_text = 'this is a plain text'
+    unsecure_string = 'a malicious executable script <script>function foo() {}</script>'
+    empty_string = ''
+
+    def test_has_html(self):
+        assert utils.has_html(self.empty_string) is False
+        assert utils.has_html(self.html_text) is True
+        assert utils.has_html(self.plain_text) is False
+
+    def test_has_html_form(self):
+        assert utils.has_html_form(self.empty_string) is False
+        assert utils.has_html_form(self.html_form) is True
+        assert utils.has_html_form(self.html_text) is False
+        assert utils.has_html_form(self.plain_text) is False
+
+    def test_script_tag(self):
+        assert utils.has_script_tag(self.empty_string) is False
+        assert utils.has_script_tag(self.plain_text) is False
+        assert utils.has_script_tag(self.html_text) is False
+        assert utils.has_script_tag(self.unsecure_string) is True
+
+    def test_parse_html(self):
+        assert utils.parse_html(self.empty_string) == ''
+        assert utils.parse_html(self.html_text) == 'some text'
+        assert utils.parse_html(self.plain_text) == 'this is a plain text'
+
+
+class TestLinks:
+
+    def test_https_only(self):
+        empty_list = []
+        mixed_links = ['https://github.com', 'http://github.com']
+        https_links = ['https://github.com', 'https://google.com']
+        assert utils.https_only(mixed_links) is False
+        assert utils.https_only(https_links) is True
+        assert utils.https_only(empty_list) is False
+
+    def test_get_links(self):
+        empty_body = ''
+        fake_links = utils.get_links_from_str(empty_body)
+        links = utils.get_links_from_str(trustable_mail.body)
+        assert type(links) == list
+        assert len(links) == 1
+        assert fake_links == []
     
-    assert utils.has_html(html_text) is True
-    assert utils.has_html(plain_text) is False
+    def test_check_links(self):
+        links = utils.check_links(trustable_mail.body)
+        assert utils.check_links(links['has_links']) is True
+        assert utils.check_links(links['mailto']) is False
+        assert utils.check_links(links['https_only']) is False
 
 def test_forbidden_words():
     forbidden_words = ['egg', 'spam']
@@ -122,3 +145,9 @@ def test_forbidden_words():
 
     assert utils.percentage_of_bad_words(body, forbidden_words) == 0
     assert utils.percentage_of_bad_words(spam, forbidden_words) > 0
+
+def test_inspect_attachments():
+    assert utils.inspect_attachments(trustable_mail.attachments)["has_attachments"] is False
+    assert utils.inspect_attachments(trustable_mail.attachments)["attachment_is_executable"] is False
+    assert utils.inspect_attachments(spam.attachments)["has_attachments"] is False
+    assert utils.inspect_attachments(spam.attachments)["attachment_is_executable"] is False
