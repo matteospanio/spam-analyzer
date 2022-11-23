@@ -131,7 +131,7 @@ def _stringify_email(email: dict):
 
         attachments += f"{k}: [bold]{v}[/bold]\n"
     
-    score = f"\nspamassassin: {email['spamassassin']}\tscore: {email['score']:.2f}\n"
+    score = f"\nscore: {email['score']:.2f}\n"
 
     return (score, headers, body, attachments)
 
