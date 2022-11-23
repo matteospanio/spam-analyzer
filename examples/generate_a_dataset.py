@@ -1,4 +1,5 @@
 import csv
+from rich.progress import track
 from spamdetector import MailAnalyzer
 from spamdetector.files import get_files_from_dir
 
@@ -12,19 +13,16 @@ def list_to_csv(l: list, filename: str):
 def file_to_csv(filename: str, output_file: str, is_spam: int, analyzer: MailAnalyzer):
     raw_files = get_files_from_dir(filename)
     datalist = []
-    for file in raw_files:
+    for file in track(raw_files, description=f'Analyzing files from {filename} folder'):
         analysis = analyzer.analyze(file)
         list_analysis = analysis.to_list()
         list_analysis.append(is_spam)
         datalist.append(list_analysis)
     list_to_csv(datalist, output_file)
-    
+
 
 if __name__ == '__main__':
-    data_spam = []
-    data_ham = []
-    
-    # load wordlist from file
+
     with open('conf/word_blacklist.txt', 'r') as f:
         wordlist = f.readlines()
 
@@ -34,3 +32,4 @@ if __name__ == '__main__':
     file_to_csv('dataset/2003_easy_ham', 'dataset/spam.csv', 0, analysis_factory)
     file_to_csv('dataset/20021010_hard_ham/hard_ham', 'dataset/spam.csv', 0, analysis_factory)
     file_to_csv('dataset/20030228_spam_2/spam_2', 'dataset/spam.csv', 1, analysis_factory)
+    file_to_csv('dataset/20030228_hard_ham/hard_ham', 'dataset/spam.csv', 0, analysis_factory)
