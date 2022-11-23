@@ -3,6 +3,7 @@ import dns.resolver, dns.name
 from dataclasses import dataclass
 from datetime import datetime
 
+import spamdetector.analyzer.classifier as classifier
 import spamdetector.analyzer.utils as utils
 
 
@@ -132,14 +133,12 @@ class MailAnalysis:
         ## Spam detection
         The mail gain a score based on the presence of some headers and the content of the body.
         """
-        if self.contains_script or self.auth_warn:
-            return 'Spam'
-        if (not self.has_spf and not self.domain_matches):
-            return 'Spam'
-        if (self.has_spf or self.domain_matches) and not self.https_only and self.forbidden_words_percentage > 0.05:
-            return 'Warning'
-        else:
-            return 'Ham'
+        
+        with open('conf/config.yaml', 'r') as f:
+            model_path = yaml.safe_load(f)['weights']['classifier']
+        
+        model = classifier.load_model(model_path)
+        return True if model.predict(self.to_list()) == 1 else False
 
     def get_score(self) -> int:       
         """It evaluates the mail and return a score based on the presence of some headers and the content of the body.
@@ -201,6 +200,15 @@ class MailAnalysis:
         score += weights['attachment_executable'] if self.is_attachment_executable else 0
 
         return score
+    
+    def send_date_is_later_than(self, date: datetime) -> bool:
+        """It returns `True` if the send date is later than the `date` parameter"""
+        return self.send_date > date
+
+    def trust_domain(self) -> bool:
+        if self.has_spf or self.domain_matches:
+            return True
+        return False
 
     def to_dict(self) -> dict:
         return {
@@ -307,3 +315,16 @@ class MailAnalyzer:
 
     def __repr__(self):
         return f'<MailAnalyzer(wordlist={self.wordlist})>'
+
+class Date:
+    
+    def __init__(self, date: str):
+        self.date = date
+
+    # parse the date
+    def parse(self) -> tuple[datetime, bool]:
+        try:
+            return datetime.strptime(self.date, '%a, %d %b %Y %H:%M:%S %z'), True
+        except ValueError:
+            return datetime.strptime(self.date, '%a, %d %b %Y %H:%M:%S %Z'), False
+        
