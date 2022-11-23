@@ -1,8 +1,8 @@
 from enum import Enum
 import re
-import requests
 import datetime
 import spamdetector.analyzer.data_structures as ds
+from bs4 import BeautifulSoup
 
 
 class Regex(Enum):
@@ -35,15 +35,19 @@ def inspect_headers(headers: dict, wordlist):
     - has_suspect_words (bool): True if the email has gappy words or forbidden words in the subject
     - send_year (int): the year in which the email was sent (in future versions should be a datetime object)
     """
-    has_spf = spf_pass(headers)
-    has_dkim = dkim_pass(headers)
-    has_dmarc = dmarc_pass(headers)
-    domain_matches = from_domain_matches_received(headers)
-    auth_warn = has_auth_warning(headers)
     has_suspect_subject, subject_is_uppercase = analyze_subject(headers, wordlist)
     send_date, _ = parse_date(headers)
 
-    return (has_spf, has_dkim, has_dmarc, domain_matches, auth_warn, has_suspect_subject, subject_is_uppercase, send_date)
+    return {
+        "has_spf": spf_pass(headers),
+        "has_dkim": dkim_pass(headers),
+        "has_dmarc": dmarc_pass(headers),
+        "domain_matches": from_domain_matches_received(headers),
+        "auth_warn": has_auth_warning(headers),
+        "has_suspect_subject": has_suspect_subject,
+        "subject_is_uppercase": subject_is_uppercase,
+        "send_date": send_date
+    }
 
 def spf_pass(headers: dict) -> bool:
     """Checks if the email has a SPF record
@@ -90,13 +94,13 @@ def dmarc_pass(headers: dict) -> bool:
     return False
 
 def has_auth_warning(headers: dict) -> bool:
-    """Checks if the email has an authentication warning
+    """Checks if the email has an authentication warning, usually it means that the sender claimed to be someone else
 
     Args:
         headers (dict): a dictionary containing parsed email headers
 
     Returns:
-        bool: True if the email has an authentication warning
+        bool: True if the email has an authentication warning header
     """
     if headers.get('X-Authentication-Warning') is not None:
         return True
@@ -186,21 +190,21 @@ def get_domain(field: str):
 def inspect_body(body: str, wordlist, domain):
     """
     A detailed analysis of the email body
-    
+
     Args:
         body (str): the body of the email
         wordlist (list[str]): a list of words to be used as a spam filter in the body
         domain (Domain): the domain of the sender
-        
+
     Returns:
         tuple: a tuple containing the following information:
-        
+
     - has_http_links (bool): True if the email has http links
     - has_script (bool): True if the email has script tags or javascript code
     - forbidden_words_percentage (float): the percentage of forbidden words in the body
     - has_form (bool): True if the email has a form
     - contains_html (bool): True if the email contains html tags
-    
+
     """
     body = body.lower()
     has_links, has_mailto, https_only = check_links(body)
@@ -209,8 +213,20 @@ def inspect_body(body: str, wordlist, domain):
     has_form = has_html_form(body)
     contains_html = has_html(body)
 
-    return (has_links, has_mailto, https_only, has_script, forbidden_words_percentage, has_form, contains_html)
-    
+    return {
+        "has_links": has_links,
+        "has_mailto": has_mailto,
+        "https_only": https_only,
+        "contains_script": has_script,
+        "forbidden_words_percentage": forbidden_words_percentage,
+        "contains_form": has_form,
+        "contains_html": contains_html,
+    }
+
+def parse_html(body: str) -> str:
+    soup = BeautifulSoup(body, 'html.parser')
+    return soup.get_text()
+
 def has_html(body):
     """Checks if the email contains html tags
 
@@ -250,7 +266,7 @@ def percentage_of_bad_words(body, wordlist) -> float:
             bad_words += len(word.split(' '))
     return bad_words / len(body.split(' '))
 
-def get_body_links(body) -> list[str]:
+def get_links_from_str(body: str) -> list[str]:
     links = []
 
     http = Regex.HTTP_LINK.value.findall(body)
@@ -282,35 +298,21 @@ def has_mailto_links(body) -> bool:
     return True if Regex.MAILTO.value.search(body) else False
 
 def check_links(body):
-    links = get_body_links(body)
+    links = get_links_from_str(body)
 
-    return (links != []), has_mailto_links(body), https_only(links)
-
-def has_inactive_links(links) -> bool:
-    for link in links:
-        if not is_active(link):
-            return True
-    return False
-
-def is_active(link) -> bool:
-    # FIXME: it slows down the process
-    #        it check if it returns a 200 status code not only if the link is active
-    """Checks if a link is active"""
-    if 'https' and 'http' not in link:
-        link = 'http://' + link
-
-    try:
-        response = requests.get(link, timeout=5)
-        return (True, response.status_code)
-    except Exception:
-        return (False, 0)
+    return {
+        "has_links": links != [],
+        "mailto": has_mailto_links(body),
+        "https_only": https_only(links)
+    }
 
 def https_only(links: list[str]) -> bool:
+    if links == []:
+        return False
+
     for link in links:
         if 'https://' not in link:
             return False
-    if links == []:
-        return False
     return True
 
 def has_script_tag(body) -> bool:
@@ -335,10 +337,7 @@ def inspect_attachments(attachments: list):
         a_type = attachment.get('mail_content_type')
         if a_type == 'application/octet-stream':
             is_executable = True
-    return (has_attachments, is_executable)
-
-def inspect_spamassassin(headers):
-    if headers.get('X-Spam-Flag') is not None:
-        return "Spam"
-    return "Ham"
-    
+    return {
+        "has_attachments": has_attachments,
+        "attachment_is_executable": is_executable
+    }
