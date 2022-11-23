@@ -46,4 +46,4 @@ class TestMailAnalysis:
         assert self.mail_ok_an.is_spam() == 'Ham'
 
     def test_mail_analysis_get_score(self):
-        assert self.mail_ok_an.get_score() == 0.0
+        assert self.mail_ok_an.get_score() <= 0.0
