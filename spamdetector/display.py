@@ -54,9 +54,16 @@ def _print_default(data, verbose):
     total_spam_score = 0
     total_ok_score = 0
 
+    classifier_spam = 0
+    classifier_ham = 0
+
     console = Console()
     renderables = []
     for analysis in data:
+        if analysis.is_spam():
+            classifier_spam += 1
+        else:
+            classifier_ham += 1
         score = analysis.get_score()
         if score <= 3.50:
             count += 1
@@ -71,6 +78,7 @@ def _print_default(data, verbose):
             console.print(Columns(renderables, equal=True))
 
     _print_summary(count, len(data) - count, total_ok_score, total_spam_score)
+    _print_summary(classifier_ham, classifier_spam, total_ok_score, total_spam_score)
 
 def _print_summary(ok_count, spam_count, total_ok_score, total_spam_score) -> None:
     table = Table(title="Summary", box=rich.box.ROUNDED, highlight=True)
@@ -131,7 +139,7 @@ def _stringify_email(email: dict):
 
         attachments += f"{k}: [bold]{v}[/bold]\n"
     
-    score = f"\nscore: {email['score']:.2f}\n"
+    score = f"\nspam: {email['is_spam']}\tscore: {email['score']:.2f}\n"
 
     return (score, headers, body, attachments)
 
