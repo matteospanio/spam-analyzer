@@ -12,8 +12,8 @@ class TestInspectHeaders:
     with open('conf/word_blacklist.txt') as f:
         wordlist = f.read().splitlines()
 
-    headers_ok = utils.inspect_headers(trustable_mail.headers, wordlist)
-    bad_headers = utils.inspect_headers(spam.headers, wordlist)
+    headers_ok = utils.inspect_headers(trustable_mail, wordlist)
+    bad_headers = utils.inspect_headers(spam, wordlist)
 
     def test_inspect_headers_method(self):
         assert type(self.headers_ok) == dict
@@ -54,7 +54,7 @@ class TestInspectBody:
     def test_inspect_body_in_secure_email(self):
         assert self.body_ok["has_links"] is True
         assert self.body_ok["has_mailto"] is False
-        assert self.body_ok["https_only"] is False
+        assert self.body_ok["https_only"] is True
         assert self.body_ok["contains_script"] is False
         assert self.body_ok["forbidden_words_percentage"] == 0.0
         assert self.body_ok["contains_form"] is False
@@ -144,9 +144,9 @@ class TestLinks:
     
     def test_check_links(self):
         links = utils.check_links(trustable_mail.body)
-        assert utils.check_links(links['has_links']) is True
-        assert utils.check_links(links['mailto']) is False
-        assert utils.check_links(links['https_only']) is False
+        assert links['has_links'] is True
+        assert links['mailto'] is False
+        assert links['https_only'] is True
 
 def test_forbidden_words():
     forbidden_words = ['egg', 'spam']
