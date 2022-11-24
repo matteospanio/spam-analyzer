@@ -1,7 +1,10 @@
 import mailparser, socket, yaml
 import dns.resolver, dns.name
+import numpy as np
 from dataclasses import dataclass
 from datetime import datetime
+from os import path
+from dateutil.parser import parse, ParserError
 
 import spamdetector.analyzer.classifier as classifier
 import spamdetector.analyzer.utils as utils
@@ -117,8 +120,9 @@ class MailAnalysis:
         with open('conf/config.yaml', 'r') as f:
             model_path = yaml.safe_load(f)['files']['classifier']
         
-        model = classifier.load_model(model_path)
-        return True if model.predict(self.to_list()) == 1 else False
+        model = classifier.load_model(path.expandvars(model_path))
+        array = np.array(self.to_list())
+        return True if model.predict(array.reshape(1, -1)) == 1 else False
 
     def get_score(self) -> int:       
         """It evaluates the mail and return a score based on the presence of some headers and the content of the body.
@@ -197,6 +201,7 @@ class MailAnalysis:
             "body": self.body,
             "attachments": self.attachments,
             "score": self.get_score(),
+            "is_spam": self.is_spam()
         }
 
     def _date_is_valid(self) -> bool:
@@ -205,22 +210,26 @@ class MailAnalysis:
 
 
     def to_list(self) -> list:
-        lista = [self.file_path,
+        lista = [#self.file_path,
                  self.headers["has_spf"],
                  self.headers["has_dkim"],
                  self.headers["has_dmarc"],
                  self.headers["domain_matches"],
+                 self.headers["auth_warn"],
                  self.headers["has_suspect_subject"],
                  self.headers["subject_is_uppercase"],
-                 self.headers["send_date"],
+                 #self.headers["send_date"],
                  self._date_is_valid(),
                  self.body["contains_script"],
+                 self.body["has_images"],
                  self.body["https_only"],
-                 self.body["contains_mailto_links"],
-                 self.body["contains_links"],
+                 self.body["has_mailto"],
+                 self.body["has_links"],
                  self.body["forbidden_words_percentage"],
                  self.body["contains_html"],
                  self.body["contains_form"],
+                 self.body["text_polarity"],
+                 self.body["text_subjectivity"],
                  self.attachments["has_attachments"],
                  self.attachments["attachment_is_executable"]]
         return lista
@@ -238,7 +247,7 @@ class MailAnalyzer:
     def analyze(self, email_path: str, add_headers: bool = False) -> MailAnalysis:
         email = mailparser.parse_from_file(email_path)
 
-        headers = utils.inspect_headers(email.headers, self.wordlist)
+        headers = utils.inspect_headers(email, self.wordlist)
         body = utils.inspect_body(email.body, self.wordlist, self.get_domain(email_path))
         attachments = utils.inspect_attachments(email.attachments)
 
@@ -262,26 +271,44 @@ class MailAnalyzer:
 class Date:
  
     _raw_date: str
-    year: int
-    day: int
-    month: int
-    timezone: str
-    day_of_week: str
+    date: datetime
     
     def __init__(self, date: str):
+        if date is None or date == '':
+            raise ValueError('Date cannot be empty or None')
         self._raw_date = date
-        self._parse()
+        self.date = self._parse()[0]
 
-    def __eq__(self, other):
+    def __eq__(self, other: object):
         # TODO
-        return self._raw_date == other._raw_date
+        return self.date == other.date
 
     # parse the date
     def _parse(self) -> tuple[datetime, bool]:
         try:
             return datetime.strptime(self._raw_date, '%a, %d %b %Y %H:%M:%S %z'), True
         except ValueError:
-            return datetime.strptime(self._raw_date, '%a, %d %b %Y %H:%M:%S %Z'), False
+            try:
+                return parse(self._raw_date), False
+            except ParserError:
+                split_date = self._raw_date.split(' ')
+                reduced_date = " ".join(split_date[0:5])
+                return parse(reduced_date), False
 
-    def follows_RFC2822(self) -> bool:
+    def is_RFC2822_formatted(self) -> bool:
         return self._parse()[1]        
+
+    def is_tz_valid(self) -> bool:
+        try:
+            if -12 <= self._get_tz_offset() <= 14:
+                return True
+            else:
+                return False
+        except Exception:
+            return False
+        
+    def _get_tz_offset(self) -> int:
+        return int(str(self.date.tzinfo).replace('UTC', '').split(':')[0])
+
+    def __repr__(self) -> str:
+        return f'{self.date.isoformat()}'
