@@ -3,6 +3,8 @@ import re
 import datetime
 import spamdetector.analyzer.data_structures as ds
 from bs4 import BeautifulSoup
+from textblob import TextBlob
+from mailparser import MailParser
 
 
 class Regex(Enum):
@@ -18,7 +20,7 @@ class Regex(Enum):
     IMAGE_TAG = re.compile(r'<img')
 
 
-def inspect_headers(headers: dict, wordlist):
+def inspect_headers(email: MailParser, wordlist):
     """A detailed analysis of the email headers
 
     Args:
@@ -36,6 +38,10 @@ def inspect_headers(headers: dict, wordlist):
     - has_suspect_words (bool): True if the email has gappy words or forbidden words in the subject
     - send_year (int): the year in which the email was sent (in future versions should be a datetime object)
     """
+
+    headers = email.headers
+    email.received[0]
+    
     has_suspect_subject, subject_is_uppercase = analyze_subject(headers, wordlist)
     send_date, _ = parse_date(headers)
 
@@ -43,7 +49,7 @@ def inspect_headers(headers: dict, wordlist):
         "has_spf": spf_pass(headers),
         "has_dkim": dkim_pass(headers),
         "has_dmarc": dmarc_pass(headers),
-        "domain_matches": from_domain_matches_received(headers),
+        "domain_matches": from_domain_matches_received(email),
         "auth_warn": has_auth_warning(headers),
         "has_suspect_subject": has_suspect_subject,
         "subject_is_uppercase": subject_is_uppercase,
@@ -155,9 +161,13 @@ def parse_date(headers: dict) -> tuple[datetime.datetime | None, bool]:
     except Exception:
         return (date, False)
 
-def from_domain_matches_received(headers: dict) -> bool:
-    email_domain = get_domain(headers.get('From'))
-    server_domain = get_domain(headers.get('Received'))
+def from_domain_matches_received(email: MailParser) -> bool:
+    email_domain = get_domain(email.headers.get('From'))
+    try:
+        server_domain = get_domain(email.received[0].get('from'))
+    except Exception:
+        # server_domain = get_domain(email.received[0].get('by'))
+        server_domain = get_domain("unknown")
 
     return ( email_domain == server_domain )
 
@@ -208,14 +218,21 @@ def inspect_body(body: str, wordlist, domain):
 
     """
     body = body.lower()
+    link_list = get_links_from_str(body)
     links = check_links(body)
-    has_script = has_script_tag(body)
     has_form = has_html_form(body)
     contains_html = has_html(body)
 
+    if links['has_links']:
+        for link in link_list:
+            body.replace(link, '')
+
     if contains_html:
-        forbidden_words_percentage = percentage_of_bad_words(parse_html(body), wordlist)
+        parsed_body = parse_html(body)
+        blob = TextBlob(parsed_body)
+        forbidden_words_percentage = percentage_of_bad_words(parsed_body, wordlist)
     else:
+        blob = TextBlob(body)
         forbidden_words_percentage = percentage_of_bad_words(body, wordlist)
 
     return {
@@ -223,7 +240,9 @@ def inspect_body(body: str, wordlist, domain):
         "has_mailto": links["mailto"],
         "has_images": has_images(body),
         "https_only": links["https_only"],
-        "contains_script": has_script,
+        "text_polarity": blob.sentiment.polarity,
+        "text_subjectivity": blob.sentiment.subjectivity,
+        "contains_script": has_script_tag(body),
         "forbidden_words_percentage": forbidden_words_percentage,
         "contains_form": has_form,
         "contains_html": contains_html,
@@ -233,7 +252,7 @@ def parse_html(body: str) -> str:
     soup = BeautifulSoup(body, 'html.parser')
     return soup.get_text()
 
-def has_html(body):
+def has_html(body: str) -> bool:
     """Checks if the email contains html tags
 
     Args:
@@ -244,7 +263,7 @@ def has_html(body):
     """
     return True if Regex.HTML_TAG.value.search(body) else False
 
-def has_images(body):
+def has_images(body: str) -> bool:
     """Checks if the email contains images
 
     Args:
@@ -346,7 +365,7 @@ def has_script_tag(body) -> bool:
             return True
     return False
 
-def inspect_attachments(attachments: list):
+def inspect_attachments(attachments: list) -> dict:
     has_attachments = len(attachments) > 0
     is_executable = False
     for attachment in attachments:
