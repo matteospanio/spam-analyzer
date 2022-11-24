@@ -38,7 +38,7 @@ def main(args=None):
     2. parses the arguments
     3. starts the application
     """
-    config, _ = files.handle_configuration_files()
+    config, _, _ = files.handle_configuration_files()
 
     args = parser.parse_args(args, config)
 
