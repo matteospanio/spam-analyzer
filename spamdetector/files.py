@@ -28,6 +28,7 @@ def handle_configuration_files():
 
     config_file = files('conf').joinpath('config.yaml')
     wordlist = files('conf').joinpath('word_blacklist.txt')
+    model = files('conf').joinpath('classifier.pkl')
     
     if not path.exists(__defaults__['SPAMDETECTOR_CONF_PATH']):
         makedirs(__defaults__['SPAMDETECTOR_CONF_PATH'])
@@ -48,4 +49,11 @@ def handle_configuration_files():
     except Exception:
         raise Exception('Error while loading wordlist at the file path specified in the config file')
 
-    return (config, wordlist_path)
+    try:
+        classifier_path = path.expandvars(config['files']['classifier'])
+        if not path.exists(classifier_path):
+            shutil.copy(model, classifier_path)
+    except Exception:
+        raise Exception('Error while loading the classifier model at the file path specified in the config file')
+
+    return (config, wordlist_path, classifier_path)
