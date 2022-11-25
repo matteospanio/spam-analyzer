@@ -1,4 +1,4 @@
-import csv
+import csv, os
 from rich.progress import track
 from spamdetector import MailAnalyzer
 from spamdetector.files import get_files_from_dir
@@ -25,11 +25,22 @@ if __name__ == '__main__':
 
     with open('conf/word_blacklist.txt', 'r') as f:
         wordlist = f.readlines()
+    
+    destination = 'dataset/spam.csv'
 
     analysis_factory = MailAnalyzer(wordlist)
 
-    file_to_csv('dataset/2003_spam', 'dataset/spam.csv', 1, analysis_factory)
-    file_to_csv('dataset/2003_easy_ham', 'dataset/spam.csv', 0, analysis_factory)
-    file_to_csv('dataset/20021010_hard_ham/hard_ham', 'dataset/spam.csv', 0, analysis_factory)
-    file_to_csv('dataset/20030228_spam_2/spam_2', 'dataset/spam.csv', 1, analysis_factory)
-    file_to_csv('dataset/20030228_hard_ham/hard_ham', 'dataset/spam.csv', 0, analysis_factory)
+    file_to_csv('dataset/personale/ham', destination, 0, analysis_factory)
+    file_to_csv('dataset/personale/spam', destination, 1, analysis_factory)
+    file_to_csv('dataset/2006/05', destination, 1, analysis_factory)
+    file_to_csv('dataset/2006/06', destination, 1, analysis_factory)
+    file_to_csv('dataset/2011/05', destination, 1, analysis_factory)
+    file_to_csv('dataset/2011/06', destination, 1, analysis_factory)
+    file_to_csv('dataset/2021/02', destination, 1, analysis_factory)
+    file_to_csv('dataset/2021/03', destination, 1, analysis_factory)
+    file_to_csv('dataset/2021/04', destination, 1, analysis_factory)
+    file_to_csv('dataset/2022-10-spam', destination, 1, analysis_factory)
+    for folder in os.listdir('dataset/spamassassin_ham'):
+        file_to_csv(f'dataset/spamassassin_ham/{folder}', destination, 0, analysis_factory)
+    for folder in os.listdir('dataset/spamassassin_spam'):
+        file_to_csv(f'dataset/spamassassin_spam/{folder}', destination, 1, analysis_factory)
