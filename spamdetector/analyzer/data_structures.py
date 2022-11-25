@@ -120,9 +120,9 @@ class MailAnalysis:
         with open('conf/config.yaml', 'r') as f:
             model_path = yaml.safe_load(f)['files']['classifier']
         
-        model = classifier.load_model(path.expandvars(model_path))
+        ml = classifier.SpamClassifier(path.expandvars(model_path))
         array = np.array(self.to_list())
-        return True if model.predict(array.reshape(1, -1)) == 1 else False
+        return True if ml.predict(array.reshape(1, -1)) == 1 else False
 
     def get_score(self) -> int:       
         """It evaluates the mail and return a score based on the presence of some headers and the content of the body.
@@ -149,16 +149,16 @@ class MailAnalysis:
 
         # verify send date
         # if the date has valid format
-        if type(self.headers["send_date"]) is datetime:
+        if type(self.headers["send_date"]) is Date:
             # if the date is in the future
-            if self.headers["send_date"].timestamp() > datetime.now().timestamp():
+            if self.headers["send_date"].date.timestamp() > datetime.now().timestamp():
                 # then add penalty
                 score += weights['invalid_date']
-            if not utils.is_valid_tz(self.headers["send_date"]):
+            if not self.headers["send_date"].is_tz_valid():
                 score += weights['invalid_date']
             
             # if email is old, it often contains http links
-            score += 0 if (not self.body["https_only"] and self.headers["send_date"].year < 2010) or self.body["https_only"] else weights['contains_http_links']
+            score += 0 if (not self.body["https_only"] and self.headers["send_date"].date.year < 2010) or self.body["https_only"] else weights['contains_http_links']
         else:
             # date is not in RFC 2822 format
             score += weights['invalid_date']
@@ -185,10 +185,6 @@ class MailAnalysis:
 
         return score
     
-    def send_date_is_later_than(self, date: datetime) -> bool:
-        """It returns `True` if the send date is later than the `date` parameter"""
-        return self.headers["send_date"] > date
-
     def trust_domain(self) -> bool:
         if self.headers["has_spf"] or self.headers["domain_matches"]:
             return True
@@ -204,13 +200,8 @@ class MailAnalysis:
             "is_spam": self.is_spam()
         }
 
-    def _date_is_valid(self) -> bool:
-        """It checks if the date is in RFC 2822 format"""
-        return type(self.headers["send_date"]) is datetime
-
-
     def to_list(self) -> list:
-        lista = [#self.file_path,
+        return [#self.file_path,
                  self.headers["has_spf"],
                  self.headers["has_dkim"],
                  self.headers["has_dmarc"],
@@ -218,8 +209,10 @@ class MailAnalysis:
                  self.headers["auth_warn"],
                  self.headers["has_suspect_subject"],
                  self.headers["subject_is_uppercase"],
-                 #self.headers["send_date"],
-                 self._date_is_valid(),
+                 self.headers["send_date"].is_RFC2822_formatted() if self.headers["send_date"] is not None else False,
+                 self.headers["send_date"].is_tz_valid() if self.headers["send_date"] is not None else False,
+                 self.headers["received_date"] is not None,
+                 self.body["is_uppercase"],
                  self.body["contains_script"],
                  self.body["has_images"],
                  self.body["https_only"],
@@ -232,7 +225,6 @@ class MailAnalysis:
                  self.body["text_subjectivity"],
                  self.attachments["has_attachments"],
                  self.attachments["attachment_is_executable"]]
-        return lista
 
 
 class MailAnalyzer:
@@ -279,9 +271,26 @@ class Date:
         self._raw_date = date
         self.date = self._parse()[0]
 
-    def __eq__(self, other: object):
-        # TODO
-        return self.date == other.date
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Date):
+            return self.date.timestamp() == other.date.timestamp()
+        if isinstance(other, datetime):
+            return self.date.timestamp() == other.timestamp()
+        return False
+    
+    def to_dict(self) -> dict:
+        return {
+            "is_RFC_2822": self.is_RFC2822_formatted(),
+            "is_tz_valid": self.is_tz_valid(),
+            "date": self.date.isoformat(),
+            "posix": self.date.timestamp(),
+            "year": self.date.year,
+            "month": self.date.month,
+            "day": self.date.day,
+            "hour": self.date.hour,
+            "minute": self.date.minute,
+            "second": self.date.second,
+        }
 
     # parse the date
     def _parse(self) -> tuple[datetime, bool]:
@@ -296,7 +305,7 @@ class Date:
                 return parse(reduced_date), False
 
     def is_RFC2822_formatted(self) -> bool:
-        return self._parse()[1]        
+        return self._parse()[1] 
 
     def is_tz_valid(self) -> bool:
         try:
