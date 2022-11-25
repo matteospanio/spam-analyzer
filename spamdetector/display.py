@@ -5,19 +5,33 @@ from rich.text import Text
 from rich.console import Console, Group
 from rich.columns import Columns
 from rich.table import Table
-from spamdetector import MailAnalysis
+from spamdetector.analyzer.data_structures import MailAnalysis
 
-HEADER = [
-    'File',
-    'Domain',
-    'SPF',
-    'DKIM',
-    'DMARC',
-    'Auth Warning',
-    'has spam word',
+HEADERS = [
+    'has_spf',
+    'has_dkim',
+    'has_dmarc',
+    'domain_matches',
+    'auth_warn',
+    'has_suspect_subject',
+    'subject_is_uppercase',
+    'send_date_is_RFC2822_compliant',
+    'send_date_tz_is_valid',
+    'has_received_date',
+    'uppercase_body',
     'script',
-    'http link',
-    'Trust'
+    'images',
+    'https_only',
+    'mailto',
+    'links',
+    'bad_words_percentage',
+    'html',
+    'form',
+    'polarity',
+    'subjectivity',
+    'attachments',
+    'attach_is_executable',
+    'is_spam'
 ]
 
 def print_output(data, output_format: str, verbose: bool) -> None:
@@ -47,6 +61,9 @@ def _print_to_csv(data):
 
 def _print_to_json(data):
     dict_data = [analysis.to_dict() for analysis in data]
+    for analysis in dict_data:
+        analysis["headers"]["send_date"] = analysis["headers"]["send_date"].to_dict()
+        analysis["headers"]["received_date"] = analysis["headers"]["received_date"].to_dict()
     print(json.dumps(dict_data, indent=4))
 
 def _print_default(data, verbose):
