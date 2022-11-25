@@ -91,6 +91,9 @@ class TestStringAnalysis:
     unsecure_string = 'a malicious executable script <script>function foo() {}</script>'
     image_string = 'this is <img src="https://github.com" />'
     empty_string = ''
+    upper_text = 'THIS IS AN UPPER TEXT'
+    limit_upper = 'This is a TEXT IN UPPER CASE'
+    limit_upper2 = 'This is a TEXT IN UPPER CASE WITH MANY UPPER WORDS'
 
     def test_has_html(self):
         assert utils.has_html(self.empty_string) is False
@@ -122,6 +125,13 @@ class TestStringAnalysis:
         assert utils.has_images(self.plain_text) is False
         assert utils.has_images(self.html_form) is False
         assert utils.has_images(self.image_string) is True
+    
+    def test_is_upper(self):
+        assert utils.is_upper(self.empty_string) is False
+        assert utils.is_upper(self.plain_text) is False
+        assert utils.is_upper(self.upper_text) is True
+        assert utils.is_upper(self.limit_upper) is False
+        assert utils.is_upper(self.limit_upper2) is True
 
 
 class TestLinks:
