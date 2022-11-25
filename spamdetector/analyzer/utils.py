@@ -1,6 +1,5 @@
 from enum import Enum
 import re
-import datetime
 import spamdetector.analyzer.data_structures as ds
 from bs4 import BeautifulSoup
 from textblob import TextBlob
@@ -43,7 +42,8 @@ def inspect_headers(email: MailParser, wordlist):
     email.received[0]
     
     has_suspect_subject, subject_is_uppercase = analyze_subject(headers, wordlist)
-    send_date, _ = parse_date(headers)
+    send_date = parse_date(headers)
+    received_date = parse_date(email.received[0])
 
     return {
         "has_spf": spf_pass(headers),
@@ -53,18 +53,12 @@ def inspect_headers(email: MailParser, wordlist):
         "auth_warn": has_auth_warning(headers),
         "has_suspect_subject": has_suspect_subject,
         "subject_is_uppercase": subject_is_uppercase,
-        "send_date": send_date
+        "received_date": received_date,
+        "send_date": send_date,
     }
 
 def spf_pass(headers: dict) -> bool:
-    """Checks if the email has a SPF record
-
-    Args:
-        headers (dict): a dictionary containing parsed email headers
-
-    Returns:
-        bool: True if the email has a SPF record
-    """
+    """Checks if the email has a SPF record"""
     spf = headers.get('Received-SPF') or headers.get('Authentication-Results') or headers.get('Authentication-results')
     if spf is not None and 'pass' in spf.lower():
         return True
@@ -72,12 +66,6 @@ def spf_pass(headers: dict) -> bool:
 
 def dkim_pass(headers: dict) -> bool:
     """Checks if the email has a DKIM record
-
-    Args:
-        headers (dict): a dictionary containing parsed email headers
-
-    Returns:
-        bool: True if the email has a DKIM record
     """
     if headers.get('DKIM-Signature') is not None:
         return True
@@ -88,12 +76,6 @@ def dkim_pass(headers: dict) -> bool:
 
 def dmarc_pass(headers: dict) -> bool:
     """Checks if the email has a DMARC record
-
-    Args:
-        headers (dict): a dictionary containing parsed email headers
-
-    Returns:
-        bool: True if the email has a DMARC record
     """
     dmarc = headers.get('Authentication-Results') or headers.get('Authentication-results')
     if dmarc is not None and 'dmarc=pass' in dmarc.lower():
@@ -102,12 +84,6 @@ def dmarc_pass(headers: dict) -> bool:
 
 def has_auth_warning(headers: dict) -> bool:
     """Checks if the email has an authentication warning, usually it means that the sender claimed to be someone else
-
-    Args:
-        headers (dict): a dictionary containing parsed email headers
-
-    Returns:
-        bool: True if the email has an authentication warning header
     """
     if headers.get('X-Authentication-Warning') is not None:
         return True
@@ -134,13 +110,7 @@ def analyze_subject(headers: dict, wordlist) -> tuple[bool, bool]:
 
     return False, False
 
-def is_valid_tz(date: datetime.datetime):
-    try:
-        return -12 < int(date.utcoffset().__str__().split(':')[0]) < 14
-    except Exception:
-        return -12 < int(date.tzinfo.__str__().split(':')[0].replace('UTC', '')) < 14
-
-def parse_date(headers: dict) -> tuple[datetime.datetime | None, bool]:
+def parse_date(headers: dict):
     """Date format should follow RFC 2822, this function expects a date in the format: "Wed, 21 Oct 2015 07:28:00 -0700",
     and returns a tuple where:
     1. the first element is the parsed date or `None` if the date is not in the correct format
@@ -149,17 +119,16 @@ def parse_date(headers: dict) -> tuple[datetime.datetime | None, bool]:
     Eventually in future versions will be specified the kind of error that occurred, like in spamassassin (e.g. "invalid date", "absurd tz", "future date")
 
     """
-    date = headers.get('Date')
+    date = headers.get('Date') or headers.get('date_utc')
+
+    if date is None:
+        return None
 
     # truncate at newline characters
     date = date.splitlines()[0]
     
     # parse date
-    try:
-        parsed_date = datetime.datetime.strptime(date, '%a, %d %b %Y %H:%M:%S %z')
-        return (parsed_date, True)
-    except Exception:
-        return (date, False)
+    return ds.Date(date)
 
 def from_domain_matches_received(email: MailParser) -> bool:
     email_domain = get_domain(email.headers.get('From'))
@@ -217,6 +186,7 @@ def inspect_body(body: str, wordlist, domain):
     - contains_html (bool): True if the email contains html tags
 
     """
+    is_uppercase = is_upper(body)
     body = body.lower()
     link_list = get_links_from_str(body)
     links = check_links(body)
@@ -225,7 +195,7 @@ def inspect_body(body: str, wordlist, domain):
 
     if links['has_links']:
         for link in link_list:
-            body.replace(link, '')
+            body = body.replace(link, '')
 
     if contains_html:
         parsed_body = parse_html(body)
@@ -243,10 +213,23 @@ def inspect_body(body: str, wordlist, domain):
         "text_polarity": blob.sentiment.polarity,
         "text_subjectivity": blob.sentiment.subjectivity,
         "contains_script": has_script_tag(body),
+        "is_uppercase": is_uppercase,
         "forbidden_words_percentage": forbidden_words_percentage,
         "contains_form": has_form,
         "contains_html": contains_html,
     }
+
+def is_upper(body: str) -> bool:
+    if body == '' or body is None:
+        return False
+    count = 0
+    word_list = body.split()
+    if len(word_list) <= 0:
+        return False
+    for word in word_list:
+        if word.isupper():
+            count += 1
+    return count / len(word_list) > 0.6
 
 def parse_html(body: str) -> str:
     soup = BeautifulSoup(body, 'html.parser')
