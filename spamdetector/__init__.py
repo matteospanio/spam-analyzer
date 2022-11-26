@@ -10,7 +10,7 @@
 from os import path
 from spamdetector.analyzer import *
 
-__all__ = ['MailAnalyzer', 'MailAnalysis']
+__all__ = ['MailAnalyzer', 'MailAnalysis', 'Domain', 'Date']
 
 __version__ = "0.0.1"
 __config_path__ = path.join(path.expanduser('~'), '.config', 'spamdetector')
