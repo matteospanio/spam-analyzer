@@ -27,7 +27,7 @@ class TestInspectHeaders:
         assert self.headers_ok["domain_matches"] is True
         assert self.headers_ok["auth_warn"] is False
         assert self.headers_ok["has_suspect_subject"] is False
-        assert self.headers_ok["send_date"] == 2021
+        assert self.headers_ok["send_date"].date.year == 2021
 
     def test_inspect_headers_in_spam(self):
         assert self.bad_headers["has_spf"] is False
@@ -36,7 +36,7 @@ class TestInspectHeaders:
         assert self.bad_headers["domain_matches"] is False
         assert self.bad_headers["auth_warn"] is False
         assert self.bad_headers["has_suspect_subject"] is False
-        assert self.bad_headers["send_date"] < 2015
+        assert self.bad_headers["send_date"].date.year < 2015
 
 
 class TestInspectBody:
