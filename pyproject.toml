@@ -1,6 +1,6 @@
 [project]
 name = "spam-analyzer"
-description = "A simple spam detector"
+description = "A simple email analyzer"
 authors = [
     {name = "Matteo Spanio", email = "matteo.spanio97@gmail.com"},
 ]

@@ -7,7 +7,7 @@
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
-- [What is Spam Detector?](#what-is-spam-analyzer)
+- [What is Spam Analyzer?](#what-is-spam-analyzer)
 - [Installation](#installation)
 - [Usage](#usage)
   * [CLI](#cli)
@@ -38,7 +38,7 @@ The analysis takes in consideration the following main aspects:
 
 Since those are three separated parts of the email, the analysis can be done separately for each of them. The final result is the sum of the three results. This splitting should make possible to perform a faster analysis parallelizing the three parts.
 
-Performance apart, the analysis is done extracting features from the email and then using a machine learning algorithm to classify the email. A detailed explanation of the features extraction is available in the [documentation](http://matteospanio.me/spam-detector/spamdetector/analyzer.html#MailAnalyzer.analyze).
+Performance apart, the analysis is done extracting features from the email and then using a machine learning algorithm to classify the email. A detailed explanation of the features extraction is available in the [documentation](http://matteospanio.me/spam-analyzer/spamanalyzer/analyzer.html#MailAnalyzer.analyze).
 
 
 # Installation
@@ -64,7 +64,7 @@ pip install .
 ```
 usage: spam-analyzer [-h] -f FILE [-l WORDLIST] [-v] [-V] [-fmt FORMAT] [-o FILE] [--destination-dir DIRECTORY]
 
-A simple spam detector
+A simple program to analyzer emails
 
 options:
   -h, --help            show this help message and exit
