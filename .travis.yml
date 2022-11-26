@@ -18,7 +18,6 @@ install:
   - pip install coveralls
 
 script:
-  - coverage run --source=spamdetector/ --omit=spamdetector/__main__.py
   - pytest
   - pytest --cov=spamdetector
 
