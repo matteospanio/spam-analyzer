@@ -5,7 +5,7 @@ from rich.progress import track
 import mailparser
 import shutil
 import yaml
-import os
+import os, sys
 
 def get_files_from_dir(directory: str, verbose: bool = False) -> list[str]:
     file_list = []
@@ -57,3 +57,24 @@ def handle_configuration_files():
         raise Exception('Error while loading the classifier model at the file path specified in the config file')
 
     return (config, wordlist_path, classifier_path)
+
+def sort_emails(expanded_dest, files):
+
+    if not path.exists(path.join(expanded_dest, 'ham')):
+        makedirs(path.join(expanded_dest, 'ham'))
+    if not path.exists(path.join(expanded_dest, 'spam')):
+        makedirs(path.join(expanded_dest, 'spam'))
+    
+    for mail in files:
+        if mail.is_spam():
+            shutil.copy(mail.file_path, path.join(expanded_dest, 'spam'))
+        else:
+            shutil.copy(mail.file_path, path.join(expanded_dest, 'ham'))
+
+def expand_destination_dir(destination_dir: str) -> str:
+    expanded_dest = path.expandvars(destination_dir)
+    if not path.isdir(expanded_dest):
+        print('The destination directory does not exist or is not a directory')
+        sys.exit(1)
+
+    return expanded_dest

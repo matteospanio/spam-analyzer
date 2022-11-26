@@ -34,7 +34,7 @@ HEADERS = [
     'is_spam'
 ]
 
-def print_output(data, output_format: str, verbose: bool) -> None:
+def print_output(data, output_format: str, verbose: bool, output_file=None) -> None:
     """Prints the output of the `MailAnalysis` in the specified format (csv, json or default).
 
     Args:
@@ -50,21 +50,26 @@ def print_output(data, output_format: str, verbose: bool) -> None:
     > Return later: future versions of spamdetector will support csv output format
     """
     if output_format == 'csv':
-        _print_to_csv(data)
+        _print_to_csv(data, output_file)
     elif output_format == 'json':
-        _print_to_json(data)
+        _print_to_json(data, output_file)
     else:
         _print_default(data, verbose)
 
-def _print_to_csv(data):
+def _print_to_csv(data, output_file):
     raise NotImplementedError
 
-def _print_to_json(data):
+def _print_to_json(data, output_file):
     dict_data = [analysis.to_dict() for analysis in data]
     for analysis in dict_data:
-        analysis["headers"]["send_date"] = analysis["headers"]["send_date"].to_dict()
-        analysis["headers"]["received_date"] = analysis["headers"]["received_date"].to_dict()
-    print(json.dumps(dict_data, indent=4))
+        if analysis["headers"]["send_date"] is not None:
+            analysis["headers"]["send_date"] = analysis["headers"]["send_date"].to_dict()
+        if analysis["headers"]["received_date"] is not None:
+            analysis["headers"]["received_date"] = analysis["headers"]["received_date"].to_dict()
+    if output_file is not None:
+        json.dump(dict_data, output_file, indent=4)
+    else:
+        print(json.dumps(dict_data, indent=4))
 
 def _print_default(data, verbose):
     count = 0

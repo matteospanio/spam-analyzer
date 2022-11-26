@@ -7,7 +7,7 @@ from spamdetector.display import print_output
 from rich.progress import track
 
 
-def app(file: str, wordlist, add_headers: bool, verbose: bool, output_format: str) -> None:
+def app(file: str, wordlist, verbose: bool, output_format: str, destination_dir: str, output_file) -> None:
     wordlist = wordlist.read().splitlines()
     data = []
 
@@ -16,11 +16,11 @@ def app(file: str, wordlist, add_headers: bool, verbose: bool, output_format: st
     if os.path.isdir(file):
         file_list = files.get_files_from_dir(file, verbose)
         for mail_path in track(file_list, description='Analyzing mail list'):
-            analysis = analyzer.analyze(mail_path, add_headers)
+            analysis = analyzer.analyze(mail_path)
             data.append(analysis)
 
     elif os.path.isfile(file) and files.file_is_valid_email(file):
-        analysis = analyzer.analyze(file, add_headers)
+        analysis = analyzer.analyze(file)
         data.append(analysis)
 
     else:
@@ -28,7 +28,12 @@ def app(file: str, wordlist, add_headers: bool, verbose: bool, output_format: st
             print('The file is not analyzable')
         sys.exit(1)
 
-    print_output(data, output_format=output_format, verbose=verbose)
+    print_output(data, output_format=output_format, verbose=verbose, output_file=output_file)
+
+    if destination_dir is not None:
+        expanded_dest_dir = files.expand_destination_dir(destination_dir)
+        files.sort_emails(expanded_dest_dir, data)
+
 
 
 def main(args=None):
@@ -42,7 +47,7 @@ def main(args=None):
 
     args = parser.parse_args(args, config)
 
-    app(args.file, args.wordlist, args.add_headers, args.verbose, args.output_format)
+    app(args.file, args.wordlist, args.verbose, args.output_format, args.destination_dir, args.output_file)
 
 
 if __name__ == '__main__':
