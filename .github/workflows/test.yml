@@ -46,7 +46,7 @@ jobs:
         run: coveralls
 
   complete_coverals:
-    needs: test
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - name: Coveralls Finished
