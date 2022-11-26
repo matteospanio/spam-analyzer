@@ -14,11 +14,11 @@ _, _, _ = handle_configuration_files()
 
 class TestDomainMethods:
 
-    domain = Domain('google.com')
-    ip_addr = socket.gethostbyname('google.com')
+    domain = Domain('localhost')
+    ip_addr = socket.gethostbyname('localhost')
 
     def test_from_string(self):
-        assert self.domain == Domain.from_string('google.com')
+        assert self.domain == Domain.from_string('localhost')
 
     def test_get_ip_address(self):
         assert self.domain.get_ip_address() == self.ip_addr
