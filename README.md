@@ -4,6 +4,8 @@
 
 > A fast spam filter written in Python inspired by SpamAssassin integrated with machine learning.
 
+<!-- [![Coverage Status](https://coveralls.io/repos/github/matteospanio/spam-analyzer/badge.svg?branch=master)](https://coveralls.io/github/matteospanio/spam-analyzer?branch=master) -->
+
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
@@ -36,10 +38,32 @@ The analysis takes in consideration the following main aspects:
 - the body of the email
 - the attachments of the email
 
-Since those are three separated parts of the email, the analysis can be done separately for each of them. The final result is the sum of the three results. This splitting should make possible to perform a faster analysis parallelizing the three parts.
+The most significant parts are the headers and the body of the email. The headers are analyzed to extract the following features:
+- SPF (Sender Policy Framework)
+- DKIM (DomainKeys Identified Mail)
+- DMARC (Domain-based Message Authentication, Reporting & Conformance)
+- If the sender domain is the same as the first in received headers
+- The subject of the email
+- The send date
+- If the send date is compliant to the RFC 2822 and if it was sent from a valid time zone
+- The date of the first received header
 
-Performance apart, the analysis is done extracting features from the email and then using a machine learning algorithm to classify the email. A detailed explanation of the features extraction is available in the [documentation](http://matteospanio.me/spam-analyzer/spamanalyzer/analyzer.html#MailAnalyzer.analyze).
+While the body is analyzed to extract the following features:
+- If there are links
+- If there are images
+- If links are only http or https
+- The percentage of the body that is written in uppercase
+- The percentage of the body that contains blacklisted words
+- The polarity of the body calculated with TextBlob
+- The subjectivity of the body calculated with TextBlob
+- If it contains mailto links
+- If it contains javascript code
+- If it contains html code
+- If it contains html forms
 
+About attachments we only know if they are present or not and if they are executable files.
+
+The task could be solved in a programmatic way, chaining a long set of `if` statements based on the features extracted from the email. However, this approach is not scalable and it is not easy to maintain. Moreover, it is not possible to improve the accuracy of the model without changing the code and, the most important, the analysis would be based on the conaissance of the programmer and not on the data. Since we live in the data era, we should use the data to solve the problem, not the programmer's knowledge. So I decided to use a machine learning algorithm to solve the problem using all the features extracted from the email.
 
 # Installation
 
