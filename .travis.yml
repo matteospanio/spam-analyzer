@@ -3,6 +3,7 @@ python:
   - "3.9"
   - "3.10"
   - "3.11-dev"
+  - "pypy3"
 
 before_install:
   - python --version
@@ -15,8 +16,8 @@ install:
   - pip install -r requirements.txt
 
 script:
-  - python -m pytest
-  - python -m pytest --cov=src
+  - pytest
+  - pytest --cov=src
 
 after_success:
   - codecov
