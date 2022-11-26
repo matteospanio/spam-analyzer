@@ -103,6 +103,9 @@ analyzer = MailAnalyzer(wordlist_path="path/to/wordlist.txt")
 analysis = analyzer.analyze("path/to/email.txt")
 ```
 
+The `spamdetector` library provides a really simple interface to extract features from an email. The `MailAnalyzer` class provides the `analyze` method that takes in input the path to the email and returns a `MailAnalysis` object containing the analysis of the email.
+
+Furthermore, the `MailAnalysis` class provides the `is_spam` method that returns `True` if the email is spam, `False` otherwise. Further examples are available in the folder `examples` of the source code.
 
 # Contributing
 
@@ -110,4 +113,4 @@ Contributions are welcome! Please read the [contribution guidelines](CONTRIBUTIN
 
 # License
 
-spam-detector is licensed under the [MIT License](LICENSE).
+spam-detector is licensed under the [GPLv3](LICENSE) license.
