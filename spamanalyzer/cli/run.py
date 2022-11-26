@@ -7,7 +7,8 @@ from spamanalyzer.display import print_output
 from rich.progress import track
 
 
-def app(file: str, wordlist, verbose: bool, output_format: str, destination_dir: str, output_file) -> None:
+def app(file: str, wordlist, verbose: bool, output_format: str, destination_dir: str,
+        output_file) -> None:
     wordlist = wordlist.read().splitlines()
     data = []
 
@@ -28,12 +29,14 @@ def app(file: str, wordlist, verbose: bool, output_format: str, destination_dir:
             print('The file is not analyzable')
         sys.exit(1)
 
-    print_output(data, output_format=output_format, verbose=verbose, output_file=output_file)
+    print_output(data,
+                 output_format=output_format,
+                 verbose=verbose,
+                 output_file=output_file)
 
     if destination_dir is not None:
         expanded_dest_dir = files.expand_destination_dir(destination_dir)
         files.sort_emails(expanded_dest_dir, data)
-
 
 
 def main(args=None):
@@ -47,7 +50,8 @@ def main(args=None):
 
     args = parser.parse_args(args, config)
 
-    app(args.file, args.wordlist, args.verbose, args.output_format, args.destination_dir, args.output_file)
+    app(args.file, args.wordlist, args.verbose, args.output_format,
+        args.destination_dir, args.output_file)
 
 
 if __name__ == '__main__':

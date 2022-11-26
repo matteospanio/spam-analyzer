@@ -10,9 +10,14 @@ class Regex(Enum):
     DOMAIN = re.compile(r"([\-A-Za-z0-9]+\.)+[A-Za-z]{2,6}")
     IP = re.compile(r"(?:\d{1,3}\.){3}\d{1,3}")
     MAILTO = re.compile(r"mailto:(\w+@\w+\.\w+)(\?subject=(.+))?")
-    HTTP_LINK = re.compile(r'(http://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)')
-    HTTPS_LINK = re.compile(r'(https://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)')
-    SHORT_LINK = re.compile(r'(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)')
+    HTTP_LINK = re.compile(
+        r'(http://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)'
+    )
+    HTTPS_LINK = re.compile(
+        r'(https://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)'
+    )
+    SHORT_LINK = re.compile(
+        r'(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)')
     GAPPY_WORDS = re.compile(r'([A-Za-z0-9]+(<!--*-->|\*|\-))+')
     HTML_FORM = re.compile(r'<form')
     HTML_TAG = re.compile(r'<[^>]+>')
@@ -40,7 +45,7 @@ def inspect_headers(email: MailParser, wordlist):
 
     headers = email.headers
     email.received[0]
-    
+
     has_suspect_subject, subject_is_uppercase = analyze_subject(headers, wordlist)
     send_date = parse_date(headers)
     received_date = parse_date(email.received[0])
@@ -57,30 +62,37 @@ def inspect_headers(email: MailParser, wordlist):
         "send_date": send_date,
     }
 
+
 def spf_pass(headers: dict) -> bool:
     """Checks if the email has a SPF record"""
-    spf = headers.get('Received-SPF') or headers.get('Authentication-Results') or headers.get('Authentication-results')
+    spf = headers.get('Received-SPF') or headers.get(
+        'Authentication-Results') or headers.get('Authentication-results')
     if spf is not None and 'pass' in spf.lower():
         return True
     return False
+
 
 def dkim_pass(headers: dict) -> bool:
     """Checks if the email has a DKIM record
     """
     if headers.get('DKIM-Signature') is not None:
         return True
-    dkim = headers.get('Authentication-Results') or headers.get('Authentication-results')
+    dkim = headers.get('Authentication-Results') or headers.get(
+        'Authentication-results')
     if dkim is not None and 'dkim=pass' in dkim.lower():
         return True
     return False
 
+
 def dmarc_pass(headers: dict) -> bool:
     """Checks if the email has a DMARC record
     """
-    dmarc = headers.get('Authentication-Results') or headers.get('Authentication-results')
+    dmarc = headers.get('Authentication-Results') or headers.get(
+        'Authentication-results')
     if dmarc is not None and 'dmarc=pass' in dmarc.lower():
         return True
     return False
+
 
 def has_auth_warning(headers: dict) -> bool:
     """Checks if the email has an authentication warning, usually it means that the sender claimed to be someone else
@@ -88,6 +100,7 @@ def has_auth_warning(headers: dict) -> bool:
     if headers.get('X-Authentication-Warning') is not None:
         return True
     return False
+
 
 def analyze_subject(headers: dict, wordlist) -> tuple[bool, bool]:
     """Checks if the email has gappy words or forbidden words in the subject
@@ -105,10 +118,11 @@ def analyze_subject(headers: dict, wordlist) -> tuple[bool, bool]:
         for word in wordlist:
             if word in subject:
                 return True, subject.isupper()
-        
+
         return False, subject.isupper()
 
     return False, False
+
 
 def parse_date(headers: dict):
     """Date format should follow RFC 2822, this function expects a date in the format: "Wed, 21 Oct 2015 07:28:00 -0700",
@@ -126,9 +140,10 @@ def parse_date(headers: dict):
 
     # truncate at newline characters
     date = date.splitlines()[0]
-    
+
     # parse date
     return ds.Date(date)
+
 
 def from_domain_matches_received(email: MailParser) -> bool:
     email_domain = get_domain(email.headers.get('From'))
@@ -138,7 +153,8 @@ def from_domain_matches_received(email: MailParser) -> bool:
         # server_domain = get_domain(email.received[0].get('by'))
         server_domain = get_domain("unknown")
 
-    return ( email_domain == server_domain )
+    return (email_domain == server_domain)
+
 
 def get_domain(field: str):
     """Extracts the domain from a field
@@ -166,6 +182,7 @@ def get_domain(field: str):
             return ds.Domain.from_ip(ip_address)
 
     return ds.Domain('unknown')
+
 
 def inspect_body(body: str, wordlist, domain):
     """
@@ -219,6 +236,7 @@ def inspect_body(body: str, wordlist, domain):
         "contains_html": contains_html,
     }
 
+
 def is_upper(body: str) -> bool:
     if body == '' or body is None:
         return False
@@ -231,9 +249,11 @@ def is_upper(body: str) -> bool:
             count += 1
     return count / len(word_list) > 0.6
 
+
 def parse_html(body: str) -> str:
     soup = BeautifulSoup(body, 'html.parser')
     return soup.get_text()
+
 
 def has_html(body: str) -> bool:
     """Checks if the email contains html tags
@@ -246,6 +266,7 @@ def has_html(body: str) -> bool:
     """
     return True if Regex.HTML_TAG.value.search(body) else False
 
+
 def has_images(body: str) -> bool:
     """Checks if the email contains images
 
@@ -257,6 +278,7 @@ def has_images(body: str) -> bool:
     """
     return True if Regex.IMAGE_TAG.value.search(body) else False
 
+
 def has_html_form(body) -> bool:
     """Checks if the email has a form
 
@@ -267,6 +289,7 @@ def has_html_form(body) -> bool:
         bool: True if the email has a form
     """
     return True if Regex.HTML_FORM.value.search(body) else False
+
 
 def percentage_of_bad_words(body, wordlist) -> float:
     """Calculates the percentage of forbidden words in the body
@@ -283,6 +306,7 @@ def percentage_of_bad_words(body, wordlist) -> float:
         if word in body:
             bad_words += len(word.split(' '))
     return bad_words / len(body.split(' '))
+
 
 def get_links_from_str(body: str) -> list[str]:
     links = []
@@ -304,6 +328,7 @@ def get_links_from_str(body: str) -> list[str]:
 
     return links
 
+
 def has_mailto_links(body) -> bool:
     """Checks if the email has mailto links
 
@@ -315,6 +340,7 @@ def has_mailto_links(body) -> bool:
     """
     return True if Regex.MAILTO.value.search(body) else False
 
+
 def check_links(body):
     links = get_links_from_str(body)
 
@@ -324,6 +350,7 @@ def check_links(body):
         "https_only": https_only(links)
     }
 
+
 def https_only(links: list[str]) -> bool:
     if links == []:
         return False
@@ -332,6 +359,7 @@ def https_only(links: list[str]) -> bool:
         if 'https://' not in link:
             return False
     return True
+
 
 def has_script_tag(body) -> bool:
     """Checks if the email has script tags or javascript code
@@ -347,6 +375,7 @@ def has_script_tag(body) -> bool:
         if tag in body:
             return True
     return False
+
 
 def inspect_attachments(attachments: list) -> dict:
     has_attachments = len(attachments) > 0

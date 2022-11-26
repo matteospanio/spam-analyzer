@@ -73,6 +73,7 @@ class Domain:
             return True
         return False
 
+
 @dataclass
 class MailAnalysis:
     """A summary of the analysis of a mail"""
@@ -116,79 +117,13 @@ class MailAnalysis:
         ## Spam detection
         The mail gain a score based on the presence of some headers and the content of the body.
         """
-        
+
         with open('conf/config.yaml', 'r') as f:
             model_path = yaml.safe_load(f)['files']['classifier']
-        
+
         ml = classifier.SpamClassifier(path.expandvars(model_path))
         array = np.array(self.to_list())
         return True if ml.predict(array.reshape(1, -1)) == 1 else False
-
-    def get_score(self) -> int:       
-        """It evaluates the mail and return a score based on the presence of some headers and the content of the body.
-        The points are assigned based on the `weights` parameter.
-        """
-        
-        # TODO: think where to pass config, we should use a dependency injection
-        with open('conf/config.yaml', 'r') as f:
-            weights = yaml.safe_load(f)['weights']
-
-        score = 0
-
-        # headers scoring
-        if self.headers["has_spf"] or self.headers["domain_matches"]:
-            pass
-        else:
-            if not self.headers["has_spf"]:
-                score += weights['has_spf']
-            if not self.headers["domain_matches"]:
-                score += weights['domain_matches']
-
-        if not self.headers["has_spf"] and not self.headers["domain_matches"] and not self.body["contains_script"] and not self.body["contains_form"] and not self.body["has_links"]:
-            score += -0.5
-
-        # verify send date
-        # if the date has valid format
-        if type(self.headers["send_date"]) is Date:
-            # if the date is in the future
-            if self.headers["send_date"].date.timestamp() > datetime.now().timestamp():
-                # then add penalty
-                score += weights['invalid_date']
-            if not self.headers["send_date"].is_tz_valid():
-                score += weights['invalid_date']
-            
-            # if email is old, it often contains http links
-            score += 0 if (not self.body["https_only"] and self.headers["send_date"].date.year < 2010) or self.body["https_only"] else weights['contains_http_links']
-        else:
-            # date is not in RFC 2822 format
-            score += weights['invalid_date']
-        
-        score += -1 if self.body["https_only"] else 0
-        score += weights['bad_subject'] if self.headers["has_suspect_subject"] else 0
-        score += weights['uppercase_subject'] if self.headers["subject_is_uppercase"] else 0
-
-        # those fields are not so often used, they should have a minimal impact in score
-        score += -1 if self.headers["has_dkim"] else weights['has_dkim']
-        score += -1 if self.headers["has_dmarc"] else weights['has_dmarc']
-
-        score += weights['auth_warn'] if self.headers["auth_warn"] else 0
-
-        # body scoring
-        score += self.body["forbidden_words_percentage"] * weights['forbidden_words_percentage'] * 10
-        score += weights['has_html_form'] if self.body["contains_form"] else 0
-        score += weights['has_script'] if self.body["contains_script"] else 0
-        score += weights['has_html'] if self.body["contains_html"] else 0
-
-        # attachments scoring
-        score += weights['has_attachments'] if self.attachments["has_attachments"] else 0
-        score += weights['attachment_executable'] if self.attachments["attachment_is_executable"] else 0
-
-        return score
-    
-    def trust_domain(self) -> bool:
-        if self.headers["has_spf"] or self.headers["domain_matches"]:
-            return True
-        return False
 
     def to_dict(self) -> dict:
         return {
@@ -196,35 +131,27 @@ class MailAnalysis:
             "headers": self.headers,
             "body": self.body,
             "attachments": self.attachments,
-            "score": self.get_score(),
             "is_spam": self.is_spam()
         }
 
     def to_list(self) -> list:
-        return [#self.file_path,
-                 self.headers["has_spf"],
-                 self.headers["has_dkim"],
-                 self.headers["has_dmarc"],
-                 self.headers["domain_matches"],
-                 self.headers["auth_warn"],
-                 self.headers["has_suspect_subject"],
-                 self.headers["subject_is_uppercase"],
-                 self.headers["send_date"].is_RFC2822_formatted() if self.headers["send_date"] is not None else False,
-                 self.headers["send_date"].is_tz_valid() if self.headers["send_date"] is not None else False,
-                 self.headers["received_date"] is not None,
-                 self.body["is_uppercase"],
-                 self.body["contains_script"],
-                 self.body["has_images"],
-                 self.body["https_only"],
-                 self.body["has_mailto"],
-                 self.body["has_links"],
-                 self.body["forbidden_words_percentage"],
-                 self.body["contains_html"],
-                 self.body["contains_form"],
-                 self.body["text_polarity"],
-                 self.body["text_subjectivity"],
-                 self.attachments["has_attachments"],
-                 self.attachments["attachment_is_executable"]]
+        return [  #self.file_path,
+            self.headers["has_spf"], self.headers["has_dkim"],
+            self.headers["has_dmarc"], self.headers["domain_matches"],
+            self.headers["auth_warn"], self.headers["has_suspect_subject"],
+            self.headers["subject_is_uppercase"],
+            self.headers["send_date"].is_RFC2822_formatted()
+            if self.headers["send_date"] is not None else False,
+            self.headers["send_date"].is_tz_valid()
+            if self.headers["send_date"] is not None else False,
+            self.headers["received_date"] is not None, self.body["is_uppercase"],
+            self.body["contains_script"], self.body["has_images"],
+            self.body["https_only"], self.body["has_mailto"], self.body["has_links"],
+            self.body["forbidden_words_percentage"], self.body["contains_html"],
+            self.body["contains_form"], self.body["text_polarity"],
+            self.body["text_subjectivity"], self.attachments["has_attachments"],
+            self.attachments["attachment_is_executable"]
+        ]
 
 
 class MailAnalyzer:
@@ -232,7 +159,7 @@ class MailAnalyzer:
     
     The analysis is based on the presence of some headers and the content of the body.
     """
-    
+
     def __init__(self, wordlist):
         self.wordlist = wordlist
 
@@ -240,15 +167,14 @@ class MailAnalyzer:
         email = mailparser.parse_from_file(email_path)
 
         headers = utils.inspect_headers(email, self.wordlist)
-        body = utils.inspect_body(email.body, self.wordlist, self.get_domain(email_path))
+        body = utils.inspect_body(email.body, self.wordlist,
+                                  self.get_domain(email_path))
         attachments = utils.inspect_attachments(email.attachments)
 
-        return MailAnalysis(
-            file_path=email_path,
-            headers=headers,
-            body=body,
-            attachments=attachments
-        )
+        return MailAnalysis(file_path=email_path,
+                            headers=headers,
+                            body=body,
+                            attachments=attachments)
 
     def get_domain(self, email_path: str) -> Domain:
         email = mailparser.parse_from_file(email_path)
@@ -260,11 +186,13 @@ class MailAnalyzer:
     def __repr__(self):
         return f'<MailAnalyzer(wordlist={self.wordlist})>'
 
+
 class Date:
- 
+    """A date object, it is used to store the date of the email and to perform some checks on it."""
+
     _raw_date: str
     date: datetime
-    
+
     def __init__(self, date: str):
         if date is None or date == '':
             raise ValueError('Date cannot be empty or None')
@@ -277,7 +205,7 @@ class Date:
         if isinstance(other, datetime):
             return self.date.timestamp() == other.timestamp()
         return False
-    
+
     def to_dict(self) -> dict:
         return {
             "is_RFC_2822": self.is_RFC2822_formatted(),
@@ -305,7 +233,7 @@ class Date:
                 return parse(reduced_date), False
 
     def is_RFC2822_formatted(self) -> bool:
-        return self._parse()[1] 
+        return self._parse()[1]
 
     def is_tz_valid(self) -> bool:
         try:
@@ -315,7 +243,7 @@ class Date:
                 return False
         except Exception:
             return False
-        
+
     def _get_tz_offset(self) -> int:
         return int(str(self.date.tzinfo).replace('UTC', '').split(':')[0])
 

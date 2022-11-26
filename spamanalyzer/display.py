@@ -8,31 +8,13 @@ from rich.table import Table
 from spamanalyzer.analyzer.data_structures import MailAnalysis
 
 HEADERS = [
-    'has_spf',
-    'has_dkim',
-    'has_dmarc',
-    'domain_matches',
-    'auth_warn',
-    'has_suspect_subject',
-    'subject_is_uppercase',
-    'send_date_is_RFC2822_compliant',
-    'send_date_tz_is_valid',
-    'has_received_date',
-    'uppercase_body',
-    'script',
-    'images',
-    'https_only',
-    'mailto',
-    'links',
-    'bad_words_percentage',
-    'html',
-    'form',
-    'polarity',
-    'subjectivity',
-    'attachments',
-    'attach_is_executable',
-    'is_spam'
+    'has_spf', 'has_dkim', 'has_dmarc', 'domain_matches', 'auth_warn',
+    'has_suspect_subject', 'subject_is_uppercase', 'send_date_is_RFC2822_compliant',
+    'send_date_tz_is_valid', 'has_received_date', 'uppercase_body', 'script', 'images',
+    'https_only', 'mailto', 'links', 'bad_words_percentage', 'html', 'form', 'polarity',
+    'subjectivity', 'attachments', 'attach_is_executable', 'is_spam'
 ]
+
 
 def print_output(data, output_format: str, verbose: bool, output_file=None) -> None:
     """Prints the output of the `MailAnalysis` in the specified format (csv, json or default).
@@ -56,26 +38,27 @@ def print_output(data, output_format: str, verbose: bool, output_file=None) -> N
     else:
         _print_default(data, verbose)
 
+
 def _print_to_csv(data, output_file):
     raise NotImplementedError
+
 
 def _print_to_json(data, output_file):
     dict_data = [analysis.to_dict() for analysis in data]
     for analysis in dict_data:
         if analysis["headers"]["send_date"] is not None:
-            analysis["headers"]["send_date"] = analysis["headers"]["send_date"].to_dict()
+            analysis["headers"]["send_date"] = analysis["headers"]["send_date"].to_dict(
+            )
         if analysis["headers"]["received_date"] is not None:
-            analysis["headers"]["received_date"] = analysis["headers"]["received_date"].to_dict()
+            analysis["headers"]["received_date"] = analysis["headers"][
+                "received_date"].to_dict()
     if output_file is not None:
         json.dump(dict_data, output_file, indent=4)
     else:
         print(json.dumps(dict_data, indent=4))
 
-def _print_default(data, verbose):
-    count = 0
-    total_spam_score = 0
-    total_ok_score = 0
 
+def _print_default(data, verbose):
     classifier_spam = 0
     classifier_ham = 0
 
@@ -86,12 +69,7 @@ def _print_default(data, verbose):
             classifier_spam += 1
         else:
             classifier_ham += 1
-        score = analysis.get_score()
-        if score <= 3.50:
-            count += 1
-            total_ok_score += score
-        else:
-            total_spam_score += score
+
         if verbose:
             renderables.append(_print_details(analysis))
 
@@ -99,21 +77,21 @@ def _print_default(data, verbose):
         with console.pager(styles=True):
             console.print(Columns(renderables, equal=True))
 
-    _print_summary(count, len(data) - count, total_ok_score, total_spam_score)
-    _print_summary(classifier_ham, classifier_spam, total_ok_score, total_spam_score)
+    _print_summary(classifier_ham, classifier_spam)
 
-def _print_summary(ok_count, spam_count, total_ok_score, total_spam_score) -> None:
+
+def _print_summary(ok_count, spam_count) -> None:
     table = Table(title="Summary", box=rich.box.ROUNDED, highlight=True)
-    
+
     table.add_column("Email class", justify="center")
     table.add_column("Quantity", justify="center")
-    table.add_column("Mean score", justify="center")
-    
-    table.add_row("[green][bold]HAM[/bold][/green]", str(ok_count), str(total_ok_score / (ok_count if ok_count > 0 else 1)))
-    table.add_row("[red][bold]SPAM[/bold][/red]", str(spam_count), str(total_spam_score / (spam_count if spam_count > 0 else 1)))
+
+    table.add_row("[green][bold]HAM[/bold][/green]", str(ok_count))
+    table.add_row("[red][bold]SPAM[/bold][/red]", str(spam_count))
 
     console = Console()
     console.print(table)
+
 
 def _print_details(email: MailAnalysis):
     mail_dict = email.to_dict()
@@ -126,13 +104,10 @@ def _print_details(email: MailAnalysis):
         Panel(attachments, title="Attachments", border_style="light_coral"),
     )
 
-    return (
-        Panel(
-            panel_group,
-            title=f"[bold]{mail_dict['file_name'].split('/')[-1][0:20]}[/bold]",
-            border_style="cyan"
-            )
-        )
+    return (Panel(panel_group,
+                  title=f"[bold]{mail_dict['file_name'].split('/')[-1][0:20]}[/bold]",
+                  border_style="cyan"))
+
 
 def _stringify_email(email: dict):
     header = email['headers']
@@ -142,38 +117,39 @@ def _stringify_email(email: dict):
     headers = ""
     body = ""
     attachments = ""
-    
+
     for key, value in header.items():
         k, v = _format_output(key, value)
         k = k.removeprefix('has_')
 
         headers += f"{k}: [bold]{v}[/bold]\n"
-    
+
     for key, value in bd.items():
         k, v = _format_output(key, value)
         k = k.removeprefix('contains_')
         k = k.replace('percentage', '%')
 
         body += f"{k}: [bold]{v}[/bold]\n"
-    
+
     for key, value in att.items():
         k, v = _format_output(key, value)
 
         attachments += f"{k}: [bold]{v}[/bold]\n"
-    
-    score = f"\nspam: {email['is_spam']}\tscore: {email['score']:.2f}\n"
+
+    score = f"\nspam: {email['is_spam']}\n"
 
     return (score, headers, body, attachments)
+
 
 def _format_output(k: str, v):
     key = k.replace('_', ' ')
     key = key.capitalize()
-    
+
     if v == True:
         v = f"[green]{v}[/green]"
     elif v == False:
         v = f"[red]{v}[/red]"
-    
+
     if type(v) == float:
         v = f"{v:.4f}"
 

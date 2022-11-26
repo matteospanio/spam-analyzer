@@ -11,6 +11,7 @@ with open('conf/word_blacklist.txt', 'r') as f:
 
 _, _, _ = handle_configuration_files()
 
+
 class TestDomainMethods:
 
     domain = Domain('google.com')
@@ -27,7 +28,8 @@ class TestMailAnalyzer:
 
     def test_get_domain(self):
         analyzer = MailAnalyzer(wordlist)
-        assert analyzer.get_domain(trustable_mail) == Domain('github-lowworker-5fb2734.va3-iad.github.net')
+        assert analyzer.get_domain(trustable_mail) == Domain(
+            'github-lowworker-5fb2734.va3-iad.github.net')
 
 
 class TestMailAnalysis:
@@ -45,12 +47,9 @@ class TestMailAnalysis:
     def test_mail_analysis_is_spam(self):
         assert self.mail_ok_an.is_spam() == False
 
-    def test_mail_analysis_get_score(self):
-        assert self.mail_ok_an.get_score() <= 0.0
-
 
 class TestDate:
-    
+
     RFC_date = 'Wed, 17 Feb 2021 10:00:00 +0100'
     invalid_date = 'Wed, 17 Feb 2021 10:00:00'
     date_plus_0 = 'Wed, 17 Feb 2021 10:00:00 +0000'
@@ -63,21 +62,21 @@ class TestDate:
 
         assert date1.date == parse(self.RFC_date)
         assert date2.date == parse(self.invalid_date)
-    
+
     def test_RFC_2822_format(self):
         date1 = Date(self.RFC_date)
         date2 = Date(self.invalid_date)
         date3 = Date(self.invalid_utc)
-        
+
         assert date1.is_RFC2822_formatted() == True
         assert date2.is_RFC2822_formatted() == False
         assert date3.is_RFC2822_formatted() == True
-    
+
     def test_is_tz_valid(self):
         date1 = Date(self.RFC_date)
         date2 = Date(self.invalid_date)
         date3 = Date(self.invalid_utc)
-        
+
         assert date1.is_tz_valid() == True
         assert date2.is_tz_valid() == False
         assert date3.is_tz_valid() == False
