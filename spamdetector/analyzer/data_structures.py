@@ -236,7 +236,7 @@ class MailAnalyzer:
     def __init__(self, wordlist):
         self.wordlist = wordlist
 
-    def analyze(self, email_path: str, add_headers: bool = False) -> MailAnalysis:
+    def analyze(self, email_path: str) -> MailAnalysis:
         email = mailparser.parse_from_file(email_path)
 
         headers = utils.inspect_headers(email, self.wordlist)
