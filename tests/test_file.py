@@ -1,6 +1,6 @@
 import os
 
-from spamdetector.files import get_files_from_dir, file_is_valid_email
+from spamanalyzer.files import get_files_from_dir, file_is_valid_email
 
 def test_get_files_from_directory():
     # should get a list of files from `data` directory

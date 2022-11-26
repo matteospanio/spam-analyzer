@@ -1,9 +1,9 @@
 import os, sys
 
-import spamdetector.files as files
-from spamdetector.cli import parser
-from spamdetector.analyzer.data_structures import MailAnalyzer
-from spamdetector.display import print_output
+import spamanalyzer.files as files
+from spamanalyzer.cli import parser
+from spamanalyzer.analyzer.data_structures import MailAnalyzer
+from spamanalyzer.display import print_output
 from rich.progress import track
 
 

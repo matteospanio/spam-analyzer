@@ -5,7 +5,7 @@ from rich.text import Text
 from rich.console import Console, Group
 from rich.columns import Columns
 from rich.table import Table
-from spamdetector.analyzer.data_structures import MailAnalysis
+from spamanalyzer.analyzer.data_structures import MailAnalysis
 
 HEADERS = [
     'has_spf',
@@ -47,7 +47,7 @@ def print_output(data, output_format: str, verbose: bool, output_file=None) -> N
     in the default pager of the terminal; outside the pager the output will be a table with the summary of the analysis where
     are reported the number of spam and ham emails and the mean score of each class.
 
-    > Return later: future versions of spamdetector will support csv output format
+    > Return later: future versions of spamanalyzer will support csv output format
     """
     if output_format == 'csv':
         _print_to_csv(data, output_file)

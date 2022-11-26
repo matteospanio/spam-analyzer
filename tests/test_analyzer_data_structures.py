@@ -1,5 +1,5 @@
-from spamdetector.analyzer.data_structures import Domain, MailAnalysis, MailAnalyzer, Date
-from spamdetector.files import handle_configuration_files
+from spamanalyzer.analyzer.data_structures import Domain, MailAnalysis, MailAnalyzer, Date
+from spamanalyzer.files import handle_configuration_files
 import socket, pytest
 from dateutil.parser import parse
 

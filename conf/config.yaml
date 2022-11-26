@@ -2,8 +2,8 @@
 files:
   # absolute path to the spam words file
   # wordlist source: https://gist.github.com/prasidhda/13c9303be3cbc4228585a7f1a06040a3
-  wordlist: '$HOME/.config/spamdetector/word_blacklist.txt'
-  classifier: '$HOME/.config/spamdetector/classifier.pkl'
+  wordlist: '$HOME/.config/spamanalyzer/word_blacklist.txt'
+  classifier: '$HOME/.config/spamanalyzer/classifier.pkl'
 
 # threshold for the spam score
 # if the score is above this value, the message is considered spam

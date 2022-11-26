@@ -6,8 +6,8 @@ from datetime import datetime
 from os import path
 from dateutil.parser import parse, ParserError
 
-import spamdetector.analyzer.classifier as classifier
-import spamdetector.analyzer.utils as utils
+import spamanalyzer.analyzer.classifier as classifier
+import spamanalyzer.analyzer.utils as utils
 
 
 @dataclass

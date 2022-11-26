@@ -1,5 +1,5 @@
 from argparse import ArgumentParser, Namespace, FileType
-from spamdetector import __version__
+from spamanalyzer import __version__
 import os
 
 def add_args(parser: ArgumentParser, config: dict) -> None:
@@ -18,8 +18,8 @@ def add_args(parser: ArgumentParser, config: dict) -> None:
 
 def parse_args(args, config: dict) -> Namespace:
     parser = ArgumentParser(
-        prog="spam-detector",
-        description="A simple spam detector",
+        prog="spam-analyzer",
+        description="A simple program to analyzer emails",
         epilog='if you find any bug write an email to matteo.spanio97@gmail.com',
     )
     add_args(parser, config)

@@ -1,4 +1,4 @@
-from spamdetector.analyzer import MailAnalysis, MailAnalyzer
+from spamanalyzer.analyzer import MailAnalysis, MailAnalyzer
 
 # create a MailAnalysis object passing a wordlist of forbidden words
 # to detect in the mail body and subject

@@ -1,7 +1,7 @@
 import mailparser
 import pytest
-import spamdetector.analyzer.utils as utils
-from spamdetector.analyzer.data_structures import Domain
+import spamanalyzer.analyzer.utils as utils
+from spamanalyzer.analyzer.data_structures import Domain
 
 trustable_mail = mailparser.parse_from_file('tests/samples/97.47949e45691dd7a024dcfaacef4831461bf5d5f09c85a6e44ee478a5bcaf8539.email')
 spam = mailparser.parse_from_file('tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email')

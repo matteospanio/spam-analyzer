@@ -19,7 +19,7 @@ install:
 
 script:
   - pytest
-  - pytest --cov=spamdetector
+  - pytest --cov=spamanalyzer
 
 after_success:
   - coveralls

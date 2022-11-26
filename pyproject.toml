@@ -1,5 +1,5 @@
 [project]
-name = "spam-detector"
+name = "spam-analyzer"
 description = "A simple spam detector"
 authors = [
     {name = "Matteo Spanio", email = "matteo.spanio97@gmail.com"},
@@ -7,33 +7,33 @@ authors = [
 dynamic = ["dependencies", "readme", "version"]
 license = { file="LICENSE" }
 requires-python = ">=3.10"
-keywords = ["spam", "spam-detector", "cybersecurity"]
+keywords = ["spam", "spam-analyzer", "cybersecurity"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.10",
-    "Topic :: Software Development :: Libraries :: Python Modules :: CLI",
+    "Programming Language :: Python :: 3.11",
 ]
 
 [tool.setuptools.package-data]
-spamdetector = ["*.yaml", "*.txt", "*/*.yaml", "*/*.txt"]
+spamanalyzer = ["*.yaml", "*.txt", "*/*.yaml", "*/*.txt"]
 
 [project.scripts]
-spam-detector = "spamdetector.cli.run:main"
+spam-analyzer = "spamanalyzer.cli.run:main"
 
 [tool.setuptools]
 include-package-data = true
 
 [project.urls]
-"homepage" = "http://matteospanio.me/spam-detector/"
-"repository" = "https://github.com/matteospanio/spam-detector"
+"homepage" = "http://matteospanio.me/spam-analyzer/"
+"repository" = "https://github.com/matteospanio/spam-analyzer"
 
 [tool.setuptools.dynamic]
 dependencies = {file = "requirements.txt"}
 readme = {file = ["README.md", "docs/requirements.md"]}
-version = {attr = "spamdetector.__version__"}
+version = {attr = "spamanalyzer.__version__"}
 
 [tool.setuptools.packages]
 find = {}

@@ -1,6 +1,6 @@
 from enum import Enum
 import re
-import spamdetector.analyzer.data_structures as ds
+import spamanalyzer.analyzer.data_structures as ds
 from bs4 import BeautifulSoup
 from textblob import TextBlob
 from mailparser import MailParser

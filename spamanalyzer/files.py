@@ -1,6 +1,6 @@
 from os import path, listdir, makedirs
 from importlib.resources import files
-from spamdetector import __defaults__
+from spamanalyzer import __defaults__
 from rich.progress import track
 import mailparser
 import shutil
@@ -30,13 +30,13 @@ def handle_configuration_files():
     wordlist = files('conf').joinpath('word_blacklist.txt')
     model = files('conf').joinpath('classifier.pkl')
     
-    if not path.exists(__defaults__['SPAMDETECTOR_CONF_PATH']):
-        makedirs(__defaults__['SPAMDETECTOR_CONF_PATH'])
+    if not path.exists(__defaults__['SPAMANALYZER_CONF_PATH']):
+        makedirs(__defaults__['SPAMANALYZER_CONF_PATH'])
     
-    if not path.exists(__defaults__['SPAMDETECTOR_CONF_FILE']):
-        shutil.copy(config_file, __defaults__['SPAMDETECTOR_CONF_FILE'])
+    if not path.exists(__defaults__['SPAMANALYZER_CONF_FILE']):
+        shutil.copy(config_file, __defaults__['SPAMANALYZER_CONF_FILE'])
 
-    with open(__defaults__['SPAMDETECTOR_CONF_FILE']) as f:
+    with open(__defaults__['SPAMANALYZER_CONF_FILE']) as f:
         try:
             config: dict = yaml.safe_load(f)
         except Exception:
