@@ -4,7 +4,6 @@ python:
   - "3.10-dev"
   - "3.11-dev"
   - "nightly"
-  - "pypy3"
 
 before_install:
   - python --version
@@ -18,8 +17,7 @@ install:
   - pip install coveralls
 
 script:
-  - pytest
-  - pytest --cov=spamanalyzer
+  - coverage run --source=smapanalyzer/ --omit=spamanalyzer/__main__.py
 
 after_success:
   - coveralls
