@@ -2,6 +2,7 @@ language: python
 python:
   - "3.9"
   - "3.10-dev"
+  - "3.11-dev"
   - "nightly"
   - "pypy3"
 
@@ -14,10 +15,12 @@ before_install:
 
 install:
   - pip install -r requirements.txt
+  - pip install coveralls
 
 script:
+  - coverage run --source=spamdetector/ --omit=spamdetector/__main__.py
   - pytest
-  - pytest --cov=src
+  - pytest --cov=spamdetector
 
 after_success:
-  - codecov
+  - coveralls

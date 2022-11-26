@@ -46,3 +46,6 @@ build-backend = "setuptools.build_meta"
 minversion = "6.0"
 addopts = "-ra -q"
 testpaths = ["tests"]
+
+[tool.coverage.run]
+relative_files = true
