@@ -43,7 +43,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--cov=./spamanalyzer --cov-report=term-missing"
+addopts = "--cov ./spamanalyzer --cov-report html --cov-report term-missing -ra -q"
 testpaths = ["tests"]
 
 [tool.coverage.run]
