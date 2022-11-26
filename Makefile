@@ -46,8 +46,8 @@ build-local:
 	pip install --editable .
 
 build:
-	python setup.py sdist bdist_wheel
+	python -m build
 	ls -l dist
 
 deploy:
-	twine upload --repository testpypi --skip-existing dist/*
+	twine upload --repository testpypi dist/* --verbose

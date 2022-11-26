@@ -61,6 +61,8 @@ pip install .
 
 ## CLI
 
+spam-analyzer can be used as a CLI application:
+
 ```
 usage: spam-analyzer [-h] -f FILE [-l WORDLIST] [-v] [-V] [-fmt FORMAT] [-o FILE] [--destination-dir DIRECTORY]
 

@@ -1,11 +1,11 @@
 [project]
 name = "spam-analyzer"
-description = "A simple email analyzer"
 authors = [
     {name = "Matteo Spanio", email = "matteo.spanio97@gmail.com"},
 ]
-dynamic = ["dependencies", "readme", "version"]
-license = { file="LICENSE" }
+description = "A simple email analyzer"
+readme = "README.md"
+dynamic = ["dependencies", "version"]
 requires-python = ">=3.10"
 keywords = ["spam", "spam-analyzer", "cybersecurity"]
 classifiers = [
@@ -32,8 +32,7 @@ include-package-data = true
 
 [tool.setuptools.dynamic]
 dependencies = {file = "requirements.txt"}
-readme = {file = ["README.md", "docs/requirements.md"]}
-version = {attr = "spamanalyzer.__version__"}
+version = { attr = "spamanalyzer.__version__" }
 
 [tool.setuptools.packages]
 find = {}
