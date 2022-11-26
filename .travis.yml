@@ -17,7 +17,7 @@ install:
   - pip install coveralls
 
 script:
-  - coverage run --source=smapanalyzer/ --omit=spamanalyzer/__main__.py
+    pytest --black --cov=./app --cov-report=term-missing
 
 after_success:
-  - coveralls
+  - COVERALLS_REPO_TOKEN=mNmroiAh09mx5ksfqNqdBRroeNECbtDOi coveralls
