@@ -51,3 +51,9 @@ build:
 
 deploy:
 	twine upload --repository testpypi dist/* --verbose
+
+format:
+	yapf --in-place --recursive ./spamanalyzer ./tests
+
+lint:
+	pylint ./spamanalyzer ./tests
