@@ -1,6 +1,9 @@
 import pytest
 import spamdetector.cli.run as spam_detector
+import spamdetector.files as files
 from spamdetector import __version__
+
+_, _, _ = files.handle_configuration_files()
 
 class TestCLI:
     

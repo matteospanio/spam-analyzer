@@ -1,4 +1,5 @@
 from spamdetector.analyzer.data_structures import Domain, MailAnalysis, MailAnalyzer, Date
+from spamdetector.files import handle_configuration_files
 import socket, pytest
 from dateutil.parser import parse
 
@@ -8,6 +9,7 @@ spam = 'tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa5
 with open('conf/word_blacklist.txt', 'r') as f:
     wordlist = f.read().splitlines()
 
+_, _, _ = handle_configuration_files()
 
 class TestDomainMethods:
 
@@ -16,9 +18,6 @@ class TestDomainMethods:
 
     def test_from_string(self):
         assert self.domain == Domain.from_string('google.com')
-
-    def test_from_ip(self):
-        assert self.domain == Domain.from_ip(self.ip_addr)
 
     def test_get_ip_address(self):
         assert self.domain.get_ip_address() == self.ip_addr
@@ -78,12 +77,10 @@ class TestDate:
         date1 = Date(self.RFC_date)
         date2 = Date(self.invalid_date)
         date3 = Date(self.invalid_utc)
-        date4 = Date(self.date_plus_0)
         
         assert date1.is_tz_valid() == True
         assert date2.is_tz_valid() == False
         assert date3.is_tz_valid() == False
-        assert date4.is_tz_valid() == True
 
     def test_empty_date_creation(self):
         with pytest.raises(ValueError):

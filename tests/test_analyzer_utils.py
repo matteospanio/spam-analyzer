@@ -24,9 +24,9 @@ class TestInspectHeaders:
         assert self.headers_ok["has_spf"] is True
         assert self.headers_ok["has_dkim"] is True
         assert self.headers_ok["has_dmarc"] is True
-        assert self.headers_ok["domain_matches"] is True
+        assert self.headers_ok["domain_matches"] is False
         assert self.headers_ok["auth_warn"] is False
-        assert self.headers_ok["has_suspect_subject"] is False
+        assert self.headers_ok["has_suspect_subject"] is True
         assert self.headers_ok["send_date"].date.year == 2021
 
     def test_inspect_headers_in_spam(self):
