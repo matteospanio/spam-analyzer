@@ -12,7 +12,7 @@ The following code showes the core concept of this package:
 from spamanalyzer.analyzer import MailAnalyzer
 
 analyser = MailAnalyzer(wordlist)
-analysis = await analyser.analyze(email_path)
+analysis = analyser.analyze(email_path) # in the future we will support asynchroneous analysis
 
 analysis.is_spam()
 ```
@@ -20,10 +20,10 @@ we istantiate the `MailAnalyzer` class and pass the wordlist to it. Then we call
 in this way we can also parallelize the analysis of multiple emails.
 """
 
-from spamanalyzer.analyzer.data_structures import Domain, MailAnalysis, MailAnalyzer
+from spamanalyzer.analyzer.data_structures import Domain, MailAnalysis, MailAnalyzer, Date
 from spamanalyzer.analyzer.utils import get_domain, inspect_headers, inspect_body, inspect_attachments
 
 __all__ = [
     "Domain", "MailAnalysis", "MailAnalyzer", "get_domain", "inspect_attachments",
-    "inspect_body", "inspect_headers"
+    "inspect_body", "inspect_headers", "Date"
 ]
