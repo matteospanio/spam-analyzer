@@ -64,7 +64,7 @@ class Domain:
             return Domain('unknown')
 
     def get_ip_address(self) -> str:
-        """Translate the domain name to its ip address"""
+        """Translate the domain name to its ip address querying the DNS server"""
         return dns.resolver.resolve(self.name, 'A')[0].to_text()
 
     def __eq__(self, __o: object) -> bool:
@@ -83,40 +83,52 @@ class MailAnalysis:
 
     # data from headers
     headers: dict
-    """It is `True` if the mail has a SPF header:
-    ### SPF: Sender Policy Framework
-    The SPF record is a TXT record that contains a policy that specifies which mail servers are allowed to send email from a specified domain.
     """
-    """IT is `True` if the mail has a DKIM header:
-    ### DKIM: DomainKeys Identified Mail
-    The DKIM signature is a digital signature that is added to an email message to verify that the message has not been altered since it was signed.
+    It is a dictionaty containing a detailed analysis of the mail's headers. It contains the following keys:
+    
+    - `has_spf`, it is `True` if the mail has a SPF header (Sender Policy Framework), it is a standard to prevent email spoofing.
+      The SPF record is a TXT record that contains a policy that specifies which mail servers are allowed to send email from a specified domain.
+    - `has_dkim`, it is `True` if the mail has a DKIM header (DomainKeys Identified Mail).
+      The DKIM signature is a digital signature that is added to an email message to verify that the message has not been altered since it was signed.
+    - `has_dmarc`, it is `True` if the mail has a DMARC header (Domain-based Message Authentication, Reporting & Conformance).
+      The DMARC record is a type of DNS record that is used to help email receivers determine whether an email is legitimate or not.
+    - `auth_warn`, it is `True` if the mail has an Authentication-Warning header
+      The Authentication-Warning header is used to indicate that the message has been modified in transit.
+    - `domain_matches`, it is `True` if the domain of the sender matches the first domain in the `Received` headers
+    - `has_suspect_subject`, it is `True` if the mail's subject contains a suspicious word or a gappy word (e.g. `H*E*L*L*O`)
+    - `subject_is_uppercase`, it is `True` if the mail's subject is in uppercase
+    - `send_date`, it is the date when the mail was sent in a `Date` object, if the mail has no `Date` header, it is `None`
+    - `received_date`, it is the date when the mail was received in a `Date` object, if the mail hasn't a date in `Received` header, it is `None`
     """
-    """It is `True` if the mail has a DMARC header:
-    ### DMARC: Domain-based Message Authentication, Reporting & Conformance
-    The DMARC record is a type of DNS record that is used to help email receivers determine whether an email is legitimate or not.
-    """
-    """It is `True` if the mail has an Authentication-Warning header
-    The Authentication-Warning header is used to indicate that the message has been modified in transit.
-    """
-    """It is `True` if the mail's subject contains a suspicious word or a gappy word (e.g. `H*E*L*L*O`)"""
-
-    # attachments
-    attachments: dict
 
     # data from body
     body: dict
-    """It is `True` if the body contains a script tag or a callback function
-    Email clients that support JavaScript can execute the script in the email.
     """
-    """The rate of forbidden words in the body of the mail, it is a float between 0 and 1
-    The formula is: `forbidden_words_count / total_bodyy_words_count`
+    It is a dictionaty containing a detailed analysis of the mail's body. It contains the following keys:
+    
+    - `contains_html`, it is `True` if the body contains an html tag.
+    - `contains_script`, it is `True` if the body contains a script tag or a callback function. It is dangerous because Email clients that support JavaScript can execute the script in the email.
+    - `forbidden_words_percentage`, the rate of forbidden words in the body of the mail, it is a float between 0 and 1.
+    - `has_links`, it is `True` if the body contains an url.
+    - `has_mailto`, it is `True` if the body contains a mailto link.
+    - `https_only`, it is `True` if the body contains only https links.
+    - `contains_form`, it is `True` if the body contains a form tag.
+    - `has_images`, it is `True` if the body contains an image.
+    - `is_uppercase`, it is `True` if the body is in uppercase more than $60\%$ of its length.
+    - `text_polarity`, it is the polarity of the body, it is a float between -1 and 1.
+    - `text_subjectivity`, it is the subjectivity of the body, it is a float between 0 and 1.
+    """
+
+    # attachments
+    attachments: dict
+    """
+    It is a dictionary containing a detailed analysis of the mail's attachments. It contains the following keys:
+    - `has_attachments`, it is `True` if the mail has attachments
+    - `attachment_is_executable`, it is `True` if the mail has an attachment in executable format
     """
 
     def is_spam(self) -> bool:
-        """Determine if the email is spam based on the score and the threshold set in the `config.yaml` file
-        ## Spam detection
-        The mail gain a score based on the presence of some headers and the content of the body.
-        """
+        """Determine if the email is spam based on the analysis of the mail"""
 
         with open('conf/config.yaml', 'r') as f:
             model_path = yaml.safe_load(f)['files']['classifier']
@@ -155,9 +167,15 @@ class MailAnalysis:
 
 
 class MailAnalyzer:
-    """Analyze a mail and return a `MailAnalysis` object, essentiaòòy it is a factory of `MailAnalysis`.
+    """Analyze a mail and return a `MailAnalysis` object, essentially it is a factory of `MailAnalysis`.
     
-    The analysis is based on the presence of some headers and the content of the body.
+    The `MailAnalyzer` object provides two methods to analyze a mail:
+    - `analyze` to analyze a mail from a file, it returns a `MailAnalysis` object containing a description of the headers, body and attachments of the mail
+    - `get_domain` to get the domain of the mail from the headers, it returns a `Domain` object
+    
+    The core of the analysis is the `analyze` method, it uses the `MailParser` class (from `mailparser` library) to parse the mail.
+    The analysis is based on separated checks for the headers, body and attachments and each check is implemented in
+    a separated function: this make the analysis modular and easy to extend in future versions.
     """
 
     def __init__(self, wordlist):
@@ -188,7 +206,13 @@ class MailAnalyzer:
 
 
 class Date:
-    """A date object, it is used to store the date of the email and to perform some checks on it."""
+    """A date object, it is used to store the date of the email and to perform some checks on it.
+    
+    The focus of the checks is to determine if the date is valid and if it is in the correct format.
+    The date is valid if it is in the RFC2822 format and if the timezone is valid:
+    - [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3): specifies the format of the date in the headers of the mail in the form `Day, DD Mon YYYY HH:MM:SS TZ`. Of course it is not the only format used in the headers, but it is the most common, so it is the one we use to check if the date is valid.
+    - [TZ](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones): specifies the timezone of the date. We included this check since often malicious emails can have a weird behavior, it is not uncommon to see a not existing timezone in the headers of the mail (valid timezones are from -12 to +14).
+    """
 
     _raw_date: str
     date: datetime
@@ -233,9 +257,12 @@ class Date:
                 return parse(reduced_date), False
 
     def is_RFC2822_formatted(self) -> bool:
+        """Check if the date is in the [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3) format."""
         return self._parse()[1]
 
     def is_tz_valid(self) -> bool:
+        """The timezone is valid if it is in the range [-12, 14]"""
+
         try:
             if -12 <= self._get_tz_offset() <= 14:
                 return True

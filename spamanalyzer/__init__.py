@@ -3,8 +3,6 @@
 .. include:: ../docs/classification.md
 .. include:: ../docs/requirements.md
 .. include:: ../docs/testing.md
-
-# API Documentation
 """
 
 from os import path

@@ -4,29 +4,3 @@ files:
   # wordlist source: https://gist.github.com/prasidhda/13c9303be3cbc4228585a7f1a06040a3
   wordlist: '$HOME/.config/spamanalyzer/word_blacklist.txt'
   classifier: '$HOME/.config/spamanalyzer/classifier.pkl'
-
-# threshold for the spam score
-# if the score is above this value, the message is considered spam
-threshold: 3.5
-
-weights:
-  # headers
-  has_spf: 1
-  has_dkim: 0.5
-  has_dmarc: 0.5
-  domain_matches: 1
-  bad_subject: 1.5
-  uppercase_subject: 1
-  auth_warn: 2
-  invalid_date: 1.5
-
-  # body
-  forbidden_words_percentage: 1.5
-  contains_http_links: 0.5
-  has_html_form: 1
-  has_script: 2
-  has_html: 0.5
-
-  # attachments
-  has_attachments: 0.0
-  attachment_executable: 2
