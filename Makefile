@@ -57,3 +57,6 @@ format:
 
 lint:
 	pylint ./spamanalyzer ./tests
+
+docs:
+	pdoc --html --output-dir pdoc ./spamanalyzer
