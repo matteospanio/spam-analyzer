@@ -23,8 +23,8 @@ def add_args(parser: ArgumentParser, config: dict) -> None:
                         help='Show program version',
                         action='version',
                         version=f'%(prog)s {__version__}')
-    # add model configuration and training options
-    # parser.add_argument('-m', '--model', help='The model to use', default=config['files']['classifier'], type=FileType('rb'))
+    parser.add_argument('-q', '--quiet', help='Less program output', action='store_true')
+    parser.add_argument('-i', '--interactive', help='Interactive mode', action='store_true')
 
     # TODO: add csv output format
     parser.add_argument('-fmt',
