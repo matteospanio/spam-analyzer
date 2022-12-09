@@ -5,13 +5,13 @@
 > A fast spam filter written in Python inspired by SpamAssassin integrated with machine learning.
 
 [![test workflow](https://github.com/matteospanio/spam-analyzer/actions/workflows/test.yml/badge.svg)](https://github.com/matteospanio/spam-analyzer/actions/workflows/test.yml/badge.svg)
+![CircleCI](https://img.shields.io/circleci/build/github/matteospanio/spam-analyzer?label=circleci-build&logo=CIRCLECI)
+[![Coverage Status](https://coveralls.io/repos/github/matteospanio/spam-analyzer/badge.svg?branch=master)](https://coveralls.io/github/matteospanio/spam-analyzer?branch=master)
 [![PyPI version](https://badge.fury.io/py/spam-analyzer.svg)](https://badge.fury.io/py/spam-analyzer)
+![PyPI - Status](https://img.shields.io/pypi/status/spam-analyzer)
 [![Python version](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue)](https://img.shields.io/badge/python-3.10%20%7C%203.7%20%7C%203.11-blue)
 [![Downloads](https://pepy.tech/badge/spam-analyzer)](https://pepy.tech/project/spam-analyzer)
-[![Downloads](https://pepy.tech/badge/spam-analyzer/week)](https://pepy.tech/project/spam-analyzer/week)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![CircleCI](https://circleci.com/gh/matteospanio/spam-analyzer.svg?style=svg)](https://circleci.com/gh/matteospanio/spam-analyzer)
-[![Coverage Status](https://coveralls.io/repos/github/matteospanio/spam-analyzer/badge.svg?branch=master)](https://coveralls.io/github/matteospanio/spam-analyzer?branch=master)
 
 # Table of Contents
 
