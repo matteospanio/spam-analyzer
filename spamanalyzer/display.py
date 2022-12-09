@@ -64,8 +64,11 @@ def _print_default(data, verbose):
 
     console = Console()
     renderables = []
-    for analysis in data:
-        if analysis.is_spam():
+
+    labels = MailAnalysis.classify_multiple_input(data)
+
+    for analysis, label in zip(data, labels):
+        if label:
             classifier_spam += 1
         else:
             classifier_ham += 1
