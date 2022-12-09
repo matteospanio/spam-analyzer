@@ -1,0 +1,18 @@
+# Add 'repo' label to any root file changes
+repo:
+- '*'
+
+test:
+- tests/*
+
+docs:
+- docs/*
+
+config:
+- conf/*
+
+workflow:
+- .github/*
+
+source:
+- any: ['spamanalyzer/**/*', 'spamanalyzer/*']
