@@ -127,6 +127,27 @@ class MailAnalysis:
     - `attachment_is_executable`, it is `True` if the mail has an attachment in executable format
     """
 
+    @staticmethod
+    def classify_multiple_input(mails: list) -> list:
+        """Classify a list of mails
+
+        Args:
+            mails (list[MailAnalysis]): a list of mails to be classified
+
+        Returns:
+            list: a list of boolean values, `True` if the mail is spam, `False` otherwise
+        """
+
+        with open('conf/config.yaml', 'r') as f:
+            model_path = yaml.safe_load(f)['files']['classifier']
+
+        ml = classifier.SpamClassifier(path.expandvars(model_path))
+
+        # rearrange input
+        adapted_mails = [np.array(mail.to_list()) for mail in mails]
+        predictions = ml.predict(adapted_mails)
+        return [True if prediction == 1 else False for prediction in predictions]
+
     def is_spam(self) -> bool:
         """Determine if the email is spam based on the analysis of the mail"""
 
