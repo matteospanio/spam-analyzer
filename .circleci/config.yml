@@ -11,3 +11,6 @@ jobs:
       - run:
           name: Run tests
           command: pytest --cov=spamanalyzer/ --cov-report=xml
+      - run:
+          name: Send coverage to Coveralls
+          command: coveralls
