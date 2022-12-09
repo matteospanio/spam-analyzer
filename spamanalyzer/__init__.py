@@ -10,7 +10,7 @@ from spamanalyzer.analyzer import *
 
 __all__ = ['MailAnalyzer', 'MailAnalysis', 'Domain', 'Date']
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __config_path__ = path.join(path.expanduser('~'), '.config', 'spamanalyzer')
 
 __defaults__ = {
