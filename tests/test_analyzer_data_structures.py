@@ -37,6 +37,7 @@ class TestMailAnalysis:
     analyzer = MailAnalyzer(wordlist)
 
     mail_ok_an = analyzer.analyze(trustable_mail)
+    mail_spam = analyzer.analyze(spam)
 
     def test_mail_analysis_type(self):
         assert type(self.mail_ok_an) == MailAnalysis
@@ -46,6 +47,9 @@ class TestMailAnalysis:
 
     def test_mail_analysis_is_spam(self):
         assert self.mail_ok_an.is_spam() == False
+
+    def test_multiple_analysis(self):
+        assert MailAnalysis.classify_multiple_input([self.mail_ok_an, self.mail_spam]) == [False, False]
 
 
 class TestDate:
