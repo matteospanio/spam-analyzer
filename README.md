@@ -4,6 +4,8 @@
 
 > A fast spam filter written in Python inspired by SpamAssassin integrated with machine learning.
 
+[![test workflow](https://github.com/matteospanio/spam-analyzer/actions/workflows/test.yml/badge.svg)](https://github.com/matteospanio/spam-analyzer/actions/workflows/test.yml/badge.svg)
+[![PyPI version](https://badge.fury.io/py/spam-analyzer.svg)](https://badge.fury.io/py/spam-analyzer)
 <!-- [![Coverage Status](https://coveralls.io/repos/github/matteospanio/spam-analyzer/badge.svg?branch=master)](https://coveralls.io/github/matteospanio/spam-analyzer?branch=master) -->
 
 # Table of Contents
