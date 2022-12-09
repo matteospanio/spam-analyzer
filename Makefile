@@ -35,12 +35,16 @@ clean-test:
 	rm -f .coverage
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
+	rm -f coverage.xml
 
 setup:
 	pip install -r requirements.txt
 
 test:
 	pytest -r A
+
+test-coverage:
+	pytest --cov=spamanalyzer --cov-report=term-missing --cov-report=html
 
 build-local:
 	pip install --editable .
