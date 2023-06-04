@@ -1,4 +1,4 @@
-import os, sys, logging
+import os, sys
 
 import spamanalyzer.files as files
 from spamanalyzer.cli import parser
@@ -8,15 +8,9 @@ from rich.progress import track
 
 
 def app(file: str, wordlist, verbose: bool, output_format: str, destination_dir: str,
-        output_file, quiet: bool) -> None:
+        output_file) -> None:
     wordlist = wordlist.read().splitlines()
     data = []
-
-    logging.basicConfig(stream=sys.stdout, 
-                        level=logging.ERROR if quiet else logging.INFO,
-                        format='[%(levelname)s] %(message)s')
-
-    log = logging.getLogger()
 
     analyzer = MailAnalyzer(wordlist)
 
@@ -32,11 +26,10 @@ def app(file: str, wordlist, verbose: bool, output_format: str, destination_dir:
 
     else:
         if verbose:
-            log.error("Invalid file found: {}, the file is not analyzable".format(file))
+            print('The file is not analyzable')
         sys.exit(1)
 
     print_output(data,
-                 logger=log,
                  output_format=output_format,
                  verbose=verbose,
                  output_file=output_file)
