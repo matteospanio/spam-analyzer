@@ -9,6 +9,8 @@ from dateutil.parser import parse, ParserError
 import spamanalyzer.analyzer.classifier as classifier
 import spamanalyzer.analyzer.utils as utils
 
+CONFIG_FILE = path.join(path.expanduser('~'), '.config', 'spamanalyzer', 'config.yaml')
+
 
 @dataclass
 class Domain:
@@ -85,7 +87,7 @@ class MailAnalysis:
     headers: dict
     """
     It is a dictionaty containing a detailed analysis of the mail's headers. It contains the following keys:
-    
+
     - `has_spf`, it is `True` if the mail has a SPF header (Sender Policy Framework), it is a standard to prevent email spoofing.
       The SPF record is a TXT record that contains a policy that specifies which mail servers are allowed to send email from a specified domain.
     - `has_dkim`, it is `True` if the mail has a DKIM header (DomainKeys Identified Mail).
@@ -105,7 +107,7 @@ class MailAnalysis:
     body: dict
     """
     It is a dictionaty containing a detailed analysis of the mail's body. It contains the following keys:
-    
+
     - `contains_html`, it is `True` if the body contains an html tag.
     - `contains_script`, it is `True` if the body contains a script tag or a callback function. It is dangerous because Email clients that support JavaScript can execute the script in the email.
     - `forbidden_words_percentage`, the rate of forbidden words in the body of the mail, it is a float between 0 and 1.
@@ -138,7 +140,7 @@ class MailAnalysis:
             list: a list of boolean values, `True` if the mail is spam, `False` otherwise
         """
 
-        with open('conf/config.yaml', 'r') as f:
+        with open(CONFIG_FILE, 'r') as f:
             model_path = yaml.safe_load(f)['files']['classifier']
 
         ml = classifier.SpamClassifier(path.expandvars(model_path))
@@ -151,7 +153,7 @@ class MailAnalysis:
     def is_spam(self) -> bool:
         """Determine if the email is spam based on the analysis of the mail"""
 
-        with open('conf/config.yaml', 'r') as f:
+        with open(CONFIG_FILE, 'r') as f:
             model_path = yaml.safe_load(f)['files']['classifier']
 
         ml = classifier.SpamClassifier(path.expandvars(model_path))
@@ -189,11 +191,11 @@ class MailAnalysis:
 
 class MailAnalyzer:
     """Analyze a mail and return a `MailAnalysis` object, essentially it is a factory of `MailAnalysis`.
-    
+
     The `MailAnalyzer` object provides two methods to analyze a mail:
     - `analyze` to analyze a mail from a file, it returns a `MailAnalysis` object containing a description of the headers, body and attachments of the mail
     - `get_domain` to get the domain of the mail from the headers, it returns a `Domain` object
-    
+
     The core of the analysis is the `analyze` method, it uses the `MailParser` class (from `mailparser` library) to parse the mail.
     The analysis is based on separated checks for the headers, body and attachments and each check is implemented in
     a separated function: this make the analysis modular and easy to extend in future versions.
@@ -228,7 +230,7 @@ class MailAnalyzer:
 
 class Date:
     """A date object, it is used to store the date of the email and to perform some checks on it.
-    
+
     The focus of the checks is to determine if the date is valid and if it is in the correct format.
     The date is valid if it is in the RFC2822 format and if the timezone is valid:
     - [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3): specifies the format of the date in the headers of the mail in the form `Day, DD Mon YYYY HH:MM:SS TZ`. Of course it is not the only format used in the headers, but it is the most common, so it is the one we use to check if the date is valid.

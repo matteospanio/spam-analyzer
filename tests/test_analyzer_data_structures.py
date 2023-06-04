@@ -49,7 +49,8 @@ class TestMailAnalysis:
         assert self.mail_ok_an.is_spam() == False
 
     def test_multiple_analysis(self):
-        assert MailAnalysis.classify_multiple_input([self.mail_ok_an, self.mail_spam]) == [False, False]
+        assert MailAnalysis.classify_multiple_input([self.mail_ok_an,
+                                                     self.mail_spam]) == [False, False]
 
 
 class TestDate:
