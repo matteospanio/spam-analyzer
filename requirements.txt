@@ -49,7 +49,7 @@ requests-toolbelt==0.10.1
 rfc3986==2.0.0
 rich==12.6.0
 scikit-learn==1.1.2
-scipy==1.9.3
+scipy==1.10.0
 SecretStorage==3.3.3
 simplejson==3.17.6
 six==1.16.0
