@@ -11,7 +11,7 @@ from .files import handle_configuration_files
 
 __all__ = ['MailAnalyzer', 'MailAnalysis', 'Domain', 'Date']
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __config_path__ = path.join(path.expanduser('~'), '.config', 'spamanalyzer')
 
 __defaults__ = {
