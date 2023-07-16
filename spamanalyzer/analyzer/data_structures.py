@@ -9,7 +9,7 @@ from dateutil.parser import parse, ParserError
 import spamanalyzer.analyzer.classifier as classifier
 import spamanalyzer.analyzer.utils as utils
 
-CONFIG_FILE = path.join(path.expanduser('~'), '.config', 'spamanalyzer', 'config.yaml')
+CONFIG_FILE = path.join(path.expanduser("~"), ".config", "spamanalyzer", "config.yaml")
 
 
 @dataclass
@@ -63,14 +63,18 @@ class Domain:
             domain_name = socket.gethostbyaddr(ip_addr)[0]
             return Domain(domain_name)
         except Exception:
-            return Domain('unknown')
+            return Domain("unknown")
 
     def get_ip_address(self) -> str:
         """Translate the domain name to its ip address querying the DNS server"""
-        return dns.resolver.resolve(self.name, 'A')[0].to_text()
+        return dns.resolver.resolve(self.name, "A")[0].to_text()
 
     def __eq__(self, __o: object) -> bool:
-        result, _, _, = self.name.fullcompare(__o.name)
+        (
+            result,
+            _,
+            _,
+        ) = self.name.fullcompare(__o.name)
         if result in [1, 2, 3]:
             return True
         return False
@@ -140,10 +144,10 @@ class MailAnalysis:
             list: a list of boolean values, `True` if the mail is spam, `False` otherwise
         """
 
-        with open(CONFIG_FILE, 'r') as f:
-            model_path = yaml.safe_load(f)['files']['classifier']
+        with open(CONFIG_FILE, "r") as f:
+            model_path = yaml.safe_load(f)["files"]["classifier"]
 
-        ml = classifier.SpamClassifier(path.expandvars(model_path))
+        ml = classifier.SpamClassifier(path.expanduser(model_path))
 
         # rearrange input
         adapted_mails = [np.array(mail.to_list()) for mail in mails]
@@ -153,10 +157,10 @@ class MailAnalysis:
     def is_spam(self) -> bool:
         """Determine if the email is spam based on the analysis of the mail"""
 
-        with open(CONFIG_FILE, 'r') as f:
-            model_path = yaml.safe_load(f)['files']['classifier']
+        with open(CONFIG_FILE, "r") as f:
+            model_path = yaml.safe_load(f)["files"]["classifier"]
 
-        ml = classifier.SpamClassifier(path.expandvars(model_path))
+        ml = classifier.SpamClassifier(path.expanduser(model_path))
         array = np.array(self.to_list())
         return True if ml.predict(array.reshape(1, -1)) == 1 else False
 
@@ -166,26 +170,36 @@ class MailAnalysis:
             "headers": self.headers,
             "body": self.body,
             "attachments": self.attachments,
-            "is_spam": self.is_spam()
+            "is_spam": self.is_spam(),
         }
 
     def to_list(self) -> list:
-        return [  #self.file_path,
-            self.headers["has_spf"], self.headers["has_dkim"],
-            self.headers["has_dmarc"], self.headers["domain_matches"],
-            self.headers["auth_warn"], self.headers["has_suspect_subject"],
+        return [  # self.file_path,
+            self.headers["has_spf"],
+            self.headers["has_dkim"],
+            self.headers["has_dmarc"],
+            self.headers["domain_matches"],
+            self.headers["auth_warn"],
+            self.headers["has_suspect_subject"],
             self.headers["subject_is_uppercase"],
             self.headers["send_date"].is_RFC2822_formatted()
             if self.headers["send_date"] is not None else False,
             self.headers["send_date"].is_tz_valid()
             if self.headers["send_date"] is not None else False,
-            self.headers["received_date"] is not None, self.body["is_uppercase"],
-            self.body["contains_script"], self.body["has_images"],
-            self.body["https_only"], self.body["has_mailto"], self.body["has_links"],
-            self.body["forbidden_words_percentage"], self.body["contains_html"],
-            self.body["contains_form"], self.body["text_polarity"],
-            self.body["text_subjectivity"], self.attachments["has_attachments"],
-            self.attachments["attachment_is_executable"]
+            self.headers["received_date"] is not None,
+            self.body["is_uppercase"],
+            self.body["contains_script"],
+            self.body["has_images"],
+            self.body["https_only"],
+            self.body["has_mailto"],
+            self.body["has_links"],
+            self.body["forbidden_words_percentage"],
+            self.body["contains_html"],
+            self.body["contains_form"],
+            self.body["text_polarity"],
+            self.body["text_subjectivity"],
+            self.attachments["has_attachments"],
+            self.attachments["attachment_is_executable"],
         ]
 
 
@@ -219,13 +233,13 @@ class MailAnalyzer:
 
     def get_domain(self, email_path: str) -> Domain:
         email = mailparser.parse_from_file(email_path)
-        received = email.headers.get('Received')
+        received = email.headers.get("Received")
         if received is None:
-            return utils.get_domain('unknown')
+            return utils.get_domain("unknown")
         return utils.get_domain(received)
 
     def __repr__(self):
-        return f'<MailAnalyzer(wordlist={self.wordlist})>'
+        return f"<MailAnalyzer(wordlist={self.wordlist})>"
 
 
 class Date:
@@ -241,8 +255,8 @@ class Date:
     date: datetime
 
     def __init__(self, date: str):
-        if date is None or date == '':
-            raise ValueError('Date cannot be empty or None')
+        if date is None or date == "":
+            raise ValueError("Date cannot be empty or None")
         self._raw_date = date
         self.date = self._parse()[0]
 
@@ -270,12 +284,12 @@ class Date:
     # parse the date
     def _parse(self) -> tuple[datetime, bool]:
         try:
-            return datetime.strptime(self._raw_date, '%a, %d %b %Y %H:%M:%S %z'), True
+            return datetime.strptime(self._raw_date, "%a, %d %b %Y %H:%M:%S %z"), True
         except ValueError:
             try:
                 return parse(self._raw_date), False
             except ParserError:
-                split_date = self._raw_date.split(' ')
+                split_date = self._raw_date.split(" ")
                 reduced_date = " ".join(split_date[0:5])
                 return parse(reduced_date), False
 
@@ -295,7 +309,7 @@ class Date:
             return False
 
     def _get_tz_offset(self) -> int:
-        return int(str(self.date.tzinfo).replace('UTC', '').split(':')[0])
+        return int(str(self.date.tzinfo).replace("UTC", "").split(":")[0])
 
     def __repr__(self) -> str:
-        return f'{self.date.isoformat()}'
+        return f"{self.date.isoformat()}"

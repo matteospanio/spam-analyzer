@@ -1,6 +1,5 @@
 from os import path, listdir, makedirs
 from importlib.resources import files
-from spamanalyzer import __defaults__
 from rich.progress import track
 import mailparser
 import shutil
@@ -30,6 +29,7 @@ def file_is_valid_email(file_path: str) -> bool:
 
 
 def handle_configuration_files():
+    from spamanalyzer import __defaults__
 
     config_file = files('conf').joinpath('config.yaml')
     wordlist = files('conf').joinpath('word_blacklist.txt')
@@ -48,7 +48,7 @@ def handle_configuration_files():
             raise Exception('Error while loading config file')
 
     try:
-        wordlist_path = path.expandvars(config['files']['wordlist'])
+        wordlist_path = path.expanduser(config['files']['wordlist'])
         if not path.exists(wordlist_path):
             shutil.copy(wordlist, wordlist_path)
     except Exception:
@@ -57,7 +57,7 @@ def handle_configuration_files():
         )
 
     try:
-        classifier_path = path.expandvars(config['files']['classifier'])
+        classifier_path = path.expanduser(config['files']['classifier'])
         if not path.exists(classifier_path):
             shutil.copy(model, classifier_path)
     except Exception:
