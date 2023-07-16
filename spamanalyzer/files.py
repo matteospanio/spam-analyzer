@@ -1,6 +1,5 @@
 from os import path, listdir, makedirs
 from importlib.resources import files
-from spamanalyzer import __defaults__
 from rich.progress import track
 import mailparser
 import shutil
@@ -30,6 +29,7 @@ def file_is_valid_email(file_path: str) -> bool:
 
 
 def handle_configuration_files():
+    from spamanalyzer import __defaults__
 
     config_file = files('conf').joinpath('config.yaml')
     wordlist = files('conf').joinpath('word_blacklist.txt')
