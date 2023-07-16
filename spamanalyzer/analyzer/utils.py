@@ -11,17 +11,17 @@ class Regex(Enum):
     IP = re.compile(r"(?:\d{1,3}\.){3}\d{1,3}")
     MAILTO = re.compile(r"mailto:(\w+@\w+\.\w+)(\?subject=(.+))?")
     HTTP_LINK = re.compile(
-        r'(http://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)'
+        r"(http://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)"
     )
     HTTPS_LINK = re.compile(
-        r'(https://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)'
+        r"(https://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)"
     )
     SHORT_LINK = re.compile(
-        r'(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)')
-    GAPPY_WORDS = re.compile(r'([A-Za-z0-9]+(<!--*-->|\*|\-))+')
-    HTML_FORM = re.compile(r'<form')
-    HTML_TAG = re.compile(r'<[^>]+>')
-    IMAGE_TAG = re.compile(r'<img')
+        r"(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)")
+    GAPPY_WORDS = re.compile(r"([A-Za-z0-9]+(<!--*-->|\*|\-))+")
+    HTML_FORM = re.compile(r"<form")
+    HTML_TAG = re.compile(r"<[^>]+>")
+    IMAGE_TAG = re.compile(r"<img")
 
 
 def inspect_headers(email: MailParser, wordlist):
@@ -65,39 +65,36 @@ def inspect_headers(email: MailParser, wordlist):
 
 def spf_pass(headers: dict) -> bool:
     """Checks if the email has a SPF record"""
-    spf = headers.get('Received-SPF') or headers.get(
-        'Authentication-Results') or headers.get('Authentication-results')
-    if spf is not None and 'pass' in spf.lower():
+    spf = (headers.get("Received-SPF") or headers.get("Authentication-Results")
+           or headers.get("Authentication-results"))
+    if spf is not None and "pass" in spf.lower():
         return True
     return False
 
 
 def dkim_pass(headers: dict) -> bool:
-    """Checks if the email has a DKIM record
-    """
-    if headers.get('DKIM-Signature') is not None:
+    """Checks if the email has a DKIM record"""
+    if headers.get("DKIM-Signature") is not None:
         return True
-    dkim = headers.get('Authentication-Results') or headers.get(
-        'Authentication-results')
-    if dkim is not None and 'dkim=pass' in dkim.lower():
+    dkim = headers.get("Authentication-Results") or headers.get(
+        "Authentication-results")
+    if dkim is not None and "dkim=pass" in dkim.lower():
         return True
     return False
 
 
 def dmarc_pass(headers: dict) -> bool:
-    """Checks if the email has a DMARC record
-    """
-    dmarc = headers.get('Authentication-Results') or headers.get(
-        'Authentication-results')
-    if dmarc is not None and 'dmarc=pass' in dmarc.lower():
+    """Checks if the email has a DMARC record"""
+    dmarc = headers.get("Authentication-Results") or headers.get(
+        "Authentication-results")
+    if dmarc is not None and "dmarc=pass" in dmarc.lower():
         return True
     return False
 
 
 def has_auth_warning(headers: dict) -> bool:
-    """Checks if the email has an authentication warning, usually it means that the sender claimed to be someone else
-    """
-    if headers.get('X-Authentication-Warning') is not None:
+    """Checks if the email has an authentication warning, usually it means that the sender claimed to be someone else"""
+    if headers.get("X-Authentication-Warning") is not None:
         return True
     return False
 
@@ -109,7 +106,7 @@ def analyze_subject(headers: dict, wordlist) -> tuple[bool, bool]:
         headers (dict): a dictionary containing parsed email headers
         wordlist (list[str]): a list of words to be used as a spam filter in the subject field
     """
-    subject: str = headers.get('Subject')
+    subject: str = headers.get("Subject")
     if subject is not None:
         matches = Regex.GAPPY_WORDS.value.search(subject)
         if matches is not None:
@@ -133,7 +130,7 @@ def parse_date(headers: dict):
     Eventually in future versions will be specified the kind of error that occurred, like in spamassassin (e.g. "invalid date", "absurd tz", "future date")
 
     """
-    date = headers.get('Date') or headers.get('date_utc')
+    date = headers.get("Date") or headers.get("date_utc")
 
     if date is None:
         return None
@@ -146,14 +143,14 @@ def parse_date(headers: dict):
 
 
 def from_domain_matches_received(email: MailParser) -> bool:
-    email_domain = get_domain(email.headers.get('From'))
+    email_domain = get_domain(email.headers.get("From"))
     try:
-        server_domain = get_domain(email.received[0].get('from'))
+        server_domain = get_domain(email.received[0].get("from"))
     except Exception:
         # server_domain = get_domain(email.received[0].get('by'))
         server_domain = get_domain("unknown")
 
-    return (email_domain == server_domain)
+    return email_domain == server_domain
 
 
 def get_domain(field: str):
@@ -167,8 +164,8 @@ def get_domain(field: str):
     """
     # TODO: should take in consideration only the string before 'by word'
 
-    if 'unknown' in field:
-        return ds.Domain('unknown')
+    if "unknown" in field:
+        return ds.Domain("unknown")
 
     domain_match = Regex.DOMAIN.value.search(field)
 
@@ -181,7 +178,7 @@ def get_domain(field: str):
             ip_address = field[ip_match.start():ip_match.end()]
             return ds.Domain.from_ip(ip_address)
 
-    return ds.Domain('unknown')
+    return ds.Domain("unknown")
 
 
 def inspect_body(body: str, wordlist, domain):
@@ -210,9 +207,9 @@ def inspect_body(body: str, wordlist, domain):
     has_form = has_html_form(body)
     contains_html = has_html(body)
 
-    if links['has_links']:
+    if links["has_links"]:
         for link in link_list:
-            body = body.replace(link, '')
+            body = body.replace(link, "")
 
     if contains_html:
         parsed_body = parse_html(body)
@@ -238,7 +235,7 @@ def inspect_body(body: str, wordlist, domain):
 
 
 def is_upper(body: str) -> bool:
-    if body == '' or body is None:
+    if body == "" or body is None:
         return False
     count = 0
     word_list = body.split()
@@ -251,7 +248,7 @@ def is_upper(body: str) -> bool:
 
 
 def parse_html(body: str) -> str:
-    soup = BeautifulSoup(body, 'html.parser')
+    soup = BeautifulSoup(body, "html.parser")
     return soup.get_text()
 
 
@@ -304,8 +301,8 @@ def percentage_of_bad_words(body, wordlist) -> float:
     bad_words = 0
     for word in wordlist:
         if word in body:
-            bad_words += len(word.split(' '))
-    return bad_words / len(body.split(' '))
+            bad_words += len(word.split(" "))
+    return bad_words / len(body.split(" "))
 
 
 def get_links_from_str(body: str) -> list[str]:
@@ -320,10 +317,10 @@ def get_links_from_str(body: str) -> list[str]:
         links = [link[0] for link in not_http]
 
     for link in http:
-        if 'www.w3.org' not in link[0]:
+        if "www.w3.org" not in link[0]:
             links.append(link[0])
     for link in https:
-        if 'spamassassin' not in link[0]:
+        if "spamassassin" not in link[0]:
             links.append(link[0])
 
     return links
@@ -347,7 +344,7 @@ def check_links(body):
     return {
         "has_links": links != [],
         "mailto": has_mailto_links(body),
-        "https_only": https_only(links)
+        "https_only": https_only(links),
     }
 
 
@@ -356,7 +353,7 @@ def https_only(links: list[str]) -> bool:
         return False
 
     for link in links:
-        if 'https://' not in link:
+        if "https://" not in link:
             return False
     return True
 
@@ -370,7 +367,7 @@ def has_script_tag(body) -> bool:
     Returns:
         bool: True if the email has script tags or javascript code
     """
-    unsecure_tags = ['<script>', '</script>', 'onload', 'onerror']
+    unsecure_tags = ["<script>", "</script>", "onload", "onerror"]
     for tag in unsecure_tags:
         if tag in body:
             return True
@@ -381,10 +378,10 @@ def inspect_attachments(attachments: list) -> dict:
     has_attachments = len(attachments) > 0
     is_executable = False
     for attachment in attachments:
-        a_type = attachment.get('mail_content_type')
-        if a_type == 'application/octet-stream':
+        a_type = attachment.get("mail_content_type")
+        if a_type == "application/octet-stream":
             is_executable = True
     return {
         "has_attachments": has_attachments,
-        "attachment_is_executable": is_executable
+        "attachment_is_executable": is_executable,
     }

@@ -8,11 +8,30 @@ from rich.table import Table
 from spamanalyzer.analyzer.data_structures import MailAnalysis
 
 HEADERS = [
-    'has_spf', 'has_dkim', 'has_dmarc', 'domain_matches', 'auth_warn',
-    'has_suspect_subject', 'subject_is_uppercase', 'send_date_is_RFC2822_compliant',
-    'send_date_tz_is_valid', 'has_received_date', 'uppercase_body', 'script', 'images',
-    'https_only', 'mailto', 'links', 'bad_words_percentage', 'html', 'form', 'polarity',
-    'subjectivity', 'attachments', 'attach_is_executable', 'is_spam'
+    "has_spf",
+    "has_dkim",
+    "has_dmarc",
+    "domain_matches",
+    "auth_warn",
+    "has_suspect_subject",
+    "subject_is_uppercase",
+    "send_date_is_RFC2822_compliant",
+    "send_date_tz_is_valid",
+    "has_received_date",
+    "uppercase_body",
+    "script",
+    "images",
+    "https_only",
+    "mailto",
+    "links",
+    "bad_words_percentage",
+    "html",
+    "form",
+    "polarity",
+    "subjectivity",
+    "attachments",
+    "attach_is_executable",
+    "is_spam",
 ]
 
 
@@ -22,18 +41,21 @@ def print_output(data, output_format: str, verbose: bool, output_file=None) -> N
     Args:
         data (`list`): a list of data to output
         output_format (`str`): the type of output (csv | json | default)
-        verbose (`bool`): valid only for `default` output_format, it prints a description for each element of the list
-        
-    Often when we work with data we want to output it in a specific format, this function handles the output of the data in the specified format,
-    at the moment it supports only json and default stdout which will print a whit the rich library a card for each email analyzed
-    in the default pager of the terminal; outside the pager the output will be a table with the summary of the analysis where
+        verbose (`bool`): valid only for `default` output_format, it prints a
+        description for each element of the list
+
+    Often when we work with data we want to output it in a specific format, this
+    function handles the output of the data in the specified format,
+    at the moment it supports only json and default stdout which will print a whit the
+    rich library a card for each email analyzed in the default pager of the terminal;
+    outside the pager the output will be a table with the summary of the analysis where
     are reported the number of spam and ham emails and the mean score of each class.
 
     > Return later: future versions of spamanalyzer will support csv output format
     """
-    if output_format == 'csv':
+    if output_format == "csv":
         _print_to_csv(data, output_file)
-    elif output_format == 'json':
+    elif output_format == "json":
         _print_to_json(data, output_file)
     else:
         _print_default(data, verbose)
@@ -107,15 +129,17 @@ def _print_details(email: MailAnalysis):
         Panel(attachments, title="Attachments", border_style="light_coral"),
     )
 
-    return (Panel(panel_group,
-                  title=f"[bold]{mail_dict['file_name'].split('/')[-1][0:20]}[/bold]",
-                  border_style="cyan"))
+    return Panel(
+        panel_group,
+        title=f"[bold]{mail_dict['file_name'].split('/')[-1][0:20]}[/bold]",
+        border_style="cyan",
+    )
 
 
 def _stringify_email(email: dict):
-    header = email['headers']
-    bd = email['body']
-    att = email['attachments']
+    header = email["headers"]
+    bd = email["body"]
+    att = email["attachments"]
 
     headers = ""
     body = ""
@@ -123,14 +147,14 @@ def _stringify_email(email: dict):
 
     for key, value in header.items():
         k, v = _format_output(key, value)
-        k = k.removeprefix('has_')
+        k = k.removeprefix("has_")
 
         headers += f"{k}: [bold]{v}[/bold]\n"
 
     for key, value in bd.items():
         k, v = _format_output(key, value)
-        k = k.removeprefix('contains_')
-        k = k.replace('percentage', '%')
+        k = k.removeprefix("contains_")
+        k = k.replace("percentage", "%")
 
         body += f"{k}: [bold]{v}[/bold]\n"
 
@@ -145,15 +169,15 @@ def _stringify_email(email: dict):
 
 
 def _format_output(k: str, v):
-    key = k.replace('_', ' ')
+    key = k.replace("_", " ")
     key = key.capitalize()
 
-    if v == True:
+    if v is True:
         v = f"[green]{v}[/green]"
-    elif v == False:
+    elif v is False:
         v = f"[red]{v}[/red]"
 
-    if type(v) == float:
+    if isinstance(v, float):
         v = f"{v:.4f}"
 
     return (key, v)

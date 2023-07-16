@@ -1,12 +1,13 @@
-[project]
+[tool.poetry]
 name = "spam-analyzer"
-authors = [
-    {name = "Matteo Spanio", email = "matteo.spanio97@gmail.com"},
-]
+version = "0.1.2"
 description = "A simple email analyzer"
+authors = ["Matteo Spanio <matteo.spanio97@gmail.com>"]
+license = "GPLv3"
 readme = "README.md"
-dynamic = ["dependencies", "version"]
-requires-python = ">=3.10"
+packages = [{include = "spamanalyzer"}]
+homepage = "http://matteospanio.me/spam-analyzer/"
+repository = "https://github.com/matteospanio/spam-analyzer"
 keywords = ["spam", "spam-analyzer", "cybersecurity"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -16,41 +17,35 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
+include = ["*.yaml", "*.txt", "*/*.yaml", "*/*.txt"]
 
-[tool.setuptools.package-data]
-spamanalyzer = ["*.yaml", "*.txt", "*/*.yaml", "*/*.txt"]
-
-[project.scripts]
+[tool.poetry.scripts]
 spam-analyzer = "spamanalyzer.cli.run:main"
 
-[tool.setuptools]
-include-package-data = true
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.31.0"
+nltk = "^3.8.1"
+PyYAML = "^6.0"
+rich = "^13.4.2"
+scikit-learn = "1.1.2"
+numpy = "^1.25.1"
+mail-parser = "^3.15.0"
+pandas = "^2.0.3"
+beautifulsoup4 = "^4.12.2"
+dnspython = "^2.4.0"
+textblob = "^0.17.1"
 
-[project.urls]
-"homepage" = "http://matteospanio.me/spam-analyzer/"
-"repository" = "https://github.com/matteospanio/spam-analyzer"
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+yapf = "^0.40.1"
+pylint = "^2.17.4"
+pytest-cov = "^4.1.0"
+pytest-xdist = "^3.3.1"
 
-[tool.setuptools.dynamic]
-dependencies = {file = "requirements.txt"}
-version = { attr = "spamanalyzer.__version__" }
 
-[tool.setuptools.packages]
-find = {}
-
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-testpaths = ["tests"]
-
-[tool.coverage.run]
-relative_files = true
-
-[tool.yapf]
-blank_line_before_nested_class_or_def = true
-column_limit = 88
+[tool.poetry.group.docs.dependencies]
+pdoc = "^14.0.0"
 
 [tool.pylint]
 max-line-length = 88
@@ -63,3 +58,16 @@ disable = [
     "R0913", # (too-many-arguments)
     "W0105", # (pointless-string-statement)
 ]
+
+[tool.yapf]
+blank_line_before_nested_class_or_def = true
+column_limit = 88
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q -n auto -W error::RuntimeWarning"
+testpaths = ["tests"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

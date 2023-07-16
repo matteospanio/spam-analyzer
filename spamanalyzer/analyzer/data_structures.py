@@ -15,16 +15,20 @@ CONFIG_FILE = path.join(path.expanduser("~"), ".config", "spamanalyzer", "config
 @dataclass
 class Domain:
     """
-    A Domain is a class representing an internet domain, here you can get information about the target domain
+    A Domain is a class representing an internet domain,
+    here you can get information about the target domain
     """
 
     name: dns.name.Name
 
     def __init__(self, name: str) -> None:
         """The constructor resolves any domain alias to the real domain name:
-        in fact common domain names are aliases for more complex server names that would be difficult to remember for common users,
-        since there is not a direct method in the `socket` module to resolve domain aliases, we use the `gethostbyname` chained with the `gethostbyaddr` methods
-        this way makes the instatiation of the class slower, but it is the only way to get the real domain name.
+        in fact common domain names are aliases for more complex server names
+        that would be difficult to remember for common users,
+        since there is not a direct method in the `socket` module to resolve domain
+        aliases, we use the `gethostbyname` chained with the `gethostbyaddr` methods
+        this way makes the instatiation of the class slower, but it is the only way to
+        get the real domain name.
         """
         # TODO: add a cache for the domain names or find a better way to resolve domain aliases
         # try:
@@ -90,45 +94,63 @@ class MailAnalysis:
     # data from headers
     headers: dict
     """
-    It is a dictionaty containing a detailed analysis of the mail's headers. It contains the following keys:
+    It is a dictionaty containing a detailed analysis of the mail's headers.
+    It contains the following keys:
 
-    - `has_spf`, it is `True` if the mail has a SPF header (Sender Policy Framework), it is a standard to prevent email spoofing.
-      The SPF record is a TXT record that contains a policy that specifies which mail servers are allowed to send email from a specified domain.
+    - `has_spf`, it is `True` if the mail has a SPF header (Sender Policy Framework),
+      it is a standard to prevent email spoofing.
+      The SPF record is a TXT record that contains a policy that specifies which mail
+      servers are allowed to send email from a specified domain.
     - `has_dkim`, it is `True` if the mail has a DKIM header (DomainKeys Identified Mail).
-      The DKIM signature is a digital signature that is added to an email message to verify that the message has not been altered since it was signed.
-    - `has_dmarc`, it is `True` if the mail has a DMARC header (Domain-based Message Authentication, Reporting & Conformance).
-      The DMARC record is a type of DNS record that is used to help email receivers determine whether an email is legitimate or not.
+      The DKIM signature is a digital signature that is added to an email message to
+      verify that the message has not been altered since it was signed.
+    - `has_dmarc`, it is `True` if the mail has a DMARC header (Domain-based Message
+      Authentication, Reporting & Conformance).
+      The DMARC record is a type of DNS record that is used to help email receivers
+      determine whether an email is legitimate or not.
     - `auth_warn`, it is `True` if the mail has an Authentication-Warning header
-      The Authentication-Warning header is used to indicate that the message has been modified in transit.
-    - `domain_matches`, it is `True` if the domain of the sender matches the first domain in the `Received` headers
-    - `has_suspect_subject`, it is `True` if the mail's subject contains a suspicious word or a gappy word (e.g. `H*E*L*L*O`)
+      The Authentication-Warning header is used to indicate that the message has been
+      modified in transit.
+    - `domain_matches`, it is `True` if the domain of the sender matches the first
+      domain in the `Received` headers
+    - `has_suspect_subject`, it is `True` if the mail's subject contains a suspicious
+      word or a gappy word (e.g. `H*E*L*L*O`)
     - `subject_is_uppercase`, it is `True` if the mail's subject is in uppercase
-    - `send_date`, it is the date when the mail was sent in a `Date` object, if the mail has no `Date` header, it is `None`
-    - `received_date`, it is the date when the mail was received in a `Date` object, if the mail hasn't a date in `Received` header, it is `None`
+    - `send_date`, it is the date when the mail was sent in a `Date` object,
+      if the mail has no `Date` header, it is `None`
+    - `received_date`, it is the date when the mail was received in a `Date` object,
+      if the mail hasn't a date in `Received` header, it is `None`
     """
 
     # data from body
     body: dict
     """
-    It is a dictionaty containing a detailed analysis of the mail's body. It contains the following keys:
+    It is a dictionaty containing a detailed analysis of the mail's body.
+    It contains the following keys:
 
     - `contains_html`, it is `True` if the body contains an html tag.
-    - `contains_script`, it is `True` if the body contains a script tag or a callback function. It is dangerous because Email clients that support JavaScript can execute the script in the email.
-    - `forbidden_words_percentage`, the rate of forbidden words in the body of the mail, it is a float between 0 and 1.
+    - `contains_script`, it is `True` if the body contains a script tag or a callback
+    function. It is dangerous because Email clients that support JavaScript can execute
+    the script in the email.
+    - `forbidden_words_percentage`, the rate of forbidden words in the body of the mail,
+    it is a float between 0 and 1.
     - `has_links`, it is `True` if the body contains an url.
     - `has_mailto`, it is `True` if the body contains a mailto link.
     - `https_only`, it is `True` if the body contains only https links.
     - `contains_form`, it is `True` if the body contains a form tag.
     - `has_images`, it is `True` if the body contains an image.
-    - `is_uppercase`, it is `True` if the body is in uppercase more than $60\%$ of its length.
+    - `is_uppercase`, it is `True` if the body is in uppercase more than $60\%$ of
+    its length.
     - `text_polarity`, it is the polarity of the body, it is a float between -1 and 1.
-    - `text_subjectivity`, it is the subjectivity of the body, it is a float between 0 and 1.
+    - `text_subjectivity`, it is the subjectivity of the body, it is a float between
+    0 and 1.
     """
 
     # attachments
     attachments: dict
     """
-    It is a dictionary containing a detailed analysis of the mail's attachments. It contains the following keys:
+    It is a dictionary containing a detailed analysis of the mail's attachments.
+    It contains the following keys:
     - `has_attachments`, it is `True` if the mail has attachments
     - `attachment_is_executable`, it is `True` if the mail has an attachment in executable format
     """
