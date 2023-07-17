@@ -2,12 +2,9 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.10
+      - image: cimg/python:3.10.12
     steps:
       - checkout
-      - run:
-          name: Upgrade poetry
-          command: yes | pip uninstall poetry && curl -sSL https://install.python-poetry.org | python3 -
       - run:
           name: Install dependencies
           command: poetry install
