@@ -37,7 +37,7 @@ def handle_configuration_files():
     model = files("conf").joinpath("classifier.pkl")
 
     if not path.exists(__defaults__["SPAMANALYZER_CONF_PATH"]):
-        makedirs(__defaults__["SPAMANALYZER_CONF_PATH"])
+        makedirs(__defaults__["SPAMANALYZER_CONF_PATH"], exist_ok=True)
 
     if not path.exists(__defaults__["SPAMANALYZER_CONF_FILE"]):
         shutil.copy(config_file, __defaults__["SPAMANALYZER_CONF_FILE"])
