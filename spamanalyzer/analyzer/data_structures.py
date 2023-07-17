@@ -1,13 +1,17 @@
-import mailparser, socket, yaml
-import dns.resolver, dns.name
-import numpy as np
+import socket
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from os import path
 from dateutil.parser import parse, ParserError
+import yaml
+import dns.resolver
+import dns.name
+import mailparser
+import numpy as np
 
-import spamanalyzer.analyzer.classifier as classifier
-import spamanalyzer.analyzer.utils as utils
+from spamanalyzer.analyzer import classifier
+from spamanalyzer.analyzer import utils
 
 CONFIG_FILE = path.join(path.expanduser("~"), ".config", "spamanalyzer", "config.yaml")
 
@@ -15,18 +19,23 @@ CONFIG_FILE = path.join(path.expanduser("~"), ".config", "spamanalyzer", "config
 @dataclass
 class Domain:
     """
-    A Domain is a class representing an internet domain, here you can get information about the target domain
+    A Domain is a class representing an internet domain,
+    here you can get information about the target domain
     """
 
     name: dns.name.Name
 
     def __init__(self, name: str) -> None:
         """The constructor resolves any domain alias to the real domain name:
-        in fact common domain names are aliases for more complex server names that would be difficult to remember for common users,
-        since there is not a direct method in the `socket` module to resolve domain aliases, we use the `gethostbyname` chained with the `gethostbyaddr` methods
-        this way makes the instatiation of the class slower, but it is the only way to get the real domain name.
+        in fact common domain names are aliases for more complex server names
+        that would be difficult to remember for common users,
+        since there is not a direct method in the `socket` module to resolve domain
+        aliases, we use the `gethostbyname` chained with the `gethostbyaddr` methods
+        this way makes the instatiation of the class slower, but it is the only way to
+        get the real domain name.
         """
-        # TODO: add a cache for the domain names or find a better way to resolve domain aliases
+        # TODO: add a cache for the domain names or find a better way to resolve domain
+        #       aliases
         # try:
         #     ip = socket.gethostbyname(name)
         #     self.name = socket.gethostbyaddr(ip)[0]
@@ -38,7 +47,8 @@ class Domain:
     @staticmethod
     def from_string(domain_str: str):
         """
-        Instantiate a Domain object from string, it is a wrapper of the `self.__init__` method
+        Instantiate a Domain object from string,
+        it is a wrapper of the `self.__init__` method
 
         Args:
             domain_str (str): a string containing a domain to be parsed
@@ -51,7 +61,8 @@ class Domain:
     @staticmethod
     def from_ip(ip_addr: str):
         """Create a Domain object from an ip address.
-        It translate the ip address to its domain name via the `socket.gethostbyaddr` method
+        It translate the ip address to its domain name via the
+        `socket.gethostbyaddr` method
 
         Args:
             ip_addr (str): the targetted ip address
@@ -90,47 +101,67 @@ class MailAnalysis:
     # data from headers
     headers: dict
     """
-    It is a dictionaty containing a detailed analysis of the mail's headers. It contains the following keys:
+    It is a dictionaty containing a detailed analysis of the mail's headers.
+    It contains the following keys:
 
-    - `has_spf`, it is `True` if the mail has a SPF header (Sender Policy Framework), it is a standard to prevent email spoofing.
-      The SPF record is a TXT record that contains a policy that specifies which mail servers are allowed to send email from a specified domain.
-    - `has_dkim`, it is `True` if the mail has a DKIM header (DomainKeys Identified Mail).
-      The DKIM signature is a digital signature that is added to an email message to verify that the message has not been altered since it was signed.
-    - `has_dmarc`, it is `True` if the mail has a DMARC header (Domain-based Message Authentication, Reporting & Conformance).
-      The DMARC record is a type of DNS record that is used to help email receivers determine whether an email is legitimate or not.
+    - `has_spf`, it is `True` if the mail has a SPF header (Sender Policy Framework),
+      it is a standard to prevent email spoofing.
+      The SPF record is a TXT record that contains a policy that specifies which mail
+      servers are allowed to send email from a specified domain.
+    - `has_dkim`, it is `True` if the mail has a DKIM header
+      (DomainKeys Identified Mail).
+      The DKIM signature is a digital signature that is added to an email message to
+      verify that the message has not been altered since it was signed.
+    - `has_dmarc`, it is `True` if the mail has a DMARC header (Domain-based Message
+      Authentication, Reporting & Conformance).
+      The DMARC record is a type of DNS record that is used to help email receivers
+      determine whether an email is legitimate or not.
     - `auth_warn`, it is `True` if the mail has an Authentication-Warning header
-      The Authentication-Warning header is used to indicate that the message has been modified in transit.
-    - `domain_matches`, it is `True` if the domain of the sender matches the first domain in the `Received` headers
-    - `has_suspect_subject`, it is `True` if the mail's subject contains a suspicious word or a gappy word (e.g. `H*E*L*L*O`)
+      The Authentication-Warning header is used to indicate that the message has been
+      modified in transit.
+    - `domain_matches`, it is `True` if the domain of the sender matches the first
+      domain in the `Received` headers
+    - `has_suspect_subject`, it is `True` if the mail's subject contains a suspicious
+      word or a gappy word (e.g. `H*E*L*L*O`)
     - `subject_is_uppercase`, it is `True` if the mail's subject is in uppercase
-    - `send_date`, it is the date when the mail was sent in a `Date` object, if the mail has no `Date` header, it is `None`
-    - `received_date`, it is the date when the mail was received in a `Date` object, if the mail hasn't a date in `Received` header, it is `None`
+    - `send_date`, it is the date when the mail was sent in a `Date` object,
+      if the mail has no `Date` header, it is `None`
+    - `received_date`, it is the date when the mail was received in a `Date` object,
+      if the mail hasn't a date in `Received` header, it is `None`
     """
 
     # data from body
     body: dict
     """
-    It is a dictionaty containing a detailed analysis of the mail's body. It contains the following keys:
+    It is a dictionaty containing a detailed analysis of the mail's body.
+    It contains the following keys:
 
     - `contains_html`, it is `True` if the body contains an html tag.
-    - `contains_script`, it is `True` if the body contains a script tag or a callback function. It is dangerous because Email clients that support JavaScript can execute the script in the email.
-    - `forbidden_words_percentage`, the rate of forbidden words in the body of the mail, it is a float between 0 and 1.
+    - `contains_script`, it is `True` if the body contains a script tag or a callback
+    function. It is dangerous because Email clients that support JavaScript can execute
+    the script in the email.
+    - `forbidden_words_percentage`, the rate of forbidden words in the body of the mail,
+    it is a float between 0 and 1.
     - `has_links`, it is `True` if the body contains an url.
     - `has_mailto`, it is `True` if the body contains a mailto link.
     - `https_only`, it is `True` if the body contains only https links.
     - `contains_form`, it is `True` if the body contains a form tag.
     - `has_images`, it is `True` if the body contains an image.
-    - `is_uppercase`, it is `True` if the body is in uppercase more than $60\%$ of its length.
+    - `is_uppercase`, it is `True` if the body is in uppercase more than $60\%$ of
+    its length.
     - `text_polarity`, it is the polarity of the body, it is a float between -1 and 1.
-    - `text_subjectivity`, it is the subjectivity of the body, it is a float between 0 and 1.
+    - `text_subjectivity`, it is the subjectivity of the body, it is a float between
+    0 and 1.
     """
 
     # attachments
     attachments: dict
     """
-    It is a dictionary containing a detailed analysis of the mail's attachments. It contains the following keys:
+    It is a dictionary containing a detailed analysis of the mail's attachments.
+    It contains the following keys:
     - `has_attachments`, it is `True` if the mail has attachments
-    - `attachment_is_executable`, it is `True` if the mail has an attachment in executable format
+    - `attachment_is_executable`, it is `True` if the mail has an attachment in
+      executable format
     """
 
     @staticmethod
@@ -141,10 +172,11 @@ class MailAnalysis:
             mails (list[MailAnalysis]): a list of mails to be classified
 
         Returns:
-            list: a list of boolean values, `True` if the mail is spam, `False` otherwise
+            list: a list of boolean values, `True` if the mail is spam, `False`
+            otherwise
         """
 
-        with open(CONFIG_FILE, "r") as f:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
             model_path = yaml.safe_load(f)["files"]["classifier"]
 
         ml = classifier.SpamClassifier(path.expanduser(model_path))
@@ -152,12 +184,12 @@ class MailAnalysis:
         # rearrange input
         adapted_mails = [np.array(mail.to_list()) for mail in mails]
         predictions = ml.predict(adapted_mails)
-        return [True if prediction == 1 else False for prediction in predictions]
+        return [prediction == 1 for prediction in predictions]
 
     def is_spam(self) -> bool:
         """Determine if the email is spam based on the analysis of the mail"""
 
-        with open(CONFIG_FILE, "r") as f:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
             model_path = yaml.safe_load(f)["files"]["classifier"]
 
         ml = classifier.SpamClassifier(path.expanduser(model_path))
@@ -204,15 +236,20 @@ class MailAnalysis:
 
 
 class MailAnalyzer:
-    """Analyze a mail and return a `MailAnalysis` object, essentially it is a factory of `MailAnalysis`.
+    """Analyze a mail and return a `MailAnalysis` object,
+    essentially it is a factory of `MailAnalysis`.
 
     The `MailAnalyzer` object provides two methods to analyze a mail:
-    - `analyze` to analyze a mail from a file, it returns a `MailAnalysis` object containing a description of the headers, body and attachments of the mail
-    - `get_domain` to get the domain of the mail from the headers, it returns a `Domain` object
+    - `analyze` to analyze a mail from a file, it returns a `MailAnalysis`
+      object containing a description of the headers, body and attachments of the mail
+    - `get_domain` to get the domain of the mail from the headers,
+      it returns a `Domain` object
 
-    The core of the analysis is the `analyze` method, it uses the `MailParser` class (from `mailparser` library) to parse the mail.
-    The analysis is based on separated checks for the headers, body and attachments and each check is implemented in
-    a separated function: this make the analysis modular and easy to extend in future versions.
+    The core of the analysis is the `analyze` method, it uses the `MailParser` class
+    (from `mailparser` library) to parse the mail.
+    The analysis is based on separated checks for the headers, body and attachments and
+    each check is implemented in a separated function: this make the analysis modular
+    and easy to extend in future versions.
     """
 
     def __init__(self, wordlist):
@@ -243,29 +280,51 @@ class MailAnalyzer:
 
 
 class Date:
-    """A date object, it is used to store the date of the email and to perform some checks on it.
+    """A date object, it is used to store the date of the email and to perform some
+    checks on it.
 
-    The focus of the checks is to determine if the date is valid and if it is in the correct format.
+    The focus of the checks is to determine if the date is valid and if it is in the
+    correct format.
     The date is valid if it is in the RFC2822 format and if the timezone is valid:
-    - [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3): specifies the format of the date in the headers of the mail in the form `Day, DD Mon YYYY HH:MM:SS TZ`. Of course it is not the only format used in the headers, but it is the most common, so it is the one we use to check if the date is valid.
-    - [TZ](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones): specifies the timezone of the date. We included this check since often malicious emails can have a weird behavior, it is not uncommon to see a not existing timezone in the headers of the mail (valid timezones are from -12 to +14).
+    - [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3): specifies the
+      format of the date in the headers of the mail in the form
+      `Day, DD Mon YYYY HH:MM:SS TZ`. Of course it is not the only format used in the
+      headers, but it is the most common, so it is the one we use to check if the
+      date is valid.
+    - [TZ](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones): specifies
+      the timezone of the date. We included this check since often malicious emails
+      can have a weird behavior, it is not uncommon to see a not existing timezone
+      in the headers of the mail (valid timezones are from -12 to +14).
     """
 
-    _raw_date: str
+    __raw_date: str
     date: datetime
 
     def __init__(self, date: str):
         if date is None or date == "":
             raise ValueError("Date cannot be empty or None")
-        self._raw_date = date
-        self.date = self._parse()[0]
+        self.__raw_date = date
+        self.date = self.__parse()[0]
+
+    @property
+    def timezone(self) -> int:
+        tz = self.date.tzinfo
+        if tz is None:
+            return 0
+
+        # remove all non numeric characters exept ":" from the timezone
+        clean_tz = re.sub("[^0-9:]", "", str(tz))
+        if clean_tz == "":
+            return 0
+
+        return int(str(clean_tz).replace("UTC", "").split(":")[0])
 
     def __eq__(self, other) -> bool:
         if isinstance(other, Date):
-            return self.date.timestamp() == other.date.timestamp()
+            return self.date.isoformat() == other.date.isoformat()
         if isinstance(other, datetime):
-            return self.date.timestamp() == other.timestamp()
-        return False
+            return self.date.isoformat() == other.isoformat()
+        raise TypeError(f"Cannot compare Date with {type(other)}")
 
     def to_dict(self) -> dict:
         return {
@@ -282,34 +341,26 @@ class Date:
         }
 
     # parse the date
-    def _parse(self) -> tuple[datetime, bool]:
+    def __parse(self) -> tuple[datetime, bool]:
         try:
-            return datetime.strptime(self._raw_date, "%a, %d %b %Y %H:%M:%S %z"), True
+            return datetime.strptime(self.__raw_date, "%a, %d %b %Y %H:%M:%S %z"), True
         except ValueError:
             try:
-                return parse(self._raw_date), False
+                return parse(self.__raw_date), False
             except ParserError:
-                split_date = self._raw_date.split(" ")
+                split_date = self.__raw_date.split(" ")
                 reduced_date = " ".join(split_date[0:5])
                 return parse(reduced_date), False
 
     def is_RFC2822_formatted(self) -> bool:
-        """Check if the date is in the [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3) format."""
-        return self._parse()[1]
+        """Check if the date is in the
+        [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3) format.
+        """
+        return self.__parse()[1]
 
     def is_tz_valid(self) -> bool:
         """The timezone is valid if it is in the range [-12, 14]"""
-
-        try:
-            if -12 <= self._get_tz_offset() <= 14:
-                return True
-            else:
-                return False
-        except Exception:
-            return False
-
-    def _get_tz_offset(self) -> int:
-        return int(str(self.date.tzinfo).replace("UTC", "").split(":")[0])
+        return -12 <= self.timezone <= 14
 
     def __repr__(self) -> str:
         return f"{self.date.isoformat()}"

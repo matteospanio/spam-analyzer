@@ -1,4 +1,2 @@
-include config.yaml
-include requirements.txt
 include conf/*
 include README.md

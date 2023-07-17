@@ -2,7 +2,10 @@
 source = spamanalyzer/
 
 [report]
-omit = spamanalyzer/__main__.py
+show_missing = True
+omit =
+    spamanalyzer/__main__.py
+    spamanalyzer/display.py
 
 exclude_lines =
     pragma: no cover

@@ -6,13 +6,15 @@
 """
 
 from os import path
+import tomli
 from spamanalyzer.analyzer import *
 from .files import handle_configuration_files
 
-__all__ = ['MailAnalyzer', 'MailAnalysis', 'Domain', 'Date']
+__all__ = ["MailAnalyzer", "MailAnalysis", "Domain", "Date"]
 
-__version__ = "0.1.2"
-__config_path__ = path.join(path.expanduser('~'), '.config', 'spamanalyzer')
+with open(path.join(path.dirname(__file__), "..", "pyproject.toml"), "rb") as f:
+    __version__ = tomli.load(f)["tool"]["poetry"]["version"]
+__config_path__ = path.join(path.expanduser("~"), ".config", "spamanalyzer")
 
 __defaults__ = {
     "SPAMANALYZER_CONF_PATH": __config_path__,

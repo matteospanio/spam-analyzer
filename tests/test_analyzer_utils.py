@@ -1,26 +1,25 @@
 import mailparser
 import pytest
-import spamanalyzer.analyzer.utils as utils
+from spamanalyzer.analyzer import utils
 from spamanalyzer.analyzer.data_structures import Domain
 
 trustable_mail = mailparser.parse_from_file(
-    'tests/samples/97.47949e45691dd7a024dcfaacef4831461bf5d5f09c85a6e44ee478a5bcaf8539.email'
+    "tests/samples/97.47949e45691dd7a024dcfaacef4831461bf5d5f09c85a6e44ee478a5bcaf8539.email"
 )
 spam = mailparser.parse_from_file(
-    'tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email'
+    "tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email"
 )
 
 
 class TestInspectHeaders:
-
-    with open('conf/word_blacklist.txt') as f:
+    with open("conf/word_blacklist.txt") as f:
         wordlist = f.read().splitlines()
 
     headers_ok = utils.inspect_headers(trustable_mail, wordlist)
     bad_headers = utils.inspect_headers(spam, wordlist)
 
     def test_inspect_headers_method(self):
-        assert type(self.headers_ok) == dict
+        assert isinstance(self.headers_ok, dict)
         with pytest.raises(KeyError):
             self.headers_ok[7]
 
@@ -44,16 +43,15 @@ class TestInspectHeaders:
 
 
 class TestInspectBody:
-
-    with open('conf/word_blacklist.txt') as f:
+    with open("conf/word_blacklist.txt") as f:
         wordlist = f.read().splitlines()
 
     body_ok = utils.inspect_body(trustable_mail.body,
-                                 domain=Domain('github.com'),
+                                 domain=Domain("github.com"),
                                  wordlist=wordlist)
 
     def test_inspect_body_method(self):
-        assert type(self.body_ok) == dict
+        assert isinstance(self.body_ok, dict)
         with pytest.raises(KeyError):
             self.body_ok[5]
 
@@ -83,26 +81,25 @@ def test_dmarc_pass():
 
 
 def test_get_domain():
-    unknown_domain = 'the domain is unknown'
-    real_domain = 'the domain is google.com'
-    ip_address = '127.0.0.1'
+    unknown_domain = "the domain is unknown"
+    real_domain = "the domain is google.com"
+    ip_address = "127.0.0.1"
 
-    assert utils.get_domain(unknown_domain) == Domain('unknown')
-    assert utils.get_domain(real_domain) == Domain('google.com')
-    assert utils.get_domain(ip_address) == Domain('localhost')
+    assert utils.get_domain(unknown_domain) == Domain("unknown")
+    assert utils.get_domain(real_domain) == Domain("google.com")
+    assert utils.get_domain(ip_address) == Domain("localhost")
 
 
 class TestStringAnalysis:
-
-    html_text = '<html><body><p>some text</p></body></html>'
+    html_text = "<html><body><p>some text</p></body></html>"
     html_form = '<form action="https://github.com" method="post"><input type="text" name="username" /></form>'
-    plain_text = 'this is a plain text'
-    unsecure_string = 'a malicious executable script <script>function foo() {}</script>'
+    plain_text = "this is a plain text"
+    unsecure_string = "a malicious executable script <script>function foo() {}</script>"
     image_string = 'this is <img src="https://github.com" />'
-    empty_string = ''
-    upper_text = 'THIS IS AN UPPER TEXT'
-    limit_upper = 'This is a TEXT IN UPPER CASE'
-    limit_upper2 = 'This is a TEXT IN UPPER CASE WITH MANY UPPER WORDS'
+    empty_string = ""
+    upper_text = "THIS IS AN UPPER TEXT"
+    limit_upper = "This is a TEXT IN UPPER CASE"
+    limit_upper2 = "This is a TEXT IN UPPER CASE WITH MANY UPPER WORDS"
 
     def test_has_html(self):
         assert utils.has_html(self.empty_string) is False
@@ -124,9 +121,9 @@ class TestStringAnalysis:
         assert utils.has_script_tag(self.unsecure_string) is True
 
     def test_parse_html(self):
-        assert utils.parse_html(self.empty_string) == ''
-        assert utils.parse_html(self.html_text) == 'some text'
-        assert utils.parse_html(self.plain_text) == 'this is a plain text'
+        assert utils.parse_html(self.empty_string) == ""
+        assert utils.parse_html(self.html_text) == "some text"
+        assert utils.parse_html(self.plain_text) == "this is a plain text"
 
     def test_has_images(self):
         assert utils.has_images(self.empty_string) is False
@@ -147,41 +144,41 @@ class TestLinks:
 
     def test_https_only(self):
         empty_list = []
-        mixed_links = ['https://github.com', 'http://github.com']
-        https_links = ['https://github.com', 'https://google.com']
+        mixed_links = ["https://github.com", "http://github.com"]
+        https_links = ["https://github.com", "https://google.com"]
         assert utils.https_only(mixed_links) is False
         assert utils.https_only(https_links) is True
         assert utils.https_only(empty_list) is False
 
     def test_get_links(self):
-        empty_body = ''
+        empty_body = ""
         fake_links = utils.get_links_from_str(empty_body)
         links = utils.get_links_from_str(trustable_mail.body)
-        assert type(links) == list
+        assert isinstance(links, list)
         assert len(links) == 1
         assert fake_links == []
 
     def test_check_links(self):
         links = utils.check_links(trustable_mail.body)
-        assert links['has_links'] is True
-        assert links['mailto'] is False
-        assert links['https_only'] is True
+        assert links["has_links"] is True
+        assert links["mailto"] is False
+        assert links["https_only"] is True
 
 
 def test_forbidden_words():
-    forbidden_words = ['egg', 'spam']
-    body = 'a string of trustable words'
-    spam = 'spam is not a funny thing'
+    forbidden_words = ["egg", "spam"]
+    body = "a string of trustable words"
+    spam = "spam is not a funny thing"
 
     assert utils.percentage_of_bad_words(body, forbidden_words) == 0
     assert utils.percentage_of_bad_words(spam, forbidden_words) > 0
 
 
 def test_inspect_attachments():
-    assert utils.inspect_attachments(
-        trustable_mail.attachments)["has_attachments"] is False
-    assert utils.inspect_attachments(
-        trustable_mail.attachments)["attachment_is_executable"] is False
+    assert (utils.inspect_attachments(trustable_mail.attachments)["has_attachments"]
+            is False)
+    assert (utils.inspect_attachments(
+        trustable_mail.attachments)["attachment_is_executable"] is False)
     assert utils.inspect_attachments(spam.attachments)["has_attachments"] is False
-    assert utils.inspect_attachments(
-        spam.attachments)["attachment_is_executable"] is False
+    assert (utils.inspect_attachments(spam.attachments)["attachment_is_executable"]
+            is False)

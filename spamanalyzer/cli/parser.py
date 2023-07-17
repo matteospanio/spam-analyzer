@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace, FileType
-from spamanalyzer import __version__
 import os
+from spamanalyzer import __version__
 
 
 def add_args(parser: ArgumentParser, config: dict) -> None:
@@ -27,7 +27,9 @@ def add_args(parser: ArgumentParser, config: dict) -> None:
         version=f"%(prog)s {__version__}",
     )
     # add model configuration and training options
-    # parser.add_argument('-m', '--model', help='The model to use', default=config['files']['classifier'], type=FileType('rb'))
+    # parser.add_argument(
+    # '-m', '--model', help='The model to use',
+    # default=config['files']['classifier'], type=FileType('rb'))
 
     # TODO: add csv output format
     parser.add_argument(

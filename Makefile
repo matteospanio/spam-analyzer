@@ -1,66 +1,69 @@
 .PHONY: clean clean-test clean-pyc clean-build docs help
 .DEFAULT_GOAL := help
+POETRY := poetry run
 
 define PRINT_HELP_PYSCRIPT
 import re, sys
 
+BOLD = '\033[1m'
+BLUE = '\033[94m'
+END = '\033[0m'
+
+print("Usage: make <target>\n")
+print(BOLD + "%-20s%s" % ("target", "description") + END)
 for line in sys.stdin:
 	match = re.match(r'^([a-zA-Z_-]+):.*?## (.*)$$', line)
 	if match:
 		target, help = match.groups()
-		print("%-20s %s" % (target, help))
+		print( BLUE + "%-20s" % (target) + END + "%s" % (help))
 endef
 export PRINT_HELP_PYSCRIPT
 
-help:
-	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
+help: ## Show this help
+	$(POETRY) python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-clean: clean-build clean-pyc clean-test
+clean: clean-build clean-pyc clean-test ## Remove all build, test, coverage and Python artifacts
 
-clean-build:
+clean-build: ## Remove build artifacts
 	rm -fr build/
 	rm -fr dist/
 	rm -fr .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -fr {} +
 
-clean-pyc:
+clean-pyc: ## Remove Python file artifacts
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
 
-clean-test:
+clean-test: ## Remove test and coverage artifacts
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
 	rm -f coverage.xml
 
-setup:
-	pip install -r requirements.txt
+setup: clean ## Install dependencies
+	poetry install
 
-test:
-	pytest -r A
+test: ## Run tests quickly with the default Python
+	$(POETRY) pytest -r A
 
-test-coverage:
-	pytest --cov=spamanalyzer --cov-report=term-missing --cov-report=html
+test-coverage: ## Run tests with coverage
+	$(POETRY) pytest --cov=spamanalyzer --cov-report=term-missing --cov-report=html
 
-build-local:
-	pip install --editable .
+build: clean setup ## Build package
+	poetry build
 
-build:
-	python -m build
-	ls -l dist
+deploy: build ## Deploy package to PyPI
+	poetry publish
 
-deploy:
-	twine upload --repository testpypi dist/* --verbose
+format: ## Format code
+	$(POETRY) yapf --in-place --recursive ./spamanalyzer ./tests
 
-format:
-	yapf --in-place --recursive ./spamanalyzer ./tests
+lint: format ## Lint code
+	$(POETRY) pylint ./spamanalyzer ./tests
 
-lint:
-	pylint ./spamanalyzer ./tests
-
-docs:
-	pdoc --html --output-dir pdoc ./spamanalyzer
+docs: ## Generate pdoc HTML documentation, including API docs
+	$(POETRY) pdoc --output-dir pdoc ./spamanalyzer
