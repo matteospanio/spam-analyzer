@@ -47,15 +47,3 @@ def save_model(model: SpamClassifier, path: str) -> None:
 def load_model(path: str):
     with open(path, "rb") as f:
         return pickle.load(f)
-
-
-if __name__ == "__main__":
-    import pandas as pd
-
-    df = pd.read_csv("dataset/spam.csv")
-
-    X = df.drop(["is_spam", "Unnamed: 3", "Unnamed: 4"], axis=1)
-    y = df["is_spam"]
-
-    model = SpamClassifier(X, y)
-    save_model(model, "classifier.pkl")

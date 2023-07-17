@@ -7,36 +7,10 @@ from rich.columns import Columns
 from rich.table import Table
 from spamanalyzer.analyzer.data_structures import MailAnalysis
 
-HEADERS = [
-    "has_spf",
-    "has_dkim",
-    "has_dmarc",
-    "domain_matches",
-    "auth_warn",
-    "has_suspect_subject",
-    "subject_is_uppercase",
-    "send_date_is_RFC2822_compliant",
-    "send_date_tz_is_valid",
-    "has_received_date",
-    "uppercase_body",
-    "script",
-    "images",
-    "https_only",
-    "mailto",
-    "links",
-    "bad_words_percentage",
-    "html",
-    "form",
-    "polarity",
-    "subjectivity",
-    "attachments",
-    "attach_is_executable",
-    "is_spam",
-]
-
 
 def print_output(data, output_format: str, verbose: bool, output_file=None) -> None:
-    """Prints the output of the `MailAnalysis` in the specified format (csv, json or default).
+    """Prints the output of the `MailAnalysis` in the specified format (csv,
+    json or default).
 
     Args:
         data (`list`): a list of data to output

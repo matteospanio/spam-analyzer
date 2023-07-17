@@ -8,7 +8,7 @@ def test_get_files_from_directory():
     file_list = get_files_from_dir(os.path.join(os.path.curdir, "tests/samples"))
     test_file = file_list[0]
     assert isinstance(file_list, list)
-    assert issubclass(test_file, str)
+    assert isinstance(test_file, str)
     assert os.path.isfile(test_file) is True
 
 

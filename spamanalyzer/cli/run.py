@@ -1,10 +1,11 @@
-import os, sys
+import os
+import sys
 
-import spamanalyzer.files as files
+from rich.progress import track
+from spamanalyzer import files
 from spamanalyzer.cli import parser
 from spamanalyzer.analyzer.data_structures import MailAnalyzer
 from spamanalyzer.display import print_output
-from rich.progress import track
 
 
 def app(

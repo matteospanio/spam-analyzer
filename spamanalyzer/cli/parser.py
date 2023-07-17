@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace, FileType
-from spamanalyzer import __version__
 import os
+from spamanalyzer import __version__
 
 
 def add_args(parser: ArgumentParser, config: dict) -> None:

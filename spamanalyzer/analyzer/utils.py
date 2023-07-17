@@ -1,9 +1,9 @@
 from enum import Enum
 import re
-import spamanalyzer.analyzer.data_structures as ds
 from bs4 import BeautifulSoup
 from textblob import TextBlob
 from mailparser import MailParser
+import spamanalyzer.analyzer.data_structures as ds
 
 
 class Regex(Enum):
@@ -29,7 +29,8 @@ def inspect_headers(email: MailParser, wordlist):
 
     Args:
         headers (dict): a dictionary containing parsed email headers
-        wordlist (list[str]): a list of words to be used as a spam filter in the subject field
+        wordlist (list[str]): a list of words to be used as a spam filter in the
+        subject field
 
     Returns:
         tuple: a tuple containing all the results of the analysis
@@ -37,10 +38,13 @@ def inspect_headers(email: MailParser, wordlist):
     - has_spf (bool): True if the email has a SPF record
     - has_dkim (bool): True if the email has a DKIM record
     - has_dmarc (bool): True if the email has a DMARC record
-    - domain_matches (bool): True if the domain of the sender matches the domain of the server
+    - domain_matches (bool): True if the domain of the sender matches the domain of
+      the server
     - has_auth_warning (bool): True if the email has an authentication warning
-    - has_suspect_words (bool): True if the email has gappy words or forbidden words in the subject
-    - send_year (int): the year in which the email was sent (in future versions should be a datetime object)
+    - has_suspect_words (bool): True if the email has gappy words or forbidden words
+      in the subject
+    - send_year (int): the year in which the email was sent (in future versions should
+      be a datetime object)
     """
 
     headers = email.headers
@@ -93,7 +97,9 @@ def dmarc_pass(headers: dict) -> bool:
 
 
 def has_auth_warning(headers: dict) -> bool:
-    """Checks if the email has an authentication warning, usually it means that the sender claimed to be someone else"""
+    """Checks if the email has an authentication warning, usually it means that the
+    sender claimed to be someone else
+    """
     if headers.get("X-Authentication-Warning") is not None:
         return True
     return False
@@ -104,7 +110,8 @@ def analyze_subject(headers: dict, wordlist) -> tuple[bool, bool]:
 
     Args:
         headers (dict): a dictionary containing parsed email headers
-        wordlist (list[str]): a list of words to be used as a spam filter in the subject field
+        wordlist (list[str]): a list of words to be used as a spam filter in the subject
+        field
     """
     subject: str = headers.get("Subject")
     if subject is not None:
@@ -122,12 +129,14 @@ def analyze_subject(headers: dict, wordlist) -> tuple[bool, bool]:
 
 
 def parse_date(headers: dict):
-    """Date format should follow RFC 2822, this function expects a date in the format: "Wed, 21 Oct 2015 07:28:00 -0700",
-    and returns a tuple where:
-    1. the first element is the parsed date or `None` if the date is not in the correct format
+    """Date format should follow RFC 2822, this function expects a date in the format:
+    "Wed, 21 Oct 2015 07:28:00 -0700", and returns a tuple where:
+    1. the first element is the parsed date or `None` if the date is not in the correct
+      format
     2. the second element is a boolean indicating if the date is valid or not
 
-    Eventually in future versions will be specified the kind of error that occurred, like in spamassassin (e.g. "invalid date", "absurd tz", "future date")
+    Eventually in future versions will be specified the kind of error that occurred,
+    like in spamassassin (e.g. "invalid date", "absurd tz", "future date")
 
     """
     date = headers.get("Date") or headers.get("date_utc")
@@ -261,7 +270,7 @@ def has_html(body: str) -> bool:
     Returns:
         bool: True if the email contains html tags
     """
-    return True if Regex.HTML_TAG.value.search(body) else False
+    return bool(Regex.HTML_TAG.value.search(body))
 
 
 def has_images(body: str) -> bool:
@@ -273,7 +282,7 @@ def has_images(body: str) -> bool:
     Returns:
         bool: True if the email contains images
     """
-    return True if Regex.IMAGE_TAG.value.search(body) else False
+    return bool(Regex.IMAGE_TAG.value.search(body))
 
 
 def has_html_form(body) -> bool:
@@ -285,7 +294,7 @@ def has_html_form(body) -> bool:
     Returns:
         bool: True if the email has a form
     """
-    return True if Regex.HTML_FORM.value.search(body) else False
+    return bool(Regex.HTML_FORM.value.search(body))
 
 
 def percentage_of_bad_words(body, wordlist) -> float:
@@ -335,7 +344,7 @@ def has_mailto_links(body) -> bool:
     Returns:
         bool: True if the email has mailto links
     """
-    return True if Regex.MAILTO.value.search(body) else False
+    return bool(Regex.MAILTO.value.search(body))
 
 
 def check_links(body):

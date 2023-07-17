@@ -1,13 +1,16 @@
-import mailparser, socket, yaml
-import dns.resolver, dns.name
-import numpy as np
+import socket
 from dataclasses import dataclass
 from datetime import datetime
 from os import path
 from dateutil.parser import parse, ParserError
+import yaml
+import dns.resolver
+import dns.name
+import mailparser
+import numpy as np
 
-import spamanalyzer.analyzer.classifier as classifier
-import spamanalyzer.analyzer.utils as utils
+from spamanalyzer.analyzer import classifier
+from spamanalyzer.analyzer import utils
 
 CONFIG_FILE = path.join(path.expanduser("~"), ".config", "spamanalyzer", "config.yaml")
 
@@ -30,7 +33,8 @@ class Domain:
         this way makes the instatiation of the class slower, but it is the only way to
         get the real domain name.
         """
-        # TODO: add a cache for the domain names or find a better way to resolve domain aliases
+        # TODO: add a cache for the domain names or find a better way to resolve domain
+        #       aliases
         # try:
         #     ip = socket.gethostbyname(name)
         #     self.name = socket.gethostbyaddr(ip)[0]
@@ -42,7 +46,8 @@ class Domain:
     @staticmethod
     def from_string(domain_str: str):
         """
-        Instantiate a Domain object from string, it is a wrapper of the `self.__init__` method
+        Instantiate a Domain object from string,
+        it is a wrapper of the `self.__init__` method
 
         Args:
             domain_str (str): a string containing a domain to be parsed
@@ -55,7 +60,8 @@ class Domain:
     @staticmethod
     def from_ip(ip_addr: str):
         """Create a Domain object from an ip address.
-        It translate the ip address to its domain name via the `socket.gethostbyaddr` method
+        It translate the ip address to its domain name via the
+        `socket.gethostbyaddr` method
 
         Args:
             ip_addr (str): the targetted ip address
@@ -101,7 +107,8 @@ class MailAnalysis:
       it is a standard to prevent email spoofing.
       The SPF record is a TXT record that contains a policy that specifies which mail
       servers are allowed to send email from a specified domain.
-    - `has_dkim`, it is `True` if the mail has a DKIM header (DomainKeys Identified Mail).
+    - `has_dkim`, it is `True` if the mail has a DKIM header
+      (DomainKeys Identified Mail).
       The DKIM signature is a digital signature that is added to an email message to
       verify that the message has not been altered since it was signed.
     - `has_dmarc`, it is `True` if the mail has a DMARC header (Domain-based Message
@@ -152,7 +159,8 @@ class MailAnalysis:
     It is a dictionary containing a detailed analysis of the mail's attachments.
     It contains the following keys:
     - `has_attachments`, it is `True` if the mail has attachments
-    - `attachment_is_executable`, it is `True` if the mail has an attachment in executable format
+    - `attachment_is_executable`, it is `True` if the mail has an attachment in
+      executable format
     """
 
     @staticmethod
@@ -163,10 +171,11 @@ class MailAnalysis:
             mails (list[MailAnalysis]): a list of mails to be classified
 
         Returns:
-            list: a list of boolean values, `True` if the mail is spam, `False` otherwise
+            list: a list of boolean values, `True` if the mail is spam, `False`
+            otherwise
         """
 
-        with open(CONFIG_FILE, "r") as f:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
             model_path = yaml.safe_load(f)["files"]["classifier"]
 
         ml = classifier.SpamClassifier(path.expanduser(model_path))
@@ -174,12 +183,12 @@ class MailAnalysis:
         # rearrange input
         adapted_mails = [np.array(mail.to_list()) for mail in mails]
         predictions = ml.predict(adapted_mails)
-        return [True if prediction == 1 else False for prediction in predictions]
+        return [prediction == 1 for prediction in predictions]
 
     def is_spam(self) -> bool:
         """Determine if the email is spam based on the analysis of the mail"""
 
-        with open(CONFIG_FILE, "r") as f:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
             model_path = yaml.safe_load(f)["files"]["classifier"]
 
         ml = classifier.SpamClassifier(path.expanduser(model_path))
@@ -205,9 +214,11 @@ class MailAnalysis:
             self.headers["has_suspect_subject"],
             self.headers["subject_is_uppercase"],
             self.headers["send_date"].is_RFC2822_formatted()
-            if self.headers["send_date"] is not None else False,
+            if self.headers["send_date"] is not None
+            else False,
             self.headers["send_date"].is_tz_valid()
-            if self.headers["send_date"] is not None else False,
+            if self.headers["send_date"] is not None
+            else False,
             self.headers["received_date"] is not None,
             self.body["is_uppercase"],
             self.body["contains_script"],
@@ -226,15 +237,20 @@ class MailAnalysis:
 
 
 class MailAnalyzer:
-    """Analyze a mail and return a `MailAnalysis` object, essentially it is a factory of `MailAnalysis`.
+    """Analyze a mail and return a `MailAnalysis` object,
+    essentially it is a factory of `MailAnalysis`.
 
     The `MailAnalyzer` object provides two methods to analyze a mail:
-    - `analyze` to analyze a mail from a file, it returns a `MailAnalysis` object containing a description of the headers, body and attachments of the mail
-    - `get_domain` to get the domain of the mail from the headers, it returns a `Domain` object
+    - `analyze` to analyze a mail from a file, it returns a `MailAnalysis`
+      object containing a description of the headers, body and attachments of the mail
+    - `get_domain` to get the domain of the mail from the headers,
+      it returns a `Domain` object
 
-    The core of the analysis is the `analyze` method, it uses the `MailParser` class (from `mailparser` library) to parse the mail.
-    The analysis is based on separated checks for the headers, body and attachments and each check is implemented in
-    a separated function: this make the analysis modular and easy to extend in future versions.
+    The core of the analysis is the `analyze` method, it uses the `MailParser` class
+    (from `mailparser` library) to parse the mail.
+    The analysis is based on separated checks for the headers, body and attachments and
+    each check is implemented in a separated function: this make the analysis modular
+    and easy to extend in future versions.
     """
 
     def __init__(self, wordlist):
@@ -244,14 +260,14 @@ class MailAnalyzer:
         email = mailparser.parse_from_file(email_path)
 
         headers = utils.inspect_headers(email, self.wordlist)
-        body = utils.inspect_body(email.body, self.wordlist,
-                                  self.get_domain(email_path))
+        body = utils.inspect_body(
+            email.body, self.wordlist, self.get_domain(email_path)
+        )
         attachments = utils.inspect_attachments(email.attachments)
 
-        return MailAnalysis(file_path=email_path,
-                            headers=headers,
-                            body=body,
-                            attachments=attachments)
+        return MailAnalysis(
+            file_path=email_path, headers=headers, body=body, attachments=attachments
+        )
 
     def get_domain(self, email_path: str) -> Domain:
         email = mailparser.parse_from_file(email_path)
@@ -265,12 +281,21 @@ class MailAnalyzer:
 
 
 class Date:
-    """A date object, it is used to store the date of the email and to perform some checks on it.
+    """A date object, it is used to store the date of the email and to perform some
+    checks on it.
 
-    The focus of the checks is to determine if the date is valid and if it is in the correct format.
+    The focus of the checks is to determine if the date is valid and if it is in the
+    correct format.
     The date is valid if it is in the RFC2822 format and if the timezone is valid:
-    - [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3): specifies the format of the date in the headers of the mail in the form `Day, DD Mon YYYY HH:MM:SS TZ`. Of course it is not the only format used in the headers, but it is the most common, so it is the one we use to check if the date is valid.
-    - [TZ](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones): specifies the timezone of the date. We included this check since often malicious emails can have a weird behavior, it is not uncommon to see a not existing timezone in the headers of the mail (valid timezones are from -12 to +14).
+    - [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3): specifies the
+      format of the date in the headers of the mail in the form
+      `Day, DD Mon YYYY HH:MM:SS TZ`. Of course it is not the only format used in the
+      headers, but it is the most common, so it is the one we use to check if the
+      date is valid.
+    - [TZ](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones): specifies
+      the timezone of the date. We included this check since often malicious emails
+      can have a weird behavior, it is not uncommon to see a not existing timezone
+      in the headers of the mail (valid timezones are from -12 to +14).
     """
 
     _raw_date: str
@@ -316,17 +341,16 @@ class Date:
                 return parse(reduced_date), False
 
     def is_RFC2822_formatted(self) -> bool:
-        """Check if the date is in the [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3) format."""
+        """Check if the date is in the
+        [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3) format.
+        """
         return self._parse()[1]
 
     def is_tz_valid(self) -> bool:
         """The timezone is valid if it is in the range [-12, 14]"""
 
         try:
-            if -12 <= self._get_tz_offset() <= 14:
-                return True
-            else:
-                return False
+            return -12 <= self._get_tz_offset() <= 14
         except Exception:
             return False
 
