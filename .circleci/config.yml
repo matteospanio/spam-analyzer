@@ -11,6 +11,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install Poetry
+          command: pip install poetry==1.3.1
+      - run:
           name: Install dependencies
           command: poetry install
       - run:
