@@ -7,7 +7,7 @@ jobs:
       - checkout
       - run:
           name: Upgrade poetry
-          command: pip remove poetry && curl -sSL https://install.python-poetry.org | python3 -
+          command: pip uninstall poetry && curl -sSL https://install.python-poetry.org | python3 -
       - run:
           name: Install dependencies
           command: poetry install
