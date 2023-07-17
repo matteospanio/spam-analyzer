@@ -1,4 +1,5 @@
 import socket
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from os import path
@@ -308,9 +309,15 @@ class Date:
     @property
     def timezone(self) -> int:
         tz = self.date.tzinfo
-        if tz is None or str(tz) == "UTC":
+        if tz is None:
             return 0
-        return int(str(tz).replace("UTC", "").split(":")[0])
+
+        # remove all non numeric characters exept ":" from the timezone
+        clean_tz = re.sub("[^0-9:]", "", str(tz))
+        if clean_tz == "":
+            return 0
+
+        return int(str(clean_tz).replace("UTC", "").split(":")[0])
 
     def __eq__(self, other) -> bool:
         if isinstance(other, Date):

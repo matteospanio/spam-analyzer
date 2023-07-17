@@ -152,4 +152,5 @@ dmypy.json
 pdoc
 
 dataset
+data
 tests/spamassassin_test
