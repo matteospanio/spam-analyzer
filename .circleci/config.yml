@@ -3,6 +3,11 @@ jobs:
   build:
     docker:
       - image: cimg/python:3.10.12
+    environment:
+        LC_ALL: C.UTF-8
+        LANG: C.UTF-8
+        LANGUAGE: C.UTF-8
+
     steps:
       - checkout
       - run:
