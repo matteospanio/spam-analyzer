@@ -214,11 +214,9 @@ class MailAnalysis:
             self.headers["has_suspect_subject"],
             self.headers["subject_is_uppercase"],
             self.headers["send_date"].is_RFC2822_formatted()
-            if self.headers["send_date"] is not None
-            else False,
+            if self.headers["send_date"] is not None else False,
             self.headers["send_date"].is_tz_valid()
-            if self.headers["send_date"] is not None
-            else False,
+            if self.headers["send_date"] is not None else False,
             self.headers["received_date"] is not None,
             self.body["is_uppercase"],
             self.body["contains_script"],
@@ -260,14 +258,14 @@ class MailAnalyzer:
         email = mailparser.parse_from_file(email_path)
 
         headers = utils.inspect_headers(email, self.wordlist)
-        body = utils.inspect_body(
-            email.body, self.wordlist, self.get_domain(email_path)
-        )
+        body = utils.inspect_body(email.body, self.wordlist,
+                                  self.get_domain(email_path))
         attachments = utils.inspect_attachments(email.attachments)
 
-        return MailAnalysis(
-            file_path=email_path, headers=headers, body=body, attachments=attachments
-        )
+        return MailAnalysis(file_path=email_path,
+                            headers=headers,
+                            body=body,
+                            attachments=attachments)
 
     def get_domain(self, email_path: str) -> Domain:
         email = mailparser.parse_from_file(email_path)
@@ -298,21 +296,28 @@ class Date:
       in the headers of the mail (valid timezones are from -12 to +14).
     """
 
-    _raw_date: str
+    __raw_date: str
     date: datetime
 
     def __init__(self, date: str):
         if date is None or date == "":
             raise ValueError("Date cannot be empty or None")
-        self._raw_date = date
-        self.date = self._parse()[0]
+        self.__raw_date = date
+        self.date = self.__parse()[0]
+
+    @property
+    def timezone(self) -> int:
+        tz = self.date.tzinfo
+        if tz is None or str(tz) == "UTC":
+            return 0
+        return int(str(tz).replace("UTC", "").split(":")[0])
 
     def __eq__(self, other) -> bool:
         if isinstance(other, Date):
-            return self.date.timestamp() == other.date.timestamp()
+            return self.date.isoformat() == other.date.isoformat()
         if isinstance(other, datetime):
-            return self.date.timestamp() == other.timestamp()
-        return False
+            return self.date.isoformat() == other.isoformat()
+        raise TypeError(f"Cannot compare Date with {type(other)}")
 
     def to_dict(self) -> dict:
         return {
@@ -329,14 +334,14 @@ class Date:
         }
 
     # parse the date
-    def _parse(self) -> tuple[datetime, bool]:
+    def __parse(self) -> tuple[datetime, bool]:
         try:
-            return datetime.strptime(self._raw_date, "%a, %d %b %Y %H:%M:%S %z"), True
+            return datetime.strptime(self.__raw_date, "%a, %d %b %Y %H:%M:%S %z"), True
         except ValueError:
             try:
-                return parse(self._raw_date), False
+                return parse(self.__raw_date), False
             except ParserError:
-                split_date = self._raw_date.split(" ")
+                split_date = self.__raw_date.split(" ")
                 reduced_date = " ".join(split_date[0:5])
                 return parse(reduced_date), False
 
@@ -344,18 +349,11 @@ class Date:
         """Check if the date is in the
         [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3) format.
         """
-        return self._parse()[1]
+        return self.__parse()[1]
 
     def is_tz_valid(self) -> bool:
         """The timezone is valid if it is in the range [-12, 14]"""
-
-        try:
-            return -12 <= self._get_tz_offset() <= 14
-        except Exception:
-            return False
-
-    def _get_tz_offset(self) -> int:
-        return int(str(self.date.tzinfo).replace("UTC", "").split(":")[0])
+        return -12 <= self.timezone <= 14
 
     def __repr__(self) -> str:
         return f"{self.date.isoformat()}"

@@ -1,6 +1,9 @@
+import datetime
+import os
 import socket
 from dateutil.parser import parse
 import pytest
+import dns.name
 from spamanalyzer.analyzer.data_structures import (
     Domain,
     MailAnalysis,
@@ -9,8 +12,16 @@ from spamanalyzer.analyzer.data_structures import (
 )
 from spamanalyzer.files import handle_configuration_files
 
-trustable_mail = "tests/samples/97.47949e45691dd7a024dcfaacef4831461bf5d5f09c85a6e44ee478a5bcaf8539.email"
-spam = "tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email"
+SAMPLES_FOLDER = "tests/samples"
+
+trustable_mail = os.path.join(
+    SAMPLES_FOLDER,
+    "97.47949e45691dd7a024dcfaacef4831461bf5d5f09c85a6e44ee478a5bcaf8539.email",
+)
+spam = os.path.join(
+    SAMPLES_FOLDER,
+    "00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email",
+)
 
 with open("conf/word_blacklist.txt", "r", encoding="utf-8") as f:
     wordlist = f.read().splitlines()
@@ -27,6 +38,7 @@ class TestDomainMethods:
 
     def test_get_ip_address(self):
         assert self.domain.get_ip_address() == self.ip_addr
+        assert Domain.from_ip("inventato").name == dns.name.from_text("unknown")
 
 
 class TestMailAnalyzer:
@@ -54,7 +66,15 @@ class TestMailAnalysis:
 
     def test_multiple_analysis(self):
         assert MailAnalysis.classify_multiple_input([self.mail_ok_an,
-                                                     self.mail_spam]) == [False, False]
+                                                     self.mail_spam]) == [False, True]
+
+    def test_to_dict(self):
+        dict_mail = self.mail_ok_an.to_dict()
+        assert isinstance(dict_mail, dict)
+        assert dict_mail["file_name"] == trustable_mail
+        assert dict_mail["is_spam"] is False
+        with pytest.raises(KeyError):
+            assert dict_mail["not_existing_key"] is None
 
 
 class TestDate:
@@ -86,9 +106,24 @@ class TestDate:
         date3 = Date(self.invalid_utc)
 
         assert date1.is_tz_valid() is True
-        assert date2.is_tz_valid() is False
+        assert date2.is_tz_valid() is True
         assert date3.is_tz_valid() is False
 
     def test_empty_date_creation(self):
         with pytest.raises(ValueError):
             Date(self.empty_date)
+
+    def test_equality(self):
+        date_datetime = datetime.datetime.strptime(self.RFC_date,
+                                                   "%a, %d %b %Y %H:%M:%S %z")
+
+        assert Date(self.RFC_date) == Date(self.RFC_date)
+        assert Date(self.RFC_date) != Date(self.invalid_date)
+        assert Date(self.RFC_date) == date_datetime
+        with pytest.raises(TypeError):
+            assert Date(self.RFC_date) == 1
+
+    def test_timezone(self):
+        assert Date(self.RFC_date).timezone == 1
+        assert Date(self.date_plus_0).timezone == 0
+        assert Date(self.invalid_utc).timezone == 19
