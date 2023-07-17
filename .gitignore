@@ -148,5 +148,8 @@ dmypy.json
 /docs/*.xml
 /docs/*.xdv
 
+# pdoc
+pdoc
+
 dataset
 tests/spamassassin_test
