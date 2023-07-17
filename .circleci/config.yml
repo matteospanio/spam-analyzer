@@ -6,11 +6,14 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install poetry
+          command: pip install poetry
+      - run:
           name: Install dependencies
-          command: pip install -r requirements.txt
+          command: poetry install
       - run:
           name: Run tests
-          command: pytest --cov=spamanalyzer/ --cov-report=xml
+          command: poetry run pytest --cov=spamanalyzer/ --cov-report=xml
       - run:
           name: Send coverage to Coveralls
-          command: coveralls
+          command: poetry run coveralls
