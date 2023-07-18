@@ -1,6 +1,6 @@
 # Installation
 
-## PIP (recommended)
+## PIP
 
 spam-analyzer is available on PyPI, so you can install it with pip:
 
@@ -20,8 +20,23 @@ poetry add spam-analyzer
 
 For the latest but not yet released version, you can install it from the source code:
 
-```bash
-git clone https://github.com/matteospanio/spam-analyzer.git
-cd spam-analyzer
-pip install .
-```
+=== "PIP"
+
+    ```bash
+    git clone https://github.com/matteospanio/spam-analyzer.git
+    cd spam-analyzer
+    pip install .
+    ```
+=== "Poetry"
+
+    ```bash
+    git clone https://github.com/matteospanio/spam-analyzer.git
+    cd spam-analyzer
+    poetry install # or poetry build
+    ```
+
+    !!! note
+        There are also two make targets that can be used to build the project:
+
+        - `make build` to build the project
+        - `make setup` to setup the development environment
