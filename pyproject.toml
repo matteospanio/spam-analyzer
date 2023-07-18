@@ -46,7 +46,10 @@ coveralls = "^3.3.1"
 
 
 [tool.poetry.group.docs.dependencies]
-pdoc = "^14.0.0"
+mkdocs = "^1.4.3"
+mkdocs-material = "^9.1.19"
+mkdocs-git-revision-date-localized-plugin = "^1.2.0"
+mkdocstrings = {version = "^0.20.0", extras = ["python"] }
 
 [tool.pylint]
 max-line-length = 88
