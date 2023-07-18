@@ -49,7 +49,7 @@ coveralls = "^3.3.1"
 mkdocs = "^1.4.3"
 mkdocs-material = "^9.1.19"
 mkdocs-git-revision-date-localized-plugin = "^1.2.0"
-mkdocstrings = "^0.22.0"
+mkdocstrings = {version = "^0.20.0", extras = ["python"] }
 
 [tool.pylint]
 max-line-length = 88

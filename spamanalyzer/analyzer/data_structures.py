@@ -21,19 +21,19 @@ class Domain:
     """
     A Domain is a class representing an internet domain,
     here you can get information about the target domain
+
+    The constructor resolves any domain alias to the real domain name:
+    in fact common domain names are aliases for more complex server names
+    that would be difficult to remember for common users,
+    since there is not a direct method in the `socket` module to resolve domain
+    aliases, we use the `gethostbyname` chained with the `gethostbyaddr` methods
+    this way makes the instatiation of the class slower, but it is the only way to
+    get the real domain name.
     """
 
     name: dns.name.Name
 
     def __init__(self, name: str) -> None:
-        """The constructor resolves any domain alias to the real domain name:
-        in fact common domain names are aliases for more complex server names
-        that would be difficult to remember for common users,
-        since there is not a direct method in the `socket` module to resolve domain
-        aliases, we use the `gethostbyname` chained with the `gethostbyaddr` methods
-        this way makes the instatiation of the class slower, but it is the only way to
-        get the real domain name.
-        """
         # TODO: add a cache for the domain names or find a better way to resolve domain
         #       aliases
         # try:
@@ -240,6 +240,7 @@ class MailAnalyzer:
     essentially it is a factory of `MailAnalysis`.
 
     The `MailAnalyzer` object provides two methods to analyze a mail:
+
     - `analyze` to analyze a mail from a file, it returns a `MailAnalysis`
       object containing a description of the headers, body and attachments of the mail
     - `get_domain` to get the domain of the mail from the headers,
