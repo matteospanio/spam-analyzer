@@ -13,7 +13,7 @@ from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as package_version
 
 
-def __get_package_version():
+def __get_package_version__():
     try:
         return package_version("spam-analyzer")
     except PackageNotFoundError:
@@ -21,7 +21,7 @@ def __get_package_version():
 
 
 __all__ = ["MailAnalyzer", "MailAnalysis", "Domain", "Date"]
-__version__ = __get_package_version()
+__version__ = __get_package_version__()
 __config_path__ = path.join(path.expanduser("~"), ".config", "spamanalyzer")
 
 __defaults__ = {

@@ -12,6 +12,7 @@ exclude_lines =
     except OSError
     def __repr__
     def __str__
+    def __get_package_version__
     raise AssertionError
     raise NotImplementedError
     if __name__ == .__main__.:
