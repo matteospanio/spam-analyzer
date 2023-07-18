@@ -1,2 +1,4 @@
-include conf/*
+include conf/classifier.pkl
+include conf/config.yaml
+include conf/word_blacklist.txt
 include README.md

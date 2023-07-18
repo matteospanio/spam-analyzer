@@ -17,7 +17,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
-include = ["*.yaml", "*.txt", "*/*.yaml", "*/*.txt"]
+include = ["*.yaml", "*.txt", "*/*.yaml", "*/*.txt", "conf/*"]
 
 [tool.poetry.scripts]
 spam-analyzer = "spamanalyzer.cli.run:main"
