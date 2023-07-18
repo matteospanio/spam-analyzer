@@ -65,5 +65,8 @@ format: ## Format code
 lint: format ## Lint code
 	$(POETRY) pylint ./spamanalyzer ./tests
 
-docs: ## Generate pdoc HTML documentation, including API docs
-	$(POETRY) pdoc --output-dir pdoc ./spamanalyzer
+docs: ## Generate mkdocs HTML documentation, including API docs
+	$(POETRY) mkdocs build
+
+docs-serve: ## Serve mkdocs HTML documentation
+	$(POETRY) mkdocs serve
