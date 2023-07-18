@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spam-analyzer"
-version = "0.2.0"
+version = "0.2.1b"
 description = "A simple email analyzer"
 authors = ["Matteo Spanio <matteo.spanio97@gmail.com>"]
 license = "GPLv3"
@@ -35,7 +35,6 @@ pandas = "^2.0.3"
 beautifulsoup4 = "^4.12.2"
 dnspython = "^2.4.0"
 textblob = "^0.17.1"
-tomli = "^2.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

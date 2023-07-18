@@ -6,14 +6,22 @@
 """
 
 from os import path
-import tomli
 from spamanalyzer.analyzer import *
 from .files import handle_configuration_files
 
-__all__ = ["MailAnalyzer", "MailAnalysis", "Domain", "Date"]
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as package_version
 
-with open(path.join(path.dirname(__file__), "..", "pyproject.toml"), "rb") as f:
-    __version__ = tomli.load(f)["tool"]["poetry"]["version"]
+
+def __get_package_version():
+    try:
+        return package_version("spam-analyzer")
+    except PackageNotFoundError:
+        return "Version information not available. Make sure you have installed your package using Poetry."
+
+
+__all__ = ["MailAnalyzer", "MailAnalysis", "Domain", "Date"]
+__version__ = __get_package_version()
 __config_path__ = path.join(path.expanduser("~"), ".config", "spamanalyzer")
 
 __defaults__ = {
