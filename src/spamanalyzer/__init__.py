@@ -25,8 +25,8 @@ in this way we can also parallelize the analysis of multiple emails.
 """
 
 from os import path
-from spamanalyzer.analyzer import *
-from .files import handle_configuration_files
+from spamanalyzer import *
+from app.files import handle_configuration_files
 
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as package_version

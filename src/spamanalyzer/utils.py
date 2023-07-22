@@ -3,7 +3,8 @@ import re
 from bs4 import BeautifulSoup
 from textblob import TextBlob
 from mailparser import MailParser
-import spamanalyzer.analyzer.data_structures as ds
+import spamanalyzer.data_structures as ds
+from spamanalyzer.date import Date
 
 
 class Regex(Enum):
@@ -148,7 +149,7 @@ def parse_date(headers: dict):
     date = date.splitlines()[0]
 
     # parse date
-    return ds.Date(date)
+    return Date(date)
 
 
 def from_domain_matches_received(email: MailParser) -> bool:

@@ -1,94 +1,14 @@
-import socket
-import re
 from dataclasses import dataclass
-from datetime import datetime
 from os import path
-from dateutil.parser import parse, ParserError
 import yaml
-import dns.resolver
-import dns.name
 import mailparser
 import numpy as np
 
-from spamanalyzer.analyzer import classifier
-from spamanalyzer.analyzer import utils
+from spamanalyzer import classifier
+from spamanalyzer import utils
+from spamanalyzer.domain import Domain
 
 CONFIG_FILE = path.join(path.expanduser("~"), ".config", "spamanalyzer", "config.yaml")
-
-
-@dataclass
-class Domain:
-    """
-    A Domain is a class representing an internet domain,
-    here you can get information about the target domain
-
-    The constructor resolves any domain alias to the real domain name:
-    in fact common domain names are aliases for more complex server names
-    that would be difficult to remember for common users,
-    since there is not a direct method in the `socket` module to resolve domain
-    aliases, we use the `gethostbyname` chained with the `gethostbyaddr` methods
-    this way makes the instatiation of the class slower, but it is the only way to
-    get the real domain name.
-    """
-
-    name: dns.name.Name
-
-    def __init__(self, name: str) -> None:
-        # TODO: add a cache for the domain names or find a better way to resolve domain
-        #       aliases
-        # try:
-        #     ip = socket.gethostbyname(name)
-        #     self.name = socket.gethostbyaddr(ip)[0]
-        # except Exception:
-        #     # if the name is not a valid domain name, we just use it
-        #     self.name = name
-        self.name = dns.name.from_text(name)
-
-    @staticmethod
-    def from_string(domain_str: str):
-        """
-        Instantiate a Domain object from string,
-        it is a wrapper of the `self.__init__` method
-
-        Args:
-            domain_str (str): a string containing a domain to be parsed
-
-        Returns:
-            Domain: the domain obtained from the string
-        """
-        return Domain(domain_str)
-
-    @staticmethod
-    def from_ip(ip_addr: str):
-        """Create a Domain object from an ip address.
-        It translate the ip address to its domain name via the
-        `socket.gethostbyaddr` method
-
-        Args:
-            ip_addr (str): the targetted ip address
-
-        Returns:
-            Domain: the domain obtained from the ip address
-        """
-        try:
-            domain_name = socket.gethostbyaddr(ip_addr)[0]
-            return Domain(domain_name)
-        except Exception:
-            return Domain("unknown")
-
-    def get_ip_address(self) -> str:
-        """Translate the domain name to its ip address querying the DNS server"""
-        return dns.resolver.resolve(self.name, "A")[0].to_text()
-
-    def __eq__(self, __o: object) -> bool:
-        (
-            result,
-            _,
-            _,
-        ) = self.name.fullcompare(__o.name)
-        if result in [1, 2, 3]:
-            return True
-        return False
 
 
 @dataclass
@@ -278,90 +198,3 @@ class MailAnalyzer:
 
     def __repr__(self):
         return f"<MailAnalyzer(wordlist={self.wordlist})>"
-
-
-class Date:
-    """A date object, it is used to store the date of the email and to perform some
-    checks on it.
-
-    The focus of the checks is to determine if the date is valid and if it is in the
-    correct format.
-    The date is valid if it is in the RFC2822 format and if the timezone is valid:
-    - [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3): specifies the
-      format of the date in the headers of the mail in the form
-      `Day, DD Mon YYYY HH:MM:SS TZ`. Of course it is not the only format used in the
-      headers, but it is the most common, so it is the one we use to check if the
-      date is valid.
-    - [TZ](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones): specifies
-      the timezone of the date. We included this check since often malicious emails
-      can have a weird behavior, it is not uncommon to see a not existing timezone
-      in the headers of the mail (valid timezones are from -12 to +14).
-    """
-
-    __raw_date: str
-    date: datetime
-
-    def __init__(self, date: str):
-        if date is None or date == "":
-            raise ValueError("Date cannot be empty or None")
-        self.__raw_date = date
-        self.date = self.__parse()[0]
-
-    @property
-    def timezone(self) -> int:
-        tz = self.date.tzinfo
-        if tz is None:
-            return 0
-
-        # remove all non numeric characters exept ":" from the timezone
-        clean_tz = re.sub("[^0-9:]", "", str(tz))
-        if clean_tz == "":
-            return 0
-
-        return int(str(clean_tz).replace("UTC", "").split(":")[0])
-
-    def __eq__(self, other) -> bool:
-        if isinstance(other, Date):
-            return self.date.isoformat() == other.date.isoformat()
-        if isinstance(other, datetime):
-            return self.date.isoformat() == other.isoformat()
-        raise TypeError(f"Cannot compare Date with {type(other)}")
-
-    def to_dict(self) -> dict:
-        return {
-            "is_RFC_2822": self.is_RFC2822_formatted(),
-            "is_tz_valid": self.is_tz_valid(),
-            "date": self.date.isoformat(),
-            "posix": self.date.timestamp(),
-            "year": self.date.year,
-            "month": self.date.month,
-            "day": self.date.day,
-            "hour": self.date.hour,
-            "minute": self.date.minute,
-            "second": self.date.second,
-        }
-
-    # parse the date
-    def __parse(self) -> tuple[datetime, bool]:
-        try:
-            return datetime.strptime(self.__raw_date, "%a, %d %b %Y %H:%M:%S %z"), True
-        except ValueError:
-            try:
-                return parse(self.__raw_date), False
-            except ParserError:
-                split_date = self.__raw_date.split(" ")
-                reduced_date = " ".join(split_date[0:5])
-                return parse(reduced_date), False
-
-    def is_RFC2822_formatted(self) -> bool:
-        """Check if the date is in the
-        [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3) format.
-        """
-        return self.__parse()[1]
-
-    def is_tz_valid(self) -> bool:
-        """The timezone is valid if it is in the range [-12, 14]"""
-        return -12 <= self.timezone <= 14
-
-    def __repr__(self) -> str:
-        return f"{self.date.isoformat()}"

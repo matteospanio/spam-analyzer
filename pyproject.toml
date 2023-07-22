@@ -5,7 +5,7 @@ description = "A simple email analyzer"
 authors = ["Matteo Spanio <matteo.spanio97@gmail.com>"]
 license = "GPLv3"
 readme = "README.md"
-packages = [{include = "spamanalyzer"}]
+packages = [{include = "spamanalyzer", from = "src"}]
 homepage = "http://matteospanio.me/spam-analyzer/"
 repository = "https://github.com/matteospanio/spam-analyzer"
 keywords = ["spam", "spam-analyzer", "cybersecurity"]
@@ -20,7 +20,7 @@ classifiers = [
 include = ["*.yaml", "*.txt", "*/*.yaml", "*/*.txt", "conf/*"]
 
 [tool.poetry.scripts]
-spam-analyzer = "spamanalyzer.cli.run:main"
+spam-analyzer = "src.app.__main__:cli"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -35,6 +35,7 @@ pandas = "^2.0.3"
 beautifulsoup4 = "^4.12.2"
 dnspython = "^2.4.0"
 textblob = "^0.17.1"
+click = "^8.1.6"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

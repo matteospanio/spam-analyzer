@@ -1,6 +1,6 @@
 import pytest
-import spamanalyzer.cli.run as spam_analyzer
-from spamanalyzer import files
+import app.__main__ as __main__
+from app import files
 from spamanalyzer import __version__
 
 _, _, _ = files.handle_configuration_files()
@@ -11,7 +11,7 @@ class TestCLI:
     @pytest.mark.parametrize("option", ("-h", "--help"))
     def test_help(self, capsys, option):
         try:
-            spam_analyzer.main([option])
+            __main__.cli([option])
         except SystemExit:
             pass
         output = capsys.readouterr().out
@@ -20,7 +20,7 @@ class TestCLI:
     @pytest.mark.parametrize("option", ("-V", "--version"))
     def test_version(self, capsys, option):
         try:
-            spam_analyzer.main([option])
+            __main__.cli([option])
         except SystemExit:
             pass
         output = capsys.readouterr().out
@@ -35,7 +35,7 @@ class TestCLI:
     )
     def test_verbose_with_not_analyzable_single_file(self, capsys, file, option):
         try:
-            spam_analyzer.main([file, option])
+            __main__.cli([file, option])
         except SystemExit:
             pass
         output = capsys.readouterr().out

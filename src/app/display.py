@@ -5,7 +5,7 @@ from rich.text import Text
 from rich.console import Console, Group
 from rich.columns import Columns
 from rich.table import Table
-from spamanalyzer.analyzer.data_structures import MailAnalysis
+from spamanalyzer.data_structures import MailAnalysis
 
 
 def print_output(data, output_format: str, verbose: bool, output_file=None) -> None:
@@ -13,9 +13,9 @@ def print_output(data, output_format: str, verbose: bool, output_file=None) -> N
     json or default).
 
     Args:
-        data (`list`): a list of data to output
-        output_format (`str`): the type of output (csv | json | default)
-        verbose (`bool`): valid only for `default` output_format, it prints a
+        data (list): a list of data to output
+        output_format (str): the type of output (csv | json | default)
+        verbose (bool): valid only for `default` output_format, it prints a
         description for each element of the list
 
     Often when we work with data we want to output it in a specific format, this

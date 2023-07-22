@@ -51,7 +51,7 @@ test: ## Run tests quickly with the default Python
 	$(POETRY) pytest -r A
 
 test-coverage: ## Run tests with coverage
-	$(POETRY) pytest --cov=spamanalyzer --cov-report=term-missing --cov-report=html
+	$(POETRY) pytest --cov=src --cov-report=term-missing --cov-report=html
 
 build: clean setup ## Build package
 	poetry build
@@ -60,10 +60,10 @@ deploy: build ## Deploy package to PyPI
 	poetry publish
 
 format: ## Format code
-	$(POETRY) yapf --in-place --recursive ./spamanalyzer ./tests
+	$(POETRY) yapf --in-place --recursive ./src ./tests
 
 lint: format ## Lint code
-	$(POETRY) pylint ./spamanalyzer ./tests
+	$(POETRY) pylint ./src ./tests
 
 docs: ## Generate mkdocs HTML documentation, including API docs
 	$(POETRY) mkdocs build

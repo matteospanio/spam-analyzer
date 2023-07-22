@@ -2,10 +2,11 @@ import os
 import sys
 
 from rich.progress import track
-from spamanalyzer import files
-from spamanalyzer.cli import parser
-from spamanalyzer.analyzer.data_structures import MailAnalyzer
-from spamanalyzer.display import print_output
+from app import files
+from spamanalyzer.data_structures import MailAnalyzer
+from app.display import print_output
+
+from . import parser
 
 
 def app(
@@ -46,7 +47,7 @@ def app(
         files.sort_emails(expanded_dest_dir, data)
 
 
-def main(args=None):
+def cli(args=None):
     """
     The tool entry point, in order it:
     1. loads the configuration
@@ -65,7 +66,3 @@ def main(args=None):
         args.destination_dir,
         args.output_file,
     )
-
-
-if __name__ == "__main__":
-    main()
