@@ -14,7 +14,7 @@ jobs:
           command: poetry install
       - run:
           name: Run tests
-          command: poetry run pytest --cov=spamanalyzer/ --cov-report=xml
+          command: poetry run pytest --cov=src/ --cov-report=xml
       - run:
           name: Send coverage to Coveralls
           command: poetry run coveralls
