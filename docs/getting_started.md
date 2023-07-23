@@ -19,8 +19,5 @@ spam-analyzer -f email.txt
 ## Python library
 
 ```python
-from spamanalyzer import MailAnalyzer
-
-analyzer = MailAnalyzer(blacklist=["cash", "money", "!!!"])
-analysis = analyzer.analyze("email.txt")
+--8<-- "examples/analyzer.py"
 ```
