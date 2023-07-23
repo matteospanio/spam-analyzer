@@ -69,12 +69,12 @@ class Domain:
         return dns.resolver.resolve(self.name, "A")[0].to_text()
 
     def __eq__(self, __o: object) -> bool:
-        (
-            result,
-            _,
-            _,
-        ) = self.name.fullcompare(__o.name)
         if isinstance(__o, Domain):
+            (
+                result,
+                _,
+                _,
+            ) = self.name.fullcompare(__o.name)
             if result in [1, 2, 3]:
                 return True
             return False

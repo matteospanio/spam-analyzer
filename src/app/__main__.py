@@ -12,7 +12,6 @@ conf, _, _ = files.handle_configuration_files()
 
 
 class Args:
-
     def __init__(self):
         self.verbose = False
         self.wordlist = []
@@ -31,7 +30,6 @@ pass_args = click.make_pass_decorator(Args, ensure=True)
 @pass_args
 def cli(config: Args, verbose: bool) -> None:
     """A simple program to analyze emails"""
-
     config.verbose = verbose
 
 
@@ -56,15 +54,14 @@ def cli(config: Args, verbose: bool) -> None:
     help="Write output to a file (works only for json format)",
     type=click.File("w"),
 )
-@click.option("--destination-dir",
-              help="The directory where copy your classified emails")
+@click.option(
+    "--destination-dir", help="The directory where copy your classified emails"
+)
 @click.argument(
     "file",
-    type=click.Path(exists=True,
-                    file_okay=True,
-                    dir_okay=True,
-                    readable=True,
-                    resolve_path=True),
+    type=click.Path(
+        exists=True, file_okay=True, dir_okay=True, readable=True, resolve_path=True
+    ),
     required=True,
 )
 @pass_args
@@ -110,10 +107,9 @@ def analyze(
             click.echo("The file is not analyzable")
         sys.exit(1)
 
-    print_output(data,
-                 output_format=output_format,
-                 verbose=verbose,
-                 output_file=output_file)
+    print_output(
+        data, output_format=output_format, verbose=verbose, output_file=output_file
+    )
 
     if destination_dir is not None:
         expanded_dest_dir = files.expand_destination_dir(destination_dir)
@@ -148,6 +144,9 @@ def show():
 
 
 @config.command()
+@click.confirmation_option(
+    prompt="Are you sure you want to reset the configuration file?"
+)
 def reset():
     """Reset the configuration file"""
 
