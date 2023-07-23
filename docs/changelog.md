@@ -13,13 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- CNAME file for github pages
+- new specific domain for github pages docs, go to https://docs.spamanalyzer.tech
 - getting_started.md page
 - installation.md page
 
 ### Changed
 
 - documentation is now generated with mkdocs
+- refactored the code to use click instead of argparse
+- refactored the code to separate the CLI from the library (also tests)
 
 ### Fixed
 
