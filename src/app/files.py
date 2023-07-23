@@ -32,9 +32,9 @@ def file_is_valid_email(file_path: str) -> bool:
 def handle_configuration_files():
     from spamanalyzer import __defaults__
 
-    config_file = files("conf").joinpath("config.yaml")
-    wordlist = files("conf").joinpath("word_blacklist.txt")
-    model = files("conf").joinpath("classifier.pkl")
+    config_file = str(files(__package__).joinpath("conf/config.yaml"))
+    wordlist = str(files(__package__).joinpath("conf/word_blacklist.txt"))
+    model = str(files(__package__).joinpath("conf/classifier.pkl"))
 
     if not path.exists(__defaults__["SPAMANALYZER_CONF_PATH"]):
         makedirs(__defaults__["SPAMANALYZER_CONF_PATH"], exist_ok=True)

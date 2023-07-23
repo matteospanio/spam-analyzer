@@ -8,10 +8,10 @@ from spamanalyzer.data_structures import MailAnalyzer
 from app import files
 from app.io import print_output
 
-config, _, _ = files.handle_configuration_files()
+conf, _, _ = files.handle_configuration_files()
 
 
-class Args(object):
+class Args:
 
     def __init__(self):
         self.verbose = False
@@ -35,50 +35,13 @@ def cli(config: Args, verbose: bool) -> None:
     config.verbose = verbose
 
 
-def app(
-    file: str,
-    wordlist,
-    verbose: bool,
-    output_format: str,
-    destination_dir: str,
-    output_file,
-) -> None:
-    wordlist = wordlist.read().splitlines()
-    data = []
-
-    analyzer = MailAnalyzer(wordlist)
-
-    if os.path.isdir(file):
-        file_list = files.get_files_from_dir(file, verbose)
-        for mail_path in track(file_list, description="Analyzing mail list"):
-            analysis = analyzer.analyze(mail_path)
-            data.append(analysis)
-
-    elif os.path.isfile(file) and files.file_is_valid_email(file):
-        analysis = analyzer.analyze(file)
-        data.append(analysis)
-
-    else:
-        if verbose:
-            print("The file is not analyzable")
-        sys.exit(1)
-
-    print_output(data,
-                 output_format=output_format,
-                 verbose=verbose,
-                 output_file=output_file)
-
-    if destination_dir is not None:
-        expanded_dest_dir = files.expand_destination_dir(destination_dir)
-        files.sort_emails(expanded_dest_dir, data)
-
-
 @cli.command()
 @click.option(
     "-l",
     "--wordlist",
     help="A file containing the spam wordlist",
-    default=os.path.expanduser(config["files"]["wordlist"]),
+    default=lambda: os.path.expanduser(conf["files"]["wordlist"]),
+    show_default="standard wordlist",
     type=click.File("r"),
 )
 @click.option(
@@ -105,7 +68,14 @@ def app(
     required=True,
 )
 @pass_args
-def analyze(args: Args, wordlist, output_format, output_file, destination_dir, file):
+def analyze(
+    args: Args,
+    wordlist,
+    output_format: str,
+    output_file,
+    destination_dir: str,
+    file: str,
+) -> None:
     """Analyze emails from a file or directory"""
 
     # The tool entry point, in order it:
@@ -118,18 +88,70 @@ def analyze(args: Args, wordlist, output_format, output_file, destination_dir, f
     args.output_file = output_file
     args.destination_dir = destination_dir
     args.file = file
+    verbose = args.verbose
 
-    app(
-        args.file,
-        args.wordlist,
-        args.verbose,
-        args.output_format,
-        args.destination_dir,
-        args.output_file,
-    )
+    wordlist = wordlist.read().splitlines()
+    data = []
+
+    analyzer = MailAnalyzer(wordlist)
+
+    if os.path.isdir(file):
+        file_list = files.get_files_from_dir(file, verbose)
+        for mail_path in track(file_list, description="Analyzing mail list"):
+            analysis = analyzer.analyze(mail_path)
+            data.append(analysis)
+
+    elif os.path.isfile(file) and files.file_is_valid_email(file):
+        analysis = analyzer.analyze(file)
+        data.append(analysis)
+
+    else:
+        if verbose:
+            click.echo("The file is not analyzable")
+        sys.exit(1)
+
+    print_output(data,
+                 output_format=output_format,
+                 verbose=verbose,
+                 output_file=output_file)
+
+    if destination_dir is not None:
+        expanded_dest_dir = files.expand_destination_dir(destination_dir)
+        files.sort_emails(expanded_dest_dir, data)
 
 
-@cli.command()
+@cli.group()
+@click.help_option()
 def config():
     """Configure the program"""
     pass
+
+
+@config.command()
+def edit():
+    """Edit the configuration file"""
+
+    click.edit(filename=os.path.expanduser("~/.config/spamanalyzer/config.yaml"))
+
+    sys.exit(0)
+
+
+@config.command()
+def show():
+    """Show the configuration file"""
+
+    conf_file = os.path.expanduser("~/.config/spamanalyzer/config.yaml")
+    with open(conf_file, "r", encoding="utf-8") as f:
+        click.echo(f.read())
+
+    sys.exit(0)
+
+
+@config.command()
+def reset():
+    """Reset the configuration file"""
+
+    os.remove(os.path.expanduser("~/.config/spamanalyzer/config.yaml"))
+    _ = files.handle_configuration_files()
+
+    sys.exit(0)

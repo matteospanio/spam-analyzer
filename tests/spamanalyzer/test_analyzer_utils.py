@@ -12,7 +12,7 @@ spam = mailparser.parse_from_file(
 
 
 class TestInspectHeaders:
-    with open("conf/word_blacklist.txt") as f:
+    with open("src/app/conf/word_blacklist.txt", encoding="utf-8") as f:
         wordlist = f.read().splitlines()
 
     headers_ok = utils.inspect_headers(trustable_mail, wordlist)
@@ -21,7 +21,7 @@ class TestInspectHeaders:
     def test_inspect_headers_method(self):
         assert isinstance(self.headers_ok, dict)
         with pytest.raises(KeyError):
-            self.headers_ok[7]
+            assert self.headers_ok[7] is None
 
     def test_inspect_headers_in_secure_email(self):
         assert self.headers_ok["has_spf"] is True
@@ -50,21 +50,19 @@ class TestInspectHeaders:
             False,
             False,
         )
-        with open("conf/word_blacklist.txt") as f:
-            wordlist = f.read().splitlines()
-            assert utils.analyze_subject(gappy_mail.headers, wordlist) == (True, False)
-            assert utils.analyze_subject(none_subject.headers, wordlist) == (
-                False,
-                False,
-            )
+        assert utils.analyze_subject(gappy_mail.headers, self.wordlist) == (True, False)
+        assert utils.analyze_subject(none_subject.headers, self.wordlist) == (
+            False,
+            False,
+        )
 
     def test_parse_date(self):
         none_date = mailparser.parse_from_file("tests/samples/none_date.email")
-        assert utils.parse_date(none_date.headers) == None
+        assert utils.parse_date(none_date.headers) is None
 
 
 class TestInspectBody:
-    with open("conf/word_blacklist.txt") as f:
+    with open("src/app/conf/word_blacklist.txt", encoding="utf-8") as f:
         wordlist = f.read().splitlines()
 
     body_ok = utils.inspect_body(trustable_mail.body,
@@ -74,7 +72,7 @@ class TestInspectBody:
     def test_inspect_body_method(self):
         assert isinstance(self.body_ok, dict)
         with pytest.raises(KeyError):
-            self.body_ok[5]
+            assert self.body_ok[5] is None
 
     def test_inspect_body_in_secure_email(self):
         assert self.body_ok["has_links"] is True
@@ -197,10 +195,10 @@ class TestLinks:
 def test_forbidden_words():
     forbidden_words = ["egg", "spam"]
     body = "a string of trustable words"
-    spam = "spam is not a funny thing"
+    spam_text = "spam is not a funny thing"
 
     assert utils.percentage_of_bad_words(body, forbidden_words) == 0
-    assert utils.percentage_of_bad_words(spam, forbidden_words) > 0
+    assert utils.percentage_of_bad_words(spam_text, forbidden_words) > 0
 
 
 def test_inspect_attachments():

@@ -25,18 +25,22 @@ in this way we can also parallelize the analysis of multiple emails.
 """
 
 from os import path
-from spamanalyzer import *
-from app.files import handle_configuration_files
 
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as package_version
+
+from spamanalyzer.data_structures import MailAnalyzer, MailAnalysis
+from spamanalyzer.date import Date
+from spamanalyzer.domain import Domain
+from app.files import handle_configuration_files
 
 
 def __get_package_version__():
     try:
         return package_version("spam-analyzer")
     except PackageNotFoundError:
-        return "Version information not available. Make sure you have installed your package using Poetry."
+        return ("Version information not available."
+                "Make sure you have installed your package using Poetry.")
 
 
 __all__ = ["MailAnalyzer", "MailAnalysis", "Domain", "Date"]

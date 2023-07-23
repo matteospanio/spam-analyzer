@@ -1,8 +1,7 @@
-import app.__main__ as __main__
 import tomli
-from app import files
-
 from click.testing import CliRunner
+
+from app import files, __main__
 
 _, _, _ = files.handle_configuration_files()
 
@@ -26,8 +25,8 @@ class TestCLI:
     def test_verbose_with_not_analyzable_single_file(self):
         result = self.runner.invoke(__main__.cli,
                                     ["-v", "analyze", "tests/samples/invalid_file.txt"])
-        output = result.output
-        assert "The file is not analyzable" in output
+        assert result.exit_code == 1
+        assert "The file is not analyzable" in result.output
 
     def test_integration_single_email(self):
         result = self.runner.invoke(

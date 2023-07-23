@@ -18,7 +18,7 @@ spam = os.path.join(
     "00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email",
 )
 
-with open("conf/word_blacklist.txt", "r", encoding="utf-8") as f:
+with open("src/app/conf/word_blacklist.txt", "r", encoding="utf-8") as f:
     wordlist = f.read().splitlines()
 
 _, _, _ = handle_configuration_files()

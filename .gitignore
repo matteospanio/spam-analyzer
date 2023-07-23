@@ -154,3 +154,6 @@ pdoc
 dataset
 data
 tests/spamassassin_test
+
+# vscode
+.vscode

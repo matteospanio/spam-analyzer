@@ -49,7 +49,6 @@ def inspect_headers(email: MailParser, wordlist):
     """
 
     headers = email.headers
-    email.received[0]
 
     has_suspect_subject, subject_is_uppercase = analyze_subject(headers, wordlist)
     send_date = parse_date(headers)
@@ -182,11 +181,11 @@ def get_domain(field: str):
     if domain_match:
         domain_name = field[domain_match.start():domain_match.end()]
         return ds.Domain(domain_name)
-    else:
-        ip_match = Regex.IP.value.search(field)
-        if ip_match:
-            ip_address = field[ip_match.start():ip_match.end()]
-            return ds.Domain.from_ip(ip_address)
+
+    ip_match = Regex.IP.value.search(field)
+    if ip_match:
+        ip_address = field[ip_match.start():ip_match.end()]
+        return ds.Domain.from_ip(ip_address)
 
     return ds.Domain("unknown")
 

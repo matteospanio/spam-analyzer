@@ -20,7 +20,7 @@ classifiers = [
 include = ["*.yaml", "*.txt", "*/*.yaml", "*/*.txt", "conf/*"]
 
 [tool.poetry.scripts]
-spam-analyzer = "src.app.__main__:cli"
+spam-analyzer = "app.__main__:cli"
 
 [tool.poetry.dependencies]
 python = "^3.10"

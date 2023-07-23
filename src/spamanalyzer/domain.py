@@ -74,6 +74,8 @@ class Domain:
             _,
             _,
         ) = self.name.fullcompare(__o.name)
-        if result in [1, 2, 3]:
-            return True
-        return False
+        if isinstance(__o, Domain):
+            if result in [1, 2, 3]:
+                return True
+            return False
+        raise TypeError("Cannot compare Domain with other types")
