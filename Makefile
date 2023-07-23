@@ -22,7 +22,7 @@ export PRINT_HELP_PYSCRIPT
 help: ## Show this help
 	$(POETRY) python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-clean: clean-build clean-pyc clean-test ## Remove all build, test, coverage and Python artifacts
+clean: clean-build clean-pyc clean-test clean-docs ## Remove all build, test, coverage and Python artifacts
 
 clean-build: ## Remove build artifacts
 	rm -fr build/
@@ -44,14 +44,17 @@ clean-test: ## Remove test and coverage artifacts
 	rm -fr .pytest_cache
 	rm -f coverage.xml
 
+clean-docs: ## Remove docs artifacts
+	rm -fr site/
+
 setup: clean ## Install dependencies
 	poetry install
 
 test: ## Run tests quickly with the default Python
-	$(POETRY) pytest -r A
+	$(POETRY) pytest
 
 test-coverage: ## Run tests with coverage
-	$(POETRY) pytest --cov=src --cov-report=term-missing --cov-report=html
+	$(POETRY) pytest -n auto --cov=src --cov-report=term-missing --cov-report=html
 
 build: clean setup ## Build package
 	poetry build
@@ -59,10 +62,10 @@ build: clean setup ## Build package
 deploy: build ## Deploy package to PyPI
 	poetry publish
 
-format: ## Format code
+format: ## Format code with yapf
 	$(POETRY) yapf --in-place --recursive ./src ./tests
 
-lint: format ## Lint code
+lint: format ## Lint code with pylint
 	$(POETRY) pylint ./src ./tests
 
 docs: ## Generate mkdocs HTML documentation, including API docs

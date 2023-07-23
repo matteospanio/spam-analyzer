@@ -71,8 +71,12 @@ column_limit = 88
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q -n auto -W error::RuntimeWarning"
+addopts = "-r a -q -n auto -W error::RuntimeWarning"
 testpaths = ["tests"]
+filterwarnings = [
+   "error",
+   "ignore:The --rsyncdir command line argument and rsyncdirs config variable are deprecated.:DeprecationWarning",
+ ]
 
 [build-system]
 requires = ["poetry-core"]

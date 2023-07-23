@@ -67,7 +67,7 @@ class MailAnalysis:
     - `https_only`, it is `True` if the body contains only https links.
     - `contains_form`, it is `True` if the body contains a form tag.
     - `has_images`, it is `True` if the body contains an image.
-    - `is_uppercase`, it is `True` if the body is in uppercase more than $60\%$ of
+    - `is_uppercase`, it is `True` if the body is in uppercase more than $60$% of
     its length.
     - `text_polarity`, it is the polarity of the body, it is a float between -1 and 1.
     - `text_subjectivity`, it is the subjectivity of the body, it is a float between

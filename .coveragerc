@@ -4,8 +4,8 @@ source = src/
 [report]
 show_missing = True
 omit =
-    src/app/__main__.py
-    src/app/display.py
+    src/app/io.py
+    **/__init__.py
 
 exclude_lines =
     pragma: no cover

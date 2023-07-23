@@ -41,6 +41,27 @@ class TestInspectHeaders:
         assert self.bad_headers["has_suspect_subject"] is False
         assert self.bad_headers["send_date"].date.year < 2015
 
+    def test_gappy_words(self):
+        gappy_mail = mailparser.parse_from_file(
+            "tests/samples/04.eeb4f91379a00b071515c5190e870901b7f4b80bcd1e00fe6da472b173509191.email"
+        )
+        none_subject = mailparser.parse_from_file("tests/samples/none_subject.email")
+        assert utils.analyze_subject(trustable_mail.headers, ["cactus"]) == (
+            False,
+            False,
+        )
+        with open("conf/word_blacklist.txt") as f:
+            wordlist = f.read().splitlines()
+            assert utils.analyze_subject(gappy_mail.headers, wordlist) == (True, False)
+            assert utils.analyze_subject(none_subject.headers, wordlist) == (
+                False,
+                False,
+            )
+
+    def test_parse_date(self):
+        none_date = mailparser.parse_from_file("tests/samples/none_date.email")
+        assert utils.parse_date(none_date.headers) == None
+
 
 class TestInspectBody:
     with open("conf/word_blacklist.txt") as f:
@@ -78,6 +99,14 @@ def test_dkim_pass():
 def test_dmarc_pass():
     assert utils.dmarc_pass(trustable_mail.headers) is True
     assert utils.dmarc_pass(spam.headers) is False
+
+
+def test_x_warning():
+    warn_mail = mailparser.parse_from_file(
+        "tests/samples/01.78e91e824c22fd2292633f7c8f0fff34d2a4d0b0bafbb2ba1fbb10d9bc06fcbb.email"
+    )
+    assert utils.has_auth_warning(trustable_mail.headers) is False
+    assert utils.has_auth_warning(warn_mail.headers) is True
 
 
 def test_get_domain():
