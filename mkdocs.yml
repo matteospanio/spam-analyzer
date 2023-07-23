@@ -1,4 +1,6 @@
 site_name: spam-analyzer
+site_description: A Python package for spam detection and analysis
+site_url: https://matteospanio.github.io/spam-analyzer/
 
 nav:
   - Home: index.md
@@ -18,8 +20,8 @@ theme:
     edit: material/pencil 
     view: material/eye
   name: material
-  logo: assets/img/logo_transparent.png
-  favicon: assets/img/logo_transparent.png
+  logo: assets/images/logo_transparent.png
+  favicon: assets/images/logo_transparent.png
   features:
     - navigation.instant
     - navigation.tracking
@@ -28,6 +30,7 @@ theme:
     - navigation.indexes
     - toc.follow
     - navigation.top
+    - navigation.path
 
     - search.suggest
     - search.highlight
@@ -35,9 +38,11 @@ theme:
 
     - header.autohide
 
+    - content.tooltips
     - content.tabs.link
     - content.action.edit
     - content.code.copy
+    - content.code.annotate
 
   palette:
 

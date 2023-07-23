@@ -11,9 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- new specific domain for github pages docs, go to https://docs.spamanalyzer.tech
+- getting_started.md page
+- installation.md page
+- integration tests for the CLI
+
 ### Changed
 
 - documentation is now generated with mkdocs
+- refactored the code to use click instead of argparse
+- refactored the code to separate the CLI from the library (also tests)
+
+### Fixed
+
+- configuration files are now properly installed
 
 
 ## [0.2.0] - 2023-07-17
@@ -21,6 +34,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - switched to poetry for dependency management
 - updated all build/ci tools to use poetry
-
-### Fixed
--
