@@ -15,6 +15,7 @@ conf, _, _ = files.handle_configuration_files()
 
 
 def async_command(coro_func):
+
     @functools.wraps(coro_func)
     def sync_func(*args, **kwargs):
         return asyncio.run(coro_func(*args, **kwargs))
@@ -71,14 +72,15 @@ def cli(config: Args, verbose: bool) -> None:
     help="Write output to a file (works only for json format)",
     type=click.File("w"),
 )
-@click.option(
-    "--destination-dir", help="The directory where copy your classified emails"
-)
+@click.option("--destination-dir",
+              help="The directory where copy your classified emails")
 @click.argument(
     "input",
-    type=click.Path(
-        exists=True, file_okay=True, dir_okay=True, readable=True, resolve_path=True
-    ),
+    type=click.Path(exists=True,
+                    file_okay=True,
+                    dir_okay=True,
+                    readable=True,
+                    resolve_path=True),
     required=True,
 )
 @async_command
@@ -128,9 +130,10 @@ async def analyze(
             click.echo("The file is not analyzable")
         sys.exit(1)
 
-    print_output(
-        data, output_format=output_format, verbose=verbose, output_file=output_file
-    )
+    print_output(data,
+                 output_format=output_format,
+                 verbose=verbose,
+                 output_file=output_file)
 
     if destination_dir is not None:
         expanded_dest_dir = files.expand_destination_dir(destination_dir)
@@ -166,8 +169,7 @@ def show():
 
 @config.command()
 @click.confirmation_option(
-    prompt="Are you sure you want to reset the configuration file?"
-)
+    prompt="Are you sure you want to reset the configuration file?")
 def reset():
     """Reset the configuration file"""
 

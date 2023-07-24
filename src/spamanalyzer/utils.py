@@ -18,8 +18,7 @@ class Regex(Enum):
         r"(https://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)"
     )
     SHORT_LINK = re.compile(
-        r"(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)"
-    )
+        r"(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)")
     GAPPY_WORDS = re.compile(r"([A-Za-z0-9]+(<!--*-->|\*|\-))+")
     HTML_FORM = re.compile(r"<\s*form", re.DOTALL)
     HTML_TAG = re.compile(r"<[^>]+>")
@@ -71,11 +70,8 @@ async def inspect_headers(email: MailParser, wordlist):
 
 def spf_pass(headers: dict) -> bool:
     """Checks if the email has a SPF record"""
-    spf = (
-        headers.get("Received-SPF")
-        or headers.get("Authentication-Results")
-        or headers.get("Authentication-results")
-    )
+    spf = (headers.get("Received-SPF") or headers.get("Authentication-Results")
+           or headers.get("Authentication-results"))
     if spf is not None and "pass" in spf.lower():
         return True
     return False
@@ -86,8 +82,7 @@ def dkim_pass(headers: dict) -> bool:
     if headers.get("DKIM-Signature") is not None:
         return True
     dkim = headers.get("Authentication-Results") or headers.get(
-        "Authentication-results"
-    )
+        "Authentication-results")
     if dkim is not None and "dkim=pass" in dkim.lower():
         return True
     return False
@@ -96,8 +91,7 @@ def dkim_pass(headers: dict) -> bool:
 def dmarc_pass(headers: dict) -> bool:
     """Checks if the email has a DMARC record"""
     dmarc = headers.get("Authentication-Results") or headers.get(
-        "Authentication-results"
-    )
+        "Authentication-results")
     if dmarc is not None and "dmarc=pass" in dmarc.lower():
         return True
     return False
@@ -186,12 +180,12 @@ async def get_domain(field: str):
     domain_match = Regex.DOMAIN.value.search(field)
 
     if domain_match:
-        domain_name = field[domain_match.start() : domain_match.end()]
+        domain_name = field[domain_match.start():domain_match.end()]
         return Domain(domain_name)
 
     ip_match = Regex.IP.value.search(field)
     if ip_match:
-        ip_address = field[ip_match.start() : ip_match.end()]
+        ip_address = field[ip_match.start():ip_match.end()]
         return await Domain.from_ip(ip_address)
 
     return Domain("unknown")
@@ -280,8 +274,7 @@ def has_html(body: str) -> bool:
         bool: True if the email contains html tags
     """
     return bool(Regex.HTML_TAG.value.search(body)) or bool(
-        Regex.HTML_PAIR_TAG.value.search(body)
-    )
+        Regex.HTML_PAIR_TAG.value.search(body))
 
 
 def has_images(body: str) -> bool:

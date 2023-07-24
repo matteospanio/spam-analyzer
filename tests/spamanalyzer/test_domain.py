@@ -37,19 +37,11 @@ class TestDomain:
             assert self.domain.is_superdomain("localhost")  # type: ignore
 
     def test_relation(self):
-        assert (
-            self.domain.relation(Domain.from_string("localhost"))
-            == DomainRelation.EQUAL
-        )
-        assert (
-            self.domain.relation(Domain.from_string("it.localhost"))
-            == DomainRelation.SUPERDOMAIN
-        )
-        assert (
-            self.domain.relation(Domain.from_string("inventato"))
-            == DomainRelation.DIFFERENT
-        )
-        assert (
-            Domain.from_string("it.localhost").relation(self.domain)
-            == DomainRelation.SUBDOMAIN
-        )
+        assert (self.domain.relation(
+            Domain.from_string("localhost")) == DomainRelation.EQUAL)
+        assert (self.domain.relation(
+            Domain.from_string("it.localhost")) == DomainRelation.SUPERDOMAIN)
+        assert (self.domain.relation(
+            Domain.from_string("inventato")) == DomainRelation.DIFFERENT)
+        assert (Domain.from_string("it.localhost").relation(
+            self.domain) == DomainRelation.SUBDOMAIN)

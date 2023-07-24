@@ -30,6 +30,7 @@ HEADERS = [
 
 
 class SpamClassifier:
+
     def __init__(self, path_to_model: str) -> None:
         self.model = load_model(path_to_model)
 

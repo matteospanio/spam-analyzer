@@ -147,11 +147,9 @@ class MailAnalysis:
             self.headers["has_suspect_subject"],
             self.headers["subject_is_uppercase"],
             self.headers["send_date"].is_RFC2822_formatted()
-            if self.headers["send_date"] is not None
-            else False,
+            if self.headers["send_date"] is not None else False,
             self.headers["send_date"].is_tz_valid()
-            if self.headers["send_date"] is not None
-            else False,
+            if self.headers["send_date"] is not None else False,
             self.headers["received_date"] is not None,
             self.body["is_uppercase"],
             self.body["contains_script"],
@@ -194,14 +192,14 @@ class MailAnalyzer:
         email = mailparser.parse_from_file(email_path)
 
         headers = await utils.inspect_headers(email, self.wordlist)
-        body = utils.inspect_body(
-            email.body, self.wordlist, (await self.get_domain(email_path))
-        )
+        body = utils.inspect_body(email.body, self.wordlist,
+                                  (await self.get_domain(email_path)))
         attachments = utils.inspect_attachments(email.attachments)
 
-        return MailAnalysis(
-            file_path=email_path, headers=headers, body=body, attachments=attachments
-        )
+        return MailAnalysis(file_path=email_path,
+                            headers=headers,
+                            body=body,
+                            attachments=attachments)
 
     async def get_domain(self, email_path: str) -> Domain:
         email = mailparser.parse_from_file(email_path)

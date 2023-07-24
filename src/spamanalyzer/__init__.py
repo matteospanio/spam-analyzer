@@ -40,10 +40,8 @@ def __get_package_version__():
     try:
         return package_version("spam-analyzer")
     except PackageNotFoundError:
-        return (
-            "Version information not available."
-            "Make sure you have installed your package using Poetry."
-        )
+        return ("Version information not available."
+                "Make sure you have installed your package using Poetry.")
 
 
 __all__ = ["MailAnalyzer", "MailAnalysis", "Domain", "Date", "utils"]
