@@ -1,5 +1,7 @@
+import asyncio
 import os
 import pytest
+from typing import Tuple
 from spamanalyzer.data_structures import (
     MailAnalysis,
     MailAnalyzer,
@@ -26,33 +28,48 @@ _, _, _ = handle_configuration_files()
 
 class TestMailAnalyzer:
 
-    def test_get_domain(self):
+    @pytest.mark.asyncio
+    async def test_get_domain(self):
         analyzer = MailAnalyzer(wordlist)
-        assert analyzer.get_domain(trustable_mail) == Domain(
-            "github-lowworker-5fb2734.va3-iad.github.net")
+        assert (await analyzer.get_domain(trustable_mail)
+                ) == Domain("github-lowworker-5fb2734.va3-iad.github.net")
+
+
+@pytest.fixture
+async def analysis() -> Tuple[MailAnalysis, MailAnalysis]:
+    analyzer = MailAnalyzer(wordlist)
+
+    return await asyncio.gather(analyzer.analyze(trustable_mail),
+                                analyzer.analyze(spam))
 
 
 class TestMailAnalysis:
     analyzer = MailAnalyzer(wordlist)
 
-    mail_ok_an = analyzer.analyze(trustable_mail)
-    mail_spam = analyzer.analyze(spam)
+    @pytest.mark.asyncio
+    async def test_mail_analysis_type(self, analysis):
+        ham, _ = analysis
+        assert isinstance(ham, MailAnalysis)
 
-    def test_mail_analysis_type(self):
-        assert isinstance(self.mail_ok_an, MailAnalysis)
+    @pytest.mark.asyncio
+    async def test_mail_analysis_file_path(self, analysis):
+        assert analysis[0].file_path == trustable_mail
 
-    def test_mail_analysis_file_path(self):
-        assert self.mail_ok_an.file_path == trustable_mail
+    @pytest.mark.asyncio
+    async def test_mail_analysis_is_spam(self, analysis):
+        assert analysis[0].is_spam() is False
 
-    def test_mail_analysis_is_spam(self):
-        assert self.mail_ok_an.is_spam() is False
+    @pytest.mark.asyncio
+    async def test_multiple_analysis(self, analysis):
+        ham, spam = analysis
+        assert MailAnalysis.classify_multiple_input([ham, spam]) == [
+            False,
+            True,
+        ]
 
-    def test_multiple_analysis(self):
-        assert MailAnalysis.classify_multiple_input([self.mail_ok_an,
-                                                     self.mail_spam]) == [False, True]
-
-    def test_to_dict(self):
-        dict_mail = self.mail_ok_an.to_dict()
+    @pytest.mark.asyncio
+    async def test_to_dict(self, analysis):
+        dict_mail = analysis[0].to_dict()
         assert isinstance(dict_mail, dict)
         assert dict_mail["file_name"] == trustable_mail
         assert dict_mail["is_spam"] is False

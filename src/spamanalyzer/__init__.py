@@ -32,6 +32,7 @@ from importlib.metadata import version as package_version
 from spamanalyzer.data_structures import MailAnalyzer, MailAnalysis
 from spamanalyzer.date import Date
 from spamanalyzer.domain import Domain
+from . import utils
 from app.files import handle_configuration_files
 
 
@@ -39,11 +40,13 @@ def __get_package_version__():
     try:
         return package_version("spam-analyzer")
     except PackageNotFoundError:
-        return ("Version information not available."
-                "Make sure you have installed your package using Poetry.")
+        return (
+            "Version information not available."
+            "Make sure you have installed your package using Poetry."
+        )
 
 
-__all__ = ["MailAnalyzer", "MailAnalysis", "Domain", "Date"]
+__all__ = ["MailAnalyzer", "MailAnalysis", "Domain", "Date", "utils"]
 __config_path__ = path.join(path.expanduser("~"), ".config", "spamanalyzer")
 
 __defaults__ = {

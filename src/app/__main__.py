@@ -1,8 +1,11 @@
+import asyncio
+import functools
 import os
 import sys
+from typing import Optional
 
 import click
-from rich.progress import track
+from rich.console import Console
 
 from spamanalyzer.data_structures import MailAnalyzer
 from app import files
@@ -11,14 +14,28 @@ from app.io import print_output
 conf, _, _ = files.handle_configuration_files()
 
 
+def async_command(coro_func):
+    @functools.wraps(coro_func)
+    def sync_func(*args, **kwargs):
+        return asyncio.run(coro_func(*args, **kwargs))
+
+    return sync_func
+
+
 class Args:
+    destination_dir: Optional[str]
+    input: Optional[str]
+    output_file: Optional[click.File]
+    output_format: Optional[str]
+    verbose: bool
+    wordlist: click.File
+
     def __init__(self):
         self.verbose = False
-        self.wordlist = []
         self.output_format = None
         self.output_file = None
         self.destination_dir = None
-        self.file = None
+        self.input = None
 
 
 pass_args = click.make_pass_decorator(Args, ensure=True)
@@ -58,48 +75,52 @@ def cli(config: Args, verbose: bool) -> None:
     "--destination-dir", help="The directory where copy your classified emails"
 )
 @click.argument(
-    "file",
+    "input",
     type=click.Path(
         exists=True, file_okay=True, dir_okay=True, readable=True, resolve_path=True
     ),
     required=True,
 )
+@async_command
 @pass_args
-def analyze(
+async def analyze(
     args: Args,
-    wordlist,
+    wordlist: click.File,
     output_format: str,
-    output_file,
+    output_file: click.File,
     destination_dir: str,
-    file: str,
+    input: str,
 ) -> None:
     """Analyze emails from a file or directory"""
 
     # The tool entry point, in order it:
     # 1. loads the configuration
-    # 2. parses the arguments
-    # 3. starts the application
+    # 2. starts the application
 
     args.wordlist = wordlist
     args.output_format = output_format
     args.output_file = output_file
     args.destination_dir = destination_dir
-    args.file = file
+    args.input = input
     verbose = args.verbose
 
-    wordlist = wordlist.read().splitlines()
+    wordlist = wordlist.read().splitlines()  # type: ignore
     data = []
+
+    console = Console()
 
     analyzer = MailAnalyzer(wordlist)
 
-    if os.path.isdir(file):
-        file_list = files.get_files_from_dir(file, verbose)
-        for mail_path in track(file_list, description="Analyzing mail list"):
-            analysis = analyzer.analyze(mail_path)
-            data.append(analysis)
+    if os.path.isdir(input):
+        file_list = files.get_files_from_dir(input, verbose)
+        with console.status("[bold]Analyzing emails...", spinner="dots"):
+            for mail_path in file_list:
+                analysis = analyzer.analyze(mail_path)
+                data.append(analysis)
+            data = await asyncio.gather(*data)
 
-    elif os.path.isfile(file) and files.file_is_valid_email(file):
-        analysis = analyzer.analyze(file)
+    elif os.path.isfile(input) and files.file_is_valid_email(input):
+        analysis = await analyzer.analyze(input)
         data.append(analysis)
 
     else:
@@ -137,7 +158,7 @@ def show():
     """Show the configuration file"""
 
     conf_file = os.path.expanduser("~/.config/spamanalyzer/config.yaml")
-    with open(conf_file, "r", encoding="utf-8") as f:
+    with click.open_file(conf_file, "r", encoding="utf-8") as f:
         click.echo(f.read())
 
     sys.exit(0)

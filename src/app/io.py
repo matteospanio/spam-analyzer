@@ -1,4 +1,5 @@
 import json
+from typing import List
 import rich
 from rich.panel import Panel
 from rich.text import Text
@@ -43,18 +44,20 @@ def __print_to_json(data, output_file):
     dict_data = [analysis.to_dict() for analysis in data]
     for analysis in dict_data:
         if analysis["headers"]["send_date"] is not None:
-            analysis["headers"]["send_date"] = analysis["headers"]["send_date"].to_dict(
-            )
+            analysis["headers"]["send_date"] = analysis["headers"][
+                "send_date"
+            ].to_dict()
         if analysis["headers"]["received_date"] is not None:
             analysis["headers"]["received_date"] = analysis["headers"][
-                "received_date"].to_dict()
+                "received_date"
+            ].to_dict()
     if output_file is not None:
         json.dump(dict_data, output_file, indent=4)
     else:
         print(json.dumps(dict_data, indent=4))
 
 
-def __print_default(data, verbose):
+def __print_default(data: List[MailAnalysis], verbose: bool):
     classifier_spam = 0
     classifier_ham = 0
 

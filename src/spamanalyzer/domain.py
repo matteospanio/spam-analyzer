@@ -1,7 +1,20 @@
 from dataclasses import dataclass
+from enum import Enum
+import asyncio
 import socket
 import dns.resolver
 import dns.name
+
+
+class DomainRelation(Enum):
+    """
+    An enum representing the relation between two domains
+    """
+
+    SUBDOMAIN = 1
+    SUPERDOMAIN = 2
+    EQUAL = 3
+    DIFFERENT = 4
 
 
 @dataclass
@@ -21,15 +34,11 @@ class Domain:
 
     name: dns.name.Name
 
+    @property
+    def length(self) -> int:
+        return len(self.name.to_text())
+
     def __init__(self, name: str) -> None:
-        # TODO: add a cache for the domain names or find a better way to resolve domain
-        #       aliases
-        # try:
-        #     ip = socket.gethostbyname(name)
-        #     self.name = socket.gethostbyaddr(ip)[0]
-        # except Exception:
-        #     # if the name is not a valid domain name, we just use it
-        #     self.name = name
         self.name = dns.name.from_text(name)
 
     @staticmethod
@@ -47,7 +56,7 @@ class Domain:
         return Domain(domain_str)
 
     @staticmethod
-    def from_ip(ip_addr: str):
+    async def from_ip(ip_addr: str):
         """Create a Domain object from an ip address.
         It translate the ip address to its domain name via the
         `socket.gethostbyaddr` method
@@ -59,23 +68,87 @@ class Domain:
             Domain: the domain obtained from the ip address
         """
         try:
-            domain_name = socket.gethostbyaddr(ip_addr)[0]
+            domain_name, _, _ = await asyncio.to_thread(socket.gethostbyaddr, ip_addr)
             return Domain(domain_name)
         except Exception:
             return Domain("unknown")
 
-    def get_ip_address(self) -> str:
-        """Translate the domain name to its ip address querying the DNS server"""
-        return dns.resolver.resolve(self.name, "A")[0].to_text()
+    async def get_ip_address(self) -> str:
+        """
+        Translate the domain name to its ip address querying the DNS server
+
+        Returns:
+            str: the ip address of the domain
+
+        Note: this method is async since it performs a network request
+        """
+        name = await asyncio.to_thread(dns.resolver.resolve, self.name, "A")
+        return name[0].to_text()
+
+    def is_subdomain(self, domain: "Domain") -> bool:
+        """
+        Is the domain a subdomain of the given domain?
+
+        Args:
+            domain (Domain): the reference domain
+
+        Returns:
+            bool: True if the domain is a subdomain of the given domain,
+
+        Raises:
+            TypeError: if the given object is not a Domain
+
+        Note: a domain is a subdomain of itself
+        """
+        if not isinstance(domain, Domain):
+            raise TypeError("Cannot compare Domain with other types")
+        return self.name.is_subdomain(domain.name)
+
+    def is_superdomain(self, domain: "Domain") -> bool:
+        """
+        Is the domain a superdomain of the given domain?
+
+        Args:
+            domain (Domain): the reference domain
+
+        Returns:
+            bool: True if the domain is a superdomain of the given domain,
+
+        Raises:
+            TypeError: if the given object is not a Domain
+
+        Note: a domain is a superdomain of itself
+        """
+        if not isinstance(domain, Domain):
+            raise TypeError("Cannot compare Domain with other types")
+        return self.name.is_superdomain(domain.name)
 
     def __eq__(self, __o: object) -> bool:
         if isinstance(__o, Domain):
-            (
-                result,
-                _,
-                _,
-            ) = self.name.fullcompare(__o.name)
-            if result in [1, 2, 3]:
-                return True
-            return False
+            return self.name == __o.name
         raise TypeError("Cannot compare Domain with other types")
+
+    def relation(self, domain: "Domain") -> DomainRelation:
+        """
+        Define the relation between two domains
+
+        Args:
+            domain (Domain): the domain to compare with
+
+        Returns:
+            DomainRelation: the relation between the two domains
+
+        Raises:
+            TypeError: if the given object is not a Domain
+        """
+
+        if not isinstance(domain, Domain):
+            raise TypeError("Cannot compare Domain with other types")
+
+        if self == domain:
+            return DomainRelation.EQUAL
+        if self.is_subdomain(domain):
+            return DomainRelation.SUBDOMAIN
+        if self.is_superdomain(domain):
+            return DomainRelation.SUPERDOMAIN
+        return DomainRelation.DIFFERENT

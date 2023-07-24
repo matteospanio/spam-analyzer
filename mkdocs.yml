@@ -8,10 +8,12 @@ nav:
     - Getting Started: getting_started.md
     - Installation: installation.md
     - Usage: usage.md
-    - API Reference: api_reference.md
+    - API Reference:
+      - api/reference.md
+      - api/utils.md
     - Contributing:
-      - contributing.md
-      - CODE_OF_CONDUCT.md
+      - contrib/contributing.md
+      - contrib/CODE_OF_CONDUCT.md
     - Changelog: changelog.md
     - Security: SECURITY.md
 

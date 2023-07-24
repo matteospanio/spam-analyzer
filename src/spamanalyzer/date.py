@@ -10,6 +10,7 @@ class Date:
     The focus of the checks is to determine if the date is valid and if it is in the
     correct format.
     The date is valid if it is in the RFC2822 format and if the timezone is valid:
+
     - [RFC2822](https://tools.ietf.org/html/rfc2822#section-3.3): specifies the
       format of the date in the headers of the mail in the form
       `Day, DD Mon YYYY HH:MM:SS TZ`. Of course it is not the only format used in the
@@ -32,6 +33,11 @@ class Date:
 
     @property
     def timezone(self) -> int:
+        """Get the timezone of the date.
+
+        Returns:
+            int: The timezone of the date, if the timezone is not found it returns 0
+        """
         tz = self.date.tzinfo
         if tz is None:
             return 0
@@ -42,6 +48,48 @@ class Date:
             return 0
 
         return int(str(clean_tz).replace("UTC", "").split(":")[0])
+
+    @property
+    def seconds(self) -> int:
+        """Get the seconds of the date."""
+        return self.date.second
+
+    @property
+    def minutes(self) -> int:
+        """Get the minutes of the date."""
+        return self.date.minute
+
+    @property
+    def hour(self) -> int:
+        """Get the hour of the date."""
+        return self.date.hour
+
+    @property
+    def day(self) -> int:
+        """Get the day of the date."""
+        return self.date.day
+
+    @property
+    def month(self) -> int:
+        """Get the month of the date."""
+        return self.date.month
+
+    @property
+    def year(self) -> int:
+        """Get the year of the date.
+        It raises a ValueError if the year is less than 1971 since the first email
+        was sent in 1971.
+
+        !!! see
+            [history of email](https://en.wikipedia.org/wiki/History_of_email) to know
+            more about the first email sent.
+
+        Raises:
+            ValueError: If the year is less than 1971
+        """
+        if self.date.year < 1971:
+            raise ValueError("Year cannot be less than 1971")
+        return self.date.year
 
     def __eq__(self, other) -> bool:
         if isinstance(other, Date):
@@ -64,7 +112,6 @@ class Date:
             "second": self.date.second,
         }
 
-    # parse the date
     def __parse(self) -> tuple[datetime, bool]:
         try:
             return datetime.strptime(self.__raw_date, "%a, %d %b %Y %H:%M:%S %z"), True

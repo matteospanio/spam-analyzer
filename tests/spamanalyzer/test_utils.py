@@ -1,3 +1,4 @@
+import asyncio
 import mailparser
 import pytest
 from spamanalyzer import utils
@@ -10,36 +11,45 @@ spam = mailparser.parse_from_file(
     "tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email"
 )
 
+with open("src/app/conf/word_blacklist.txt", encoding="utf-8") as f:
+    wordlist = f.read().splitlines()
+
+
+@pytest.fixture
+async def mail_headers():
+    return await asyncio.gather(
+        utils.inspect_headers(trustable_mail, wordlist),
+        utils.inspect_headers(spam, wordlist),
+    )
+
 
 class TestInspectHeaders:
-    with open("src/app/conf/word_blacklist.txt", encoding="utf-8") as f:
-        wordlist = f.read().splitlines()
 
-    headers_ok = utils.inspect_headers(trustable_mail, wordlist)
-    bad_headers = utils.inspect_headers(spam, wordlist)
-
-    def test_inspect_headers_method(self):
-        assert isinstance(self.headers_ok, dict)
+    def test_inspect_headers_method(self, mail_headers):
+        ok, _ = mail_headers
+        assert isinstance(ok, dict)
         with pytest.raises(KeyError):
-            assert self.headers_ok[7] is None
+            assert ok[7] is None
 
-    def test_inspect_headers_in_secure_email(self):
-        assert self.headers_ok["has_spf"] is True
-        assert self.headers_ok["has_dkim"] is True
-        assert self.headers_ok["has_dmarc"] is True
-        assert self.headers_ok["domain_matches"] is False
-        assert self.headers_ok["auth_warn"] is False
-        assert self.headers_ok["has_suspect_subject"] is True
-        assert self.headers_ok["send_date"].date.year == 2021
+    def test_inspect_headers_in_secure_email(self, mail_headers):
+        ok, _ = mail_headers
+        assert ok["has_spf"] is True
+        assert ok["has_dkim"] is True
+        assert ok["has_dmarc"] is True
+        assert ok["domain_matches"] is False
+        assert ok["auth_warn"] is False
+        assert ok["has_suspect_subject"] is True
+        assert ok["send_date"].date.year == 2021
 
-    def test_inspect_headers_in_spam(self):
-        assert self.bad_headers["has_spf"] is False
-        assert self.bad_headers["has_dkim"] is False
-        assert self.bad_headers["has_dmarc"] is False
-        assert self.bad_headers["domain_matches"] is False
-        assert self.bad_headers["auth_warn"] is False
-        assert self.bad_headers["has_suspect_subject"] is False
-        assert self.bad_headers["send_date"].date.year < 2015
+    def test_inspect_headers_in_spam(self, mail_headers):
+        _, bad_headers = mail_headers
+        assert bad_headers["has_spf"] is False
+        assert bad_headers["has_dkim"] is False
+        assert bad_headers["has_dmarc"] is False
+        assert bad_headers["domain_matches"] is False
+        assert bad_headers["auth_warn"] is False
+        assert bad_headers["has_suspect_subject"] is False
+        assert bad_headers["send_date"].date.year < 2015
 
     def test_gappy_words(self):
         gappy_mail = mailparser.parse_from_file(
@@ -50,8 +60,8 @@ class TestInspectHeaders:
             False,
             False,
         )
-        assert utils.analyze_subject(gappy_mail.headers, self.wordlist) == (True, False)
-        assert utils.analyze_subject(none_subject.headers, self.wordlist) == (
+        assert utils.analyze_subject(gappy_mail.headers, wordlist) == (True, False)
+        assert utils.analyze_subject(none_subject.headers, wordlist) == (
             False,
             False,
         )
@@ -107,14 +117,15 @@ def test_x_warning():
     assert utils.has_auth_warning(warn_mail.headers) is True
 
 
-def test_get_domain():
+@pytest.mark.asyncio
+async def test_get_domain():
     unknown_domain = "the domain is unknown"
     real_domain = "the domain is google.com"
     ip_address = "127.0.0.1"
 
-    assert utils.get_domain(unknown_domain) == Domain("unknown")
-    assert utils.get_domain(real_domain) == Domain("google.com")
-    assert utils.get_domain(ip_address) == Domain("localhost")
+    assert await utils.get_domain(unknown_domain) == Domain("unknown")
+    assert await utils.get_domain(real_domain) == Domain("google.com")
+    assert await utils.get_domain(ip_address) == Domain("localhost")
 
 
 class TestStringAnalysis:

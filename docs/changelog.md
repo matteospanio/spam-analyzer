@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- changed to async methods for faster execution
 - documentation is now generated with mkdocs
 - refactored the code to use click instead of argparse
 - refactored the code to separate the CLI from the library (also tests)

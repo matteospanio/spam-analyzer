@@ -1,10 +1,10 @@
 from enum import Enum
 import re
+from typing import List
 from bs4 import BeautifulSoup
-from textblob import TextBlob
 from mailparser import MailParser
-import spamanalyzer.data_structures as ds
 from spamanalyzer.date import Date
+from spamanalyzer.domain import Domain
 
 
 class Regex(Enum):
@@ -18,14 +18,16 @@ class Regex(Enum):
         r"(https://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)"
     )
     SHORT_LINK = re.compile(
-        r"(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)")
+        r"(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)"
+    )
     GAPPY_WORDS = re.compile(r"([A-Za-z0-9]+(<!--*-->|\*|\-))+")
-    HTML_FORM = re.compile(r"<form")
+    HTML_FORM = re.compile(r"<\s*form", re.DOTALL)
     HTML_TAG = re.compile(r"<[^>]+>")
-    IMAGE_TAG = re.compile(r"<img")
+    HTML_PAIR_TAG = re.compile(r"<\s*(\w+)[^>]*>(.*?)<\s*/\s*\1\s*>", re.DOTALL)
+    IMAGE_TAG = re.compile(r"<\s*img", re.DOTALL)
 
 
-def inspect_headers(email: MailParser, wordlist):
+async def inspect_headers(email: MailParser, wordlist):
     """A detailed analysis of the email headers
 
     Args:
@@ -58,7 +60,7 @@ def inspect_headers(email: MailParser, wordlist):
         "has_spf": spf_pass(headers),
         "has_dkim": dkim_pass(headers),
         "has_dmarc": dmarc_pass(headers),
-        "domain_matches": from_domain_matches_received(email),
+        "domain_matches": await from_domain_matches_received(email),
         "auth_warn": has_auth_warning(headers),
         "has_suspect_subject": has_suspect_subject,
         "subject_is_uppercase": subject_is_uppercase,
@@ -69,8 +71,11 @@ def inspect_headers(email: MailParser, wordlist):
 
 def spf_pass(headers: dict) -> bool:
     """Checks if the email has a SPF record"""
-    spf = (headers.get("Received-SPF") or headers.get("Authentication-Results")
-           or headers.get("Authentication-results"))
+    spf = (
+        headers.get("Received-SPF")
+        or headers.get("Authentication-Results")
+        or headers.get("Authentication-results")
+    )
     if spf is not None and "pass" in spf.lower():
         return True
     return False
@@ -81,7 +86,8 @@ def dkim_pass(headers: dict) -> bool:
     if headers.get("DKIM-Signature") is not None:
         return True
     dkim = headers.get("Authentication-Results") or headers.get(
-        "Authentication-results")
+        "Authentication-results"
+    )
     if dkim is not None and "dkim=pass" in dkim.lower():
         return True
     return False
@@ -90,7 +96,8 @@ def dkim_pass(headers: dict) -> bool:
 def dmarc_pass(headers: dict) -> bool:
     """Checks if the email has a DMARC record"""
     dmarc = headers.get("Authentication-Results") or headers.get(
-        "Authentication-results")
+        "Authentication-results"
+    )
     if dmarc is not None and "dmarc=pass" in dmarc.lower():
         return True
     return False
@@ -113,7 +120,7 @@ def analyze_subject(headers: dict, wordlist) -> tuple[bool, bool]:
         wordlist (list[str]): a list of words to be used as a spam filter in the subject
         field
     """
-    subject: str = headers.get("Subject")
+    subject: str = headers.get("Subject")  # type: ignore
     if subject is not None:
         matches = Regex.GAPPY_WORDS.value.search(subject)
         if matches is not None:
@@ -151,18 +158,18 @@ def parse_date(headers: dict):
     return Date(date)
 
 
-def from_domain_matches_received(email: MailParser) -> bool:
-    email_domain = get_domain(email.headers.get("From"))
+async def from_domain_matches_received(email: MailParser) -> bool:
+    email_domain = await get_domain(email.headers.get("From"))  # type: ignore
     try:
-        server_domain = get_domain(email.received[0].get("from"))
+        server_domain = await get_domain(email.received[0].get("from"))
     except Exception:
         # server_domain = get_domain(email.received[0].get('by'))
-        server_domain = get_domain("unknown")
+        server_domain = await get_domain("unknown")
 
     return email_domain == server_domain
 
 
-def get_domain(field: str):
+async def get_domain(field: str):
     """Extracts the domain from a field
 
     Args:
@@ -174,20 +181,20 @@ def get_domain(field: str):
     # TODO: should take in consideration only the string before 'by word'
 
     if "unknown" in field:
-        return ds.Domain("unknown")
+        return Domain("unknown")
 
     domain_match = Regex.DOMAIN.value.search(field)
 
     if domain_match:
-        domain_name = field[domain_match.start():domain_match.end()]
-        return ds.Domain(domain_name)
+        domain_name = field[domain_match.start() : domain_match.end()]
+        return Domain(domain_name)
 
     ip_match = Regex.IP.value.search(field)
     if ip_match:
-        ip_address = field[ip_match.start():ip_match.end()]
-        return ds.Domain.from_ip(ip_address)
+        ip_address = field[ip_match.start() : ip_match.end()]
+        return await Domain.from_ip(ip_address)
 
-    return ds.Domain("unknown")
+    return Domain("unknown")
 
 
 def inspect_body(body: str, wordlist, domain):
@@ -209,6 +216,8 @@ def inspect_body(body: str, wordlist, domain):
     - contains_html (bool): True if the email contains html tags
 
     """
+    from textblob import TextBlob  # FIXME: moved here for testing purposes
+
     is_uppercase = is_upper(body)
     body = body.lower()
     link_list = get_links_from_str(body)
@@ -233,8 +242,8 @@ def inspect_body(body: str, wordlist, domain):
         "has_mailto": links["mailto"],
         "has_images": has_images(body),
         "https_only": links["https_only"],
-        "text_polarity": blob.sentiment.polarity,
-        "text_subjectivity": blob.sentiment.subjectivity,
+        "text_polarity": blob.sentiment.polarity,  # type: ignore
+        "text_subjectivity": blob.sentiment.subjectivity,  # type: ignore
         "contains_script": has_script_tag(body),
         "is_uppercase": is_uppercase,
         "forbidden_words_percentage": forbidden_words_percentage,
@@ -270,7 +279,9 @@ def has_html(body: str) -> bool:
     Returns:
         bool: True if the email contains html tags
     """
-    return bool(Regex.HTML_TAG.value.search(body))
+    return bool(Regex.HTML_TAG.value.search(body)) or bool(
+        Regex.HTML_PAIR_TAG.value.search(body)
+    )
 
 
 def has_images(body: str) -> bool:
@@ -285,7 +296,7 @@ def has_images(body: str) -> bool:
     return bool(Regex.IMAGE_TAG.value.search(body))
 
 
-def has_html_form(body) -> bool:
+def has_html_form(body: str) -> bool:
     """Checks if the email has a form
 
     Args:
@@ -297,7 +308,7 @@ def has_html_form(body) -> bool:
     return bool(Regex.HTML_FORM.value.search(body))
 
 
-def percentage_of_bad_words(body, wordlist) -> float:
+def percentage_of_bad_words(body: str, wordlist: List[str]) -> float:
     """Calculates the percentage of forbidden words in the body
 
     Args:
@@ -314,7 +325,7 @@ def percentage_of_bad_words(body, wordlist) -> float:
     return bad_words / len(body.split(" "))
 
 
-def get_links_from_str(body: str) -> list[str]:
+def get_links_from_str(body: str) -> List[str]:
     links = []
 
     http = Regex.HTTP_LINK.value.findall(body)
@@ -357,7 +368,7 @@ def check_links(body):
     }
 
 
-def https_only(links: list[str]) -> bool:
+def https_only(links: List[str]) -> bool:
     if links == []:
         return False
 
@@ -367,7 +378,7 @@ def https_only(links: list[str]) -> bool:
     return True
 
 
-def has_script_tag(body) -> bool:
+def has_script_tag(body: str) -> bool:
     """Checks if the email has script tags or javascript code
 
     Args:
@@ -383,7 +394,23 @@ def has_script_tag(body) -> bool:
     return False
 
 
-def inspect_attachments(attachments: list) -> dict:
+def inspect_attachments(attachments: List) -> dict:
+    """A detailed analysis of the email attachments
+
+    Args:
+        attachments (List):  a list of attachments
+
+    Returns:
+        dict: a dictionary containing the following information:
+
+        ```python
+        {
+            "has_attachments": bool,         # True if the email has attachments
+            "attachment_is_executable": bool # True if the email has
+                                             # an attachment in executable format
+        }
+
+    """
     has_attachments = len(attachments) > 0
     is_executable = False
     for attachment in attachments:

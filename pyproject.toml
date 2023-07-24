@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spam-analyzer"
-version = "0.2.1"
+version = "0.3.0"
 description = "A simple email analyzer"
 authors = ["Matteo Spanio <matteo.spanio97@gmail.com>"]
 license = "GPLv3"
@@ -45,6 +45,7 @@ pytest-cov = "^4.1.0"
 pytest-xdist = "^3.3.1"
 coveralls = "^3.3.1"
 tomli = "^2.0.1"
+pytest-asyncio = "^0.21.1"
 
 
 [tool.poetry.group.docs.dependencies]
@@ -70,6 +71,7 @@ blank_line_before_nested_class_or_def = true
 column_limit = 88
 
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
 minversion = "6.0"
 addopts = "-r a -q -n auto -W error::RuntimeWarning"
 testpaths = ["tests"]

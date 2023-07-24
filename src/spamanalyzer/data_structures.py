@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from os import path
+from typing import List
 import yaml
 import mailparser
 import numpy as np
@@ -23,6 +24,18 @@ class MailAnalysis:
     """
     It is a dictionaty containing a detailed analysis of the mail's headers.
     It contains the following keys:
+
+    | Key | Type |  Description |
+    | --- | --- | --- |
+    | `has_spf` | bool | flag that indicates if the mail has a SPF header |
+    | `has_dkim` | bool | flag that indicates if the mail has a DKIM header |
+    | `has_dmarc` | bool | flag that indicates if the mail has a DMARC header |
+    | `auth_warn` | bool | flag that indicates if the mail has an Authentication-Warning header |
+    | `domain_matches` | bool | flag that indicates if the domain of the sender matches the first domain in the `Received` headers |
+    | `has_suspect_subject` | bool | flag that indicates if the mail's subject contains a suspicious word or a gappy word (e.g. `H*E*L*L*O`) |
+    | `subject_is_uppercase` | bool | flag that indicates if the mail's subject is in uppercase |
+    | `send_date` | Date | the date when the mail was sent, if the mail has no `Date` header, it is `None` |
+    | `received_date` | Date | the date when the mail was received, if the mail hasn't a date in `Received` header, it is `None` |
 
     - `has_spf`, it is `True` if the mail has a SPF header (Sender Policy Framework),
       it is a standard to prevent email spoofing.
@@ -56,22 +69,19 @@ class MailAnalysis:
     It is a dictionaty containing a detailed analysis of the mail's body.
     It contains the following keys:
 
-    - `contains_html`, it is `True` if the body contains an html tag.
-    - `contains_script`, it is `True` if the body contains a script tag or a callback
-    function. It is dangerous because Email clients that support JavaScript can execute
-    the script in the email.
-    - `forbidden_words_percentage`, the rate of forbidden words in the body of the mail,
-    it is a float between 0 and 1.
-    - `has_links`, it is `True` if the body contains an url.
-    - `has_mailto`, it is `True` if the body contains a mailto link.
-    - `https_only`, it is `True` if the body contains only https links.
-    - `contains_form`, it is `True` if the body contains a form tag.
-    - `has_images`, it is `True` if the body contains an image.
-    - `is_uppercase`, it is `True` if the body is in uppercase more than $60$% of
-    its length.
-    - `text_polarity`, it is the polarity of the body, it is a float between -1 and 1.
-    - `text_subjectivity`, it is the subjectivity of the body, it is a float between
-    0 and 1.
+    | Key | Type |  Description |
+    | --- | --- | --- |
+    | `contains_html` | bool | flag that indicates if the body contains an html tag |
+    | `contains_script` | bool | flag that indicates if the body contains a script tag or a callback function |
+    | `forbidden_words_percentage` | float | the rate of forbidden words in the body of the mail, it is a float between 0 and 1 |
+    | `has_links` | bool | flag that indicates if the body contains an url |
+    | `has_mailto` | bool | flag that indicates if the body contains a mailto link |
+    | `https_only` | bool | flag that indicates if the body contains only https links |
+    | `contains_form` | bool | flag that indicates if the body contains a form tag |
+    | `has_images` | bool | flag that indicates if the body contains an image |
+    | `is_uppercase` | bool | flag that indicates if the body is in uppercase more than $60$% of its length |
+    | `text_polarity` | float | the polarity of the body, it is a float between -1 and 1 |
+    | `text_subjectivity` | float | the subjectivity of the body, it is a float between 0 and 1 |
     """
 
     # attachments
@@ -79,13 +89,15 @@ class MailAnalysis:
     """
     It is a dictionary containing a detailed analysis of the mail's attachments.
     It contains the following keys:
-    - `has_attachments`, it is `True` if the mail has attachments
-    - `attachment_is_executable`, it is `True` if the mail has an attachment in
-      executable format
+
+    | Key | Type |  Description |
+    | --- | --- | --- |
+    | `has_attachments` | bool | flag that indicates if the mail has attachments |
+    | `attachment_is_executable` | bool | flag that indicates if the mail has an attachment in executable format |
     """
 
     @staticmethod
-    def classify_multiple_input(mails: list) -> list:
+    def classify_multiple_input(mails: List["MailAnalysis"]) -> List[bool]:
         """Classify a list of mails
 
         Args:
@@ -125,7 +137,7 @@ class MailAnalysis:
             "is_spam": self.is_spam(),
         }
 
-    def to_list(self) -> list:
+    def to_list(self) -> List:
         return [  # self.file_path,
             self.headers["has_spf"],
             self.headers["has_dkim"],
@@ -135,9 +147,11 @@ class MailAnalysis:
             self.headers["has_suspect_subject"],
             self.headers["subject_is_uppercase"],
             self.headers["send_date"].is_RFC2822_formatted()
-            if self.headers["send_date"] is not None else False,
+            if self.headers["send_date"] is not None
+            else False,
             self.headers["send_date"].is_tz_valid()
-            if self.headers["send_date"] is not None else False,
+            if self.headers["send_date"] is not None
+            else False,
             self.headers["received_date"] is not None,
             self.body["is_uppercase"],
             self.body["contains_script"],
@@ -176,25 +190,23 @@ class MailAnalyzer:
     def __init__(self, wordlist):
         self.wordlist = wordlist
 
-    def analyze(self, email_path: str) -> MailAnalysis:
+    async def analyze(self, email_path: str) -> MailAnalysis:
         email = mailparser.parse_from_file(email_path)
 
-        headers = utils.inspect_headers(email, self.wordlist)
-        body = utils.inspect_body(email.body, self.wordlist,
-                                  self.get_domain(email_path))
+        headers = await utils.inspect_headers(email, self.wordlist)
+        body = utils.inspect_body(
+            email.body, self.wordlist, (await self.get_domain(email_path))
+        )
         attachments = utils.inspect_attachments(email.attachments)
 
-        return MailAnalysis(file_path=email_path,
-                            headers=headers,
-                            body=body,
-                            attachments=attachments)
+        return MailAnalysis(
+            file_path=email_path, headers=headers, body=body, attachments=attachments
+        )
 
-    def get_domain(self, email_path: str) -> Domain:
+    async def get_domain(self, email_path: str) -> Domain:
         email = mailparser.parse_from_file(email_path)
         received = email.headers.get("Received")
-        if received is None:
-            return utils.get_domain("unknown")
-        return utils.get_domain(received)
+        return await utils.get_domain("unknown" if received is None else received)
 
     def __repr__(self):
         return f"<MailAnalyzer(wordlist={self.wordlist})>"
