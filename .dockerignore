@@ -1,0 +1,10 @@
+.coveragerc
+.coveralls.yml
+.gitignore
+.editorconfig
+LICENSE
+docs
+.circleci
+_docs
+examples
+mkdocs.yml
