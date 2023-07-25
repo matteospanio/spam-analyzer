@@ -2,14 +2,15 @@ import asyncio
 import functools
 import os
 import sys
-from typing import Optional
+from io import TextIOWrapper
+from typing import List, Optional
 
 import click
 from rich.console import Console
 
-from spamanalyzer.data_structures import MailAnalyzer
 from app import files
 from app.io import print_output
+from spamanalyzer.data_structures import SpamAnalyzer
 
 conf, _, _ = files.handle_configuration_files()
 
@@ -29,7 +30,7 @@ class Args:
     output_file: Optional[click.File]
     output_format: Optional[str]
     verbose: bool
-    wordlist: click.File
+    wordlist: TextIOWrapper
 
     def __init__(self):
         self.verbose = False
@@ -72,22 +73,17 @@ def cli(config: Args, verbose: bool) -> None:
     help="Write output to a file (works only for json format)",
     type=click.File("w"),
 )
-@click.option("--destination-dir",
-              help="The directory where copy your classified emails")
+@click.option("--destination-dir", help="The directory where copy your classified emails")
 @click.argument(
     "input",
-    type=click.Path(exists=True,
-                    file_okay=True,
-                    dir_okay=True,
-                    readable=True,
-                    resolve_path=True),
+    type=click.Path(exists=True, file_okay=True, dir_okay=True, readable=True, resolve_path=True),
     required=True,
 )
 @async_command
 @pass_args
 async def analyze(
     args: Args,
-    wordlist: click.File,
+    wordlist: TextIOWrapper,
     output_format: str,
     output_file: click.File,
     destination_dir: str,
@@ -106,15 +102,16 @@ async def analyze(
     args.input = input
     verbose = args.verbose
 
-    wordlist = wordlist.read().splitlines()  # type: ignore
+    wordlist_content: List[str] = wordlist.read().splitlines()  # type: ignore
     data = []
 
     console = Console()
 
-    analyzer = MailAnalyzer(wordlist)
+    analyzer = SpamAnalyzer(wordlist_content)
 
     if os.path.isdir(input):
-        file_list = files.get_files_from_dir(input, verbose)
+        with console.status("[bold]Reading files...", spinner="dots"):
+            file_list = files.get_files_from_dir(input, verbose)
         with console.status("[bold]Analyzing emails...", spinner="dots"):
             for mail_path in file_list:
                 analysis = analyzer.analyze(mail_path)
@@ -130,10 +127,13 @@ async def analyze(
             click.echo("The file is not analyzable")
         sys.exit(1)
 
-    print_output(data,
-                 output_format=output_format,
-                 verbose=verbose,
-                 output_file=output_file)
+    print_output(
+        data,
+        output_format=output_format,
+        verbose=verbose,
+        analyzer=analyzer,
+        output_file=output_file,
+    )
 
     if destination_dir is not None:
         expanded_dest_dir = files.expand_destination_dir(destination_dir)
@@ -168,8 +168,7 @@ def show():
 
 
 @config.command()
-@click.confirmation_option(
-    prompt="Are you sure you want to reset the configuration file?")
+@click.confirmation_option(prompt="Are you sure you want to reset the configuration file?")
 def reset():
     """Reset the configuration file"""
 

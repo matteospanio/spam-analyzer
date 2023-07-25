@@ -1,8 +1,7 @@
 import tomli
-import pytest
 from click.testing import CliRunner
 
-from app import files, __main__
+from app import __main__, files
 
 _, _, _ = files.handle_configuration_files()
 
@@ -49,6 +48,4 @@ class TestCLI:
                 "tests/samples",
             ],
         )
-        output = result.output
-        assert "Reading files" in output
-        assert "Analyzing" in output
+        assert 0 == result.exit_code

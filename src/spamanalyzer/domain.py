@@ -1,9 +1,10 @@
-from dataclasses import dataclass
-from enum import Enum
 import asyncio
 import socket
-import dns.resolver
+from dataclasses import dataclass
+from enum import Enum
+
 import dns.name
+import dns.resolver
 
 
 class DomainRelation(Enum):

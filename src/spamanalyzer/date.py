@@ -1,6 +1,11 @@
-from datetime import datetime
 import re
-from dateutil.parser import parse, ParserError
+import warnings
+from datetime import datetime
+from typing import Optional
+
+from dateutil.parser import ParserError, parse
+
+warnings.filterwarnings("ignore")
 
 
 class Date:
@@ -24,12 +29,14 @@ class Date:
 
     __raw_date: str
     date: datetime
+    __tz: Optional[int]
 
-    def __init__(self, date: str):
+    def __init__(self, date: str, tz: Optional[int] = None):
         if date is None or date == "":
             raise ValueError("Date cannot be empty or None")
         self.__raw_date = date
         self.date = self.__parse()[0]
+        self.__tz = tz
 
     @property
     def timezone(self) -> int:
@@ -38,6 +45,9 @@ class Date:
         Returns:
             int: The timezone of the date, if the timezone is not found it returns 0
         """
+        if self.__tz is not None:
+            return self.__tz
+
         tz = self.date.tzinfo
         if tz is None:
             return 0
@@ -104,12 +114,12 @@ class Date:
             "is_tz_valid": self.is_tz_valid(),
             "date": self.date.isoformat(),
             "posix": self.date.timestamp(),
-            "year": self.date.year,
-            "month": self.date.month,
-            "day": self.date.day,
-            "hour": self.date.hour,
-            "minute": self.date.minute,
-            "second": self.date.second,
+            "year": self.year,
+            "month": self.month,
+            "day": self.day,
+            "hour": self.hour,
+            "minute": self.minutes,
+            "second": self.seconds,
         }
 
     def __parse(self) -> tuple[datetime, bool]:

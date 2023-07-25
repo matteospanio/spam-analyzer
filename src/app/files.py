@@ -1,17 +1,15 @@
-import sys
-import shutil
 import os
-from os import path, listdir, makedirs
+import shutil
+import sys
 from importlib.resources import files
-from rich.progress import track
-import mailparser
+from os import listdir, makedirs, path
+
 import yaml
 
 
 def get_files_from_dir(directory: str, verbose: bool = False) -> list[str]:
     file_list = []
-    for filename in track(listdir(directory),
-                          description="Reading files from directory"):
+    for filename in listdir(directory):
         mail_path = path.join(directory, filename)
         if os.path.isfile(mail_path) and file_is_valid_email(mail_path):
             file_list.append(mail_path)
@@ -24,7 +22,9 @@ def get_files_from_dir(directory: str, verbose: bool = False) -> list[str]:
 
 
 def file_is_valid_email(file_path: str) -> bool:
-    mail = mailparser.parse_from_file(file_path)
+    from spamanalyzer import SpamAnalyzer
+
+    mail = SpamAnalyzer.parse(file_path)
     return (path.isfile(file_path) and mail.headers.get("Received") is not None
             and mail.headers.get("From") is not None)
 
@@ -34,7 +34,7 @@ def handle_configuration_files():
 
     config_file = str(files(__package__).joinpath("conf/config.yaml"))
     wordlist = str(files(__package__).joinpath("conf/word_blacklist.txt"))
-    model = str(files(__package__).joinpath("conf/classifier.pkl"))
+    model = str(files("spamanalyzer.ml").joinpath("classifier.pkl"))
 
     if not path.exists(__defaults__["SPAMANALYZER_CONF_PATH"]):
         makedirs(__defaults__["SPAMANALYZER_CONF_PATH"], exist_ok=True)
@@ -54,8 +54,7 @@ def handle_configuration_files():
             shutil.copy(wordlist, wordlist_path)
     except Exception as e:
         raise Exception(
-            "Error while loading wordlist at the file path specified in the config file"
-        ) from e
+            "Error while loading wordlist at the file path specified in the config file") from e
 
     try:
         classifier_path = path.expanduser(config["files"]["classifier"])

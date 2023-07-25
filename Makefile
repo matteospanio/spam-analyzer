@@ -62,8 +62,11 @@ build: clean setup ## Build package
 deploy: build ## Deploy package to PyPI
 	poetry publish
 
-format: ## Format code with yapf
+format: isort ## Format code with yapf
 	$(POETRY) yapf --in-place --recursive ./src ./tests
+
+isort: ## Sort imports with isort
+	$(POETRY) isort .
 
 lint: format ## Lint code with pylint
 	$(POETRY) pylint ./src ./tests

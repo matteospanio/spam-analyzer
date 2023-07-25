@@ -1,15 +1,24 @@
 import json
-from typing import List
+from io import TextIOWrapper
+from typing import List, Optional
+
 import rich
-from rich.panel import Panel
-from rich.text import Text
-from rich.console import Console, Group
 from rich.columns import Columns
+from rich.console import Console, Group
+from rich.panel import Panel
 from rich.table import Table
-from spamanalyzer.data_structures import MailAnalysis
+from rich.text import Text
+
+from spamanalyzer.data_structures import MailAnalysis, SpamAnalyzer
 
 
-def print_output(data, output_format: str, verbose: bool, output_file=None) -> None:
+def print_output(
+    data: List[MailAnalysis],
+    output_format: str,
+    verbose: bool,
+    analyzer: SpamAnalyzer,
+    output_file=None,
+) -> None:
     """Prints the output of the `MailAnalysis` in the specified format (csv,
     json or default).
 
@@ -33,36 +42,34 @@ def print_output(data, output_format: str, verbose: bool, output_file=None) -> N
     elif output_format == "json":
         __print_to_json(data, output_file)
     else:
-        __print_default(data, verbose)
+        __print_default(data, analyzer, verbose)
 
 
 def __print_to_csv(data, output_file):
     raise NotImplementedError
 
 
-def __print_to_json(data, output_file):
+def __print_to_json(data: List[MailAnalysis], output_file: Optional[TextIOWrapper]):
     dict_data = [analysis.to_dict() for analysis in data]
     for analysis in dict_data:
         if analysis["headers"]["send_date"] is not None:
-            analysis["headers"]["send_date"] = analysis["headers"]["send_date"].to_dict(
-            )
+            analysis["headers"]["send_date"] = analysis["headers"]["send_date"].to_dict()
         if analysis["headers"]["received_date"] is not None:
-            analysis["headers"]["received_date"] = analysis["headers"][
-                "received_date"].to_dict()
+            analysis["headers"]["received_date"] = analysis["headers"]["received_date"].to_dict()
     if output_file is not None:
         json.dump(dict_data, output_file, indent=4)
     else:
         print(json.dumps(dict_data, indent=4))
 
 
-def __print_default(data: List[MailAnalysis], verbose: bool):
+def __print_default(data: List[MailAnalysis], analyzer: SpamAnalyzer, verbose: bool):
     classifier_spam = 0
     classifier_ham = 0
 
     console = Console()
     renderables = []
 
-    labels = MailAnalysis.classify_multiple_input(data)
+    labels = analyzer.classify_multiple_input(data)
 
     for analysis, label in zip(data, labels):
         if label:

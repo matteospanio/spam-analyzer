@@ -1,6 +1,8 @@
 import datetime
-from dateutil.parser import parse
+
 import pytest
+from dateutil.parser import parse
+
 from spamanalyzer.date import Date
 
 
@@ -41,8 +43,7 @@ class TestDate:
             Date(self.empty_date)
 
     def test_equality(self):
-        date_datetime = datetime.datetime.strptime(self.RFC_date,
-                                                   "%a, %d %b %Y %H:%M:%S %z")
+        date_datetime = datetime.datetime.strptime(self.RFC_date, "%a, %d %b %Y %H:%M:%S %z")
 
         assert Date(self.RFC_date) == Date(self.RFC_date)
         assert Date(self.RFC_date) != Date(self.invalid_date)

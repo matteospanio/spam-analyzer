@@ -1,7 +1,10 @@
-import csv, os
+import csv
+import os
+
 from rich.progress import track
-from spamanalyzer import MailAnalyzer
+
 from app.files import get_files_from_dir
+from spamanalyzer import SpamAnalyzer
 
 
 def list_to_csv(l: list, filename: str):
@@ -11,7 +14,7 @@ def list_to_csv(l: list, filename: str):
             writer.writerow(elem)
 
 
-def file_to_csv(filename: str, output_file: str, is_spam: int, analyzer: MailAnalyzer):
+def file_to_csv(filename: str, output_file: str, is_spam: int, analyzer: SpamAnalyzer):
     raw_files = get_files_from_dir(filename)
     datalist = []
     for file in track(raw_files, description=f"Analyzing files from {filename} folder"):
@@ -28,7 +31,7 @@ if __name__ == "__main__":
 
     destination = "docs/data/spam.csv"
 
-    analysis_factory = MailAnalyzer(wordlist)
+    analysis_factory = SpamAnalyzer(wordlist)
 
     file_to_csv("dataset/2021/02", destination, 1, analysis_factory)
     file_to_csv("dataset/2021/03", destination, 1, analysis_factory)

@@ -24,16 +24,15 @@ we istantiate the `MailAnalyzer` class and pass the wordlist to it. Then we call
 in this way we can also parallelize the analysis of multiple emails.
 """
 
-from os import path
-
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as package_version
+from os import path
 
-from spamanalyzer.data_structures import MailAnalyzer, MailAnalysis
+from spamanalyzer.data_structures import MailAnalysis, SpamAnalyzer
 from spamanalyzer.date import Date
 from spamanalyzer.domain import Domain
+
 from . import utils
-from app.files import handle_configuration_files
 
 
 def __get_package_version__():
@@ -41,15 +40,13 @@ def __get_package_version__():
         return package_version("spam-analyzer")
     except PackageNotFoundError:
         return ("Version information not available."
-                "Make sure you have installed your package using Poetry.")
+                "Make sure you have installed your package using correctly.")
 
 
-__all__ = ["MailAnalyzer", "MailAnalysis", "Domain", "Date", "utils"]
+__all__ = ["SpamAnalyzer", "MailAnalysis", "Domain", "Date", "utils"]
 __config_path__ = path.join(path.expanduser("~"), ".config", "spamanalyzer")
 
 __defaults__ = {
     "SPAMANALYZER_CONF_PATH": __config_path__,
     "SPAMANALYZER_CONF_FILE": path.join(__config_path__, "config.yaml"),
 }
-
-handle_configuration_files()

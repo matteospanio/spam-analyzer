@@ -1,4 +1,5 @@
 import pickle
+
 import pandas as pd
 
 HEADERS = [
@@ -32,7 +33,8 @@ HEADERS = [
 class SpamClassifier:
 
     def __init__(self, path_to_model: str) -> None:
-        self.model = load_model(path_to_model)
+        with open(path_to_model, "rb") as f:
+            self.model = pickle.load(f)
 
     def predict(self, X_test):
         X = pd.DataFrame(X_test, columns=HEADERS[:-1])
@@ -42,8 +44,3 @@ class SpamClassifier:
 def save_model(model: SpamClassifier, path: str) -> None:
     with open(path, "wb") as f:
         pickle.dump(model, f)
-
-
-def load_model(path: str):
-    with open(path, "rb") as f:
-        return pickle.load(f)

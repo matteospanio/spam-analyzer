@@ -1,9 +1,10 @@
 import asyncio
-from spamanalyzer import MailAnalysis, MailAnalyzer
+
+from spamanalyzer import MailAnalysis, SpamAnalyzer
 
 
 async def spam_analysis():
-    analysis_factory = MailAnalyzer(wordlist=["spam", "phishing", "malware"])
+    analysis_factory = SpamAnalyzer(wordlist=["spam", "phishing", "malware"])
     analysis: MailAnalysis = await analysis_factory.analyze("path/to/mail")
 
     return analysis

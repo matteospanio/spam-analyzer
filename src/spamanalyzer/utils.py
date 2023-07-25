@@ -1,8 +1,10 @@
-from enum import Enum
 import re
-from typing import List
+from enum import Enum
+from typing import List, Literal, Union
+
 from bs4 import BeautifulSoup
 from mailparser import MailParser
+
 from spamanalyzer.date import Date
 from spamanalyzer.domain import Domain
 
@@ -12,13 +14,10 @@ class Regex(Enum):
     IP = re.compile(r"(?:\d{1,3}\.){3}\d{1,3}")
     MAILTO = re.compile(r"mailto:(\w+@\w+\.\w+)(\?subject=(.+))?")
     HTTP_LINK = re.compile(
-        r"(http://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)"
-    )
+        r"(http://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)")
     HTTPS_LINK = re.compile(
-        r"(https://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)"
-    )
-    SHORT_LINK = re.compile(
-        r"(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)")
+        r"(https://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)")
+    SHORT_LINK = re.compile(r"(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)")
     GAPPY_WORDS = re.compile(r"([A-Za-z0-9]+(<!--*-->|\*|\-))+")
     HTML_FORM = re.compile(r"<\s*form", re.DOTALL)
     HTML_TAG = re.compile(r"<[^>]+>")
@@ -52,8 +51,8 @@ async def inspect_headers(email: MailParser, wordlist):
     headers = email.headers
 
     has_suspect_subject, subject_is_uppercase = analyze_subject(headers, wordlist)
-    send_date = parse_date(headers)
-    received_date = parse_date(email.received[0])
+    send_date = parse_date(headers, email.timezone)
+    received_date = parse_date(email.received[0], email.timezone)
 
     return {
         "has_spf": spf_pass(headers),
@@ -81,8 +80,7 @@ def dkim_pass(headers: dict) -> bool:
     """Checks if the email has a DKIM record"""
     if headers.get("DKIM-Signature") is not None:
         return True
-    dkim = headers.get("Authentication-Results") or headers.get(
-        "Authentication-results")
+    dkim = headers.get("Authentication-Results") or headers.get("Authentication-results")
     if dkim is not None and "dkim=pass" in dkim.lower():
         return True
     return False
@@ -90,8 +88,7 @@ def dkim_pass(headers: dict) -> bool:
 
 def dmarc_pass(headers: dict) -> bool:
     """Checks if the email has a DMARC record"""
-    dmarc = headers.get("Authentication-Results") or headers.get(
-        "Authentication-results")
+    dmarc = headers.get("Authentication-Results") or headers.get("Authentication-results")
     if dmarc is not None and "dmarc=pass" in dmarc.lower():
         return True
     return False
@@ -129,7 +126,7 @@ def analyze_subject(headers: dict, wordlist) -> tuple[bool, bool]:
     return False, False
 
 
-def parse_date(headers: dict):
+def parse_date(headers: dict, timezone: Union[str, Literal[0]]):
     """Date format should follow RFC 2822, this function expects a date in the format:
     "Wed, 21 Oct 2015 07:28:00 -0700", and returns a tuple where:
     1. the first element is the parsed date or `None` if the date is not in the correct
@@ -149,7 +146,7 @@ def parse_date(headers: dict):
     date = date.splitlines()[0]
 
     # parse date
-    return Date(date)
+    return Date(date, tz=int(float(timezone)))
 
 
 async def from_domain_matches_received(email: MailParser) -> bool:
@@ -273,8 +270,7 @@ def has_html(body: str) -> bool:
     Returns:
         bool: True if the email contains html tags
     """
-    return bool(Regex.HTML_TAG.value.search(body)) or bool(
-        Regex.HTML_PAIR_TAG.value.search(body))
+    return bool(Regex.HTML_TAG.value.search(body)) or bool(Regex.HTML_PAIR_TAG.value.search(body))
 
 
 def has_images(body: str) -> bool:

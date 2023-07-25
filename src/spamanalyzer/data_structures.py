@@ -1,15 +1,36 @@
+import io
+import sys
 from dataclasses import dataclass
+from functools import wraps
+from importlib import resources
 from os import path
-from typing import List
-import yaml
+from typing import List, Optional
+
 import mailparser
 import numpy as np
 
-from spamanalyzer import classifier
 from spamanalyzer import utils
 from spamanalyzer.domain import Domain
+from spamanalyzer.ml import SpamClassifier
 
-CONFIG_FILE = path.join(path.expanduser("~"), ".config", "spamanalyzer", "config.yaml")
+
+def silent(func):
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # Redirect stdout to a StringIO object
+        original_stdout = sys.stdout
+        sys.stdout = io.StringIO()
+
+        try:
+            result = func(*args, **kwargs)
+        finally:
+            # Reset stdout to its original value after the function call
+            sys.stdout = original_stdout
+
+        return result
+
+    return wrapper
 
 
 @dataclass
@@ -31,11 +52,14 @@ class MailAnalysis:
     | `has_dkim` | bool | flag that indicates if the mail has a DKIM header |
     | `has_dmarc` | bool | flag that indicates if the mail has a DMARC header |
     | `auth_warn` | bool | flag that indicates if the mail has an Authentication-Warning header |
-    | `domain_matches` | bool | flag that indicates if the domain of the sender matches the first domain in the `Received` headers |
-    | `has_suspect_subject` | bool | flag that indicates if the mail's subject contains a suspicious word or a gappy word (e.g. `H*E*L*L*O`) |
+    | `domain_matches` | bool | flag that indicates if the domain
+    of the sender matches the first domain in the `Received` headers |
+    | `has_suspect_subject` | bool | flag that indicates if the mail's subject contains
+    a suspicious word or a gappy word (e.g. `H*E*L*L*O`) |
     | `subject_is_uppercase` | bool | flag that indicates if the mail's subject is in uppercase |
     | `send_date` | Date | the date when the mail was sent, if the mail has no `Date` header, it is `None` |
-    | `received_date` | Date | the date when the mail was received, if the mail hasn't a date in `Received` header, it is `None` |
+    | `received_date` | Date | the date when the mail was received, if the mail hasn't a date
+    in `Received` header, it is `None` |
 
     - `has_spf`, it is `True` if the mail has a SPF header (Sender Policy Framework),
       it is a standard to prevent email spoofing.
@@ -96,49 +120,15 @@ class MailAnalysis:
     | `attachment_is_executable` | bool | flag that indicates if the mail has an attachment in executable format |
     """
 
-    @staticmethod
-    def classify_multiple_input(mails: List["MailAnalysis"]) -> List[bool]:
-        """Classify a list of mails
-
-        Args:
-            mails (list[MailAnalysis]): a list of mails to be classified
-
-        Returns:
-            list: a list of boolean values, `True` if the mail is spam, `False`
-            otherwise
-        """
-
-        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-            model_path = yaml.safe_load(f)["files"]["classifier"]
-
-        ml = classifier.SpamClassifier(path.expanduser(model_path))
-
-        # rearrange input
-        adapted_mails = [np.array(mail.to_list()) for mail in mails]
-        predictions = ml.predict(adapted_mails)
-        return [prediction == 1 for prediction in predictions]
-
-    def is_spam(self) -> bool:
-        """Determine if the email is spam based on the analysis of the mail"""
-
-        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-            model_path = yaml.safe_load(f)["files"]["classifier"]
-
-        ml = classifier.SpamClassifier(path.expanduser(model_path))
-        array = np.array(self.to_list())
-        return True if ml.predict(array.reshape(1, -1)) == 1 else False
-
     def to_dict(self) -> dict:
         return {
-            "file_name": self.file_path,
             "headers": self.headers,
             "body": self.body,
             "attachments": self.attachments,
-            "is_spam": self.is_spam(),
         }
 
     def to_list(self) -> List:
-        return [  # self.file_path,
+        return [
             self.headers["has_spf"],
             self.headers["has_dkim"],
             self.headers["has_dmarc"],
@@ -167,7 +157,7 @@ class MailAnalysis:
         ]
 
 
-class MailAnalyzer:
+class SpamAnalyzer:
     """Analyze a mail and return a `MailAnalysis` object,
     essentially it is a factory of `MailAnalysis`.
 
@@ -185,15 +175,27 @@ class MailAnalyzer:
     and easy to extend in future versions.
     """
 
-    def __init__(self, wordlist):
-        self.wordlist = wordlist
+    __model: str
+    __wordlist: List[str]
+
+    def __init__(self, wordlist: List[str], model: Optional[str] = None):
+        self.__wordlist = wordlist
+
+        if model is None:
+            model = str(resources.files("spamanalyzer.ml").joinpath("classifier.pkl"))
+
+        self.__model = model  # type: ignore
+
+    @staticmethod
+    @silent
+    def parse(email_path: str) -> mailparser.MailParser:
+        return mailparser.parse_from_file(email_path)
 
     async def analyze(self, email_path: str) -> MailAnalysis:
-        email = mailparser.parse_from_file(email_path)
+        email = SpamAnalyzer.parse(email_path)
 
-        headers = await utils.inspect_headers(email, self.wordlist)
-        body = utils.inspect_body(email.body, self.wordlist,
-                                  (await self.get_domain(email_path)))
+        headers = await utils.inspect_headers(email, self.__wordlist)
+        body = utils.inspect_body(email.body, self.__wordlist, (await self.get_domain(email_path)))
         attachments = utils.inspect_attachments(email.attachments)
 
         return MailAnalysis(file_path=email_path,
@@ -202,9 +204,34 @@ class MailAnalyzer:
                             attachments=attachments)
 
     async def get_domain(self, email_path: str) -> Domain:
-        email = mailparser.parse_from_file(email_path)
+        email = SpamAnalyzer.parse(email_path)
         received = email.headers.get("Received")
         return await utils.get_domain("unknown" if received is None else received)
 
+    def is_spam(self, email: MailAnalysis) -> bool:
+        """Determine if the email is spam based on the analysis of the mail"""
+
+        model = SpamClassifier(self.__model)
+        array = np.array(email.to_list())
+        return True if model.predict(array.reshape(1, -1)) == 1 else False
+
+    def classify_multiple_input(self, mails: List["MailAnalysis"]) -> List[bool]:
+        """Classify a list of mails
+
+        Args:
+            mails (list[MailAnalysis]): a list of mails to be classified
+
+        Returns:
+            list: a list of boolean values, `True` if the mail is spam, `False`
+            otherwise
+        """
+
+        model = SpamClassifier(self.__model)
+
+        # rearrange input
+        adapted_mails = [np.array(mail.to_list()) for mail in mails]
+        predictions = model.predict(adapted_mails)
+        return [prediction == 1 for prediction in predictions]
+
     def __repr__(self):
-        return f"<MailAnalyzer(wordlist={self.wordlist})>"
+        return f"<MailAnalyzer(wordlist={self.__wordlist})>"
