@@ -19,22 +19,10 @@ repos:
     rev: v0.40.1
     hooks:
     -   id: yapf
-        name: yapf
-        description: "A formatter for Python files."
-        entry: yapf
-        args: [-i] #inplace
-        language: python
-        types: [python]
 
-# -   repo: https://github.com/regebro/pyroma
-#     rev: "3.2"
-#     hooks:
-#     -   id: pyroma
-#         name: pyroma
-
-# -   repo: https://github.com/PyCQA/docformatter
-#     rev: v1.6.1
-#     hooks:
-#     -   id: docformatter
-#         additional_dependencies: [tomli]
-#         args: [--in-place --config ./pyproject.toml]
+-   repo: https://github.com/PyCQA/docformatter
+    rev: v1.6.1
+    hooks:
+    -   id: docformatter
+        additional_dependencies: [tomli]
+        args: [--in-place]

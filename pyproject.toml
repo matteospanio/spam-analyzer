@@ -83,9 +83,8 @@ src_paths = ["src", "tests"]
 
 [tool.docformatter]
 resucrsive = true
-wrap-summaries = true
+wrap-summaries = 82
 blank = true
-in-place = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

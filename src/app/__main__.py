@@ -50,6 +50,7 @@ pass_args = click.make_pass_decorator(Args, ensure=True)
 def cli(config: Args, verbose: bool) -> None:
     """A simple program to analyze emails."""
     config.verbose = verbose
+    os.makedirs(click.get_app_dir("spam-analyzer"), exist_ok=True)
 
 
 @cli.command()

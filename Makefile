@@ -58,6 +58,7 @@ test-coverage: ## Run tests with coverage
 
 build: clean setup ## Build package
 	poetry build
+	$(POETRY) pyroma .
 
 deploy: build ## Deploy package to PyPI
 	poetry publish
