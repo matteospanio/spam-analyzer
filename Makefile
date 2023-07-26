@@ -24,27 +24,27 @@ help: ## Show this help
 
 clean: clean-build clean-pyc clean-test clean-docs ## Remove all build, test, coverage and Python artifacts
 
-clean-build: ## Remove build artifacts
+clean-build:
 	rm -fr build/
 	rm -fr dist/
 	rm -fr .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -fr {} +
 
-clean-pyc: ## Remove Python file artifacts
+clean-pyc:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
 
-clean-test: ## Remove test and coverage artifacts
+clean-test:
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
 	rm -f coverage.xml
 
-clean-docs: ## Remove docs artifacts
+clean-docs:
 	rm -fr site/
 
 setup: clean ## Install dependencies
@@ -53,21 +53,19 @@ setup: clean ## Install dependencies
 test: ## Run tests quickly with the default Python
 	$(POETRY) pytest
 
-test-coverage: ## Run tests with coverage
+coverage: ## Run tests with coverage
 	$(POETRY) pytest -n auto --cov=src --cov-report=term-missing --cov-report=html
 
-build: clean setup ## Build package
+build: clean setup ## Build package and check with pyroma
 	poetry build
 	$(POETRY) pyroma .
 
 deploy: build ## Deploy package to PyPI
 	poetry publish
 
-format: isort ## Format code with yapf
+format: ## Format code with yapf, comments with docformatter and sort imports with isort
 	$(POETRY) yapf --in-place --recursive ./src ./tests
 	$(POETRY) docformatter --config .pyproject.toml --in-place --recursive ./src ./tests
-
-isort: ## Sort imports with isort
 	$(POETRY) isort .
 
 lint: format ## Lint code with pylint
@@ -78,3 +76,7 @@ docs: ## Generate mkdocs HTML documentation, including API docs
 
 docs-serve: ## Serve mkdocs HTML documentation
 	$(POETRY) mkdocs serve
+
+update: ## Update dependencies
+	poetry update
+	$(POETRY) pre-commit autoupdate
