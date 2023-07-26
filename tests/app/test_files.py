@@ -14,6 +14,6 @@ def test_get_files_from_directory():
 
 def test_invalid_email_file():
     assert (file_is_valid_email(
-        "tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email")
-            is True)
+        "tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email"
+    ) is True)
     assert file_is_valid_email("tests/samples/invalid_file.txt") is False

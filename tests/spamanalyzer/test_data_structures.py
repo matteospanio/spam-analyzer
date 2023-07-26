@@ -26,7 +26,8 @@ with open("src/app/conf/word_blacklist.txt", "r", encoding="utf-8") as f:
 async def analysis() -> Tuple[MailAnalysis, MailAnalysis]:
     analyzer = SpamAnalyzer(wordlist)
 
-    return await asyncio.gather(analyzer.analyze(trustable_mail), analyzer.analyze(spam))
+    return await asyncio.gather(analyzer.analyze(trustable_mail),
+                                analyzer.analyze(spam))
 
 
 class TestSpamAnalyzer:

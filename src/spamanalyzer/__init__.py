@@ -1,5 +1,5 @@
-"""
-The package contains the main classes and functions used to analyze the emails.
+"""The package contains the main classes and functions used to analyze the
+emails.
 
 ## Abstraction
 

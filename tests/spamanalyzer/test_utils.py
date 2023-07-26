@@ -7,9 +7,11 @@ from spamanalyzer import utils
 from spamanalyzer.domain import Domain
 
 trustable_mail = mailparser.parse_from_file(
-    "tests/samples/97.47949e45691dd7a024dcfaacef4831461bf5d5f09c85a6e44ee478a5bcaf8539.email")
+    "tests/samples/97.47949e45691dd7a024dcfaacef4831461bf5d5f09c85a6e44ee478a5bcaf8539.email"
+)
 spam = mailparser.parse_from_file(
-    "tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email")
+    "tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email"
+)
 
 with open("src/app/conf/word_blacklist.txt", encoding="utf-8") as f:
     wordlist = f.read().splitlines()
@@ -111,7 +113,8 @@ def test_dmarc_pass():
 
 def test_x_warning():
     warn_mail = mailparser.parse_from_file(
-        "tests/samples/01.78e91e824c22fd2292633f7c8f0fff34d2a4d0b0bafbb2ba1fbb10d9bc06fcbb.email")
+        "tests/samples/01.78e91e824c22fd2292633f7c8f0fff34d2a4d0b0bafbb2ba1fbb10d9bc06fcbb.email"
+    )
     assert utils.has_auth_warning(trustable_mail.headers) is False
     assert utils.has_auth_warning(warn_mail.headers) is True
 
@@ -212,8 +215,10 @@ def test_forbidden_words():
 
 
 def test_inspect_attachments():
-    assert (utils.inspect_attachments(trustable_mail.attachments)["has_attachments"] is False)
-    assert (utils.inspect_attachments(trustable_mail.attachments)["attachment_is_executable"]
+    assert (utils.inspect_attachments(trustable_mail.attachments)["has_attachments"]
             is False)
+    assert (utils.inspect_attachments(
+        trustable_mail.attachments)["attachment_is_executable"] is False)
     assert utils.inspect_attachments(spam.attachments)["has_attachments"] is False
-    assert (utils.inspect_attachments(spam.attachments)["attachment_is_executable"] is False)
+    assert (utils.inspect_attachments(spam.attachments)["attachment_is_executable"]
+            is False)

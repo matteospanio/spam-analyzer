@@ -53,9 +53,11 @@ def __print_to_json(data: List[MailAnalysis], output_file: Optional[TextIOWrappe
     dict_data = [analysis.to_dict() for analysis in data]
     for analysis in dict_data:
         if analysis["headers"]["send_date"] is not None:
-            analysis["headers"]["send_date"] = analysis["headers"]["send_date"].to_dict()
+            analysis["headers"]["send_date"] = analysis["headers"]["send_date"].to_dict(
+            )
         if analysis["headers"]["received_date"] is not None:
-            analysis["headers"]["received_date"] = analysis["headers"]["received_date"].to_dict()
+            analysis["headers"]["received_date"] = analysis["headers"][
+                "received_date"].to_dict()
     if output_file is not None:
         json.dump(dict_data, output_file, indent=4)
     else:

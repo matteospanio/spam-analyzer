@@ -35,10 +35,10 @@ def silent(func):
 
 @dataclass
 class MailAnalysis:
-    """A summary of the analysis of a mail"""
+    """A summary of the analysis of a mail."""
 
     file_path: str
-    """The path of the file analyzed"""
+    """The path of the file analyzed."""
 
     # data from headers
     headers: dict
@@ -158,8 +158,8 @@ class MailAnalysis:
 
 
 class SpamAnalyzer:
-    """Analyze a mail and return a `MailAnalysis` object,
-    essentially it is a factory of `MailAnalysis`.
+    """Analyze a mail and return a `MailAnalysis` object, essentially it is a
+    factory of `MailAnalysis`.
 
     The `MailAnalyzer` object provides two methods to analyze a mail:
 
@@ -195,7 +195,8 @@ class SpamAnalyzer:
         email = SpamAnalyzer.parse(email_path)
 
         headers = await utils.inspect_headers(email, self.__wordlist)
-        body = utils.inspect_body(email.body, self.__wordlist, (await self.get_domain(email_path)))
+        body = utils.inspect_body(email.body, self.__wordlist,
+                                  (await self.get_domain(email_path)))
         attachments = utils.inspect_attachments(email.attachments)
 
         return MailAnalysis(file_path=email_path,
@@ -209,14 +210,14 @@ class SpamAnalyzer:
         return await utils.get_domain("unknown" if received is None else received)
 
     def is_spam(self, email: MailAnalysis) -> bool:
-        """Determine if the email is spam based on the analysis of the mail"""
+        """Determine if the email is spam based on the analysis of the mail."""
 
         model = SpamClassifier(self.__model)
         array = np.array(email.to_list())
         return True if model.predict(array.reshape(1, -1)) == 1 else False
 
     def classify_multiple_input(self, mails: List["MailAnalysis"]) -> List[bool]:
-        """Classify a list of mails
+        """Classify a list of mails.
 
         Args:
             mails (list[MailAnalysis]): a list of mails to be classified

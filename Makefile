@@ -64,6 +64,7 @@ deploy: build ## Deploy package to PyPI
 
 format: isort ## Format code with yapf
 	$(POETRY) yapf --in-place --recursive ./src ./tests
+	$(POETRY) docformatter --config .pyproject.toml --in-place --recursive ./src ./tests
 
 isort: ## Sort imports with isort
 	$(POETRY) isort .

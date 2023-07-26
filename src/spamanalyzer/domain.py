@@ -8,9 +8,7 @@ import dns.resolver
 
 
 class DomainRelation(Enum):
-    """
-    An enum representing the relation between two domains
-    """
+    """An enum representing the relation between two domains."""
 
     SUBDOMAIN = 1
     SUPERDOMAIN = 2
@@ -20,9 +18,8 @@ class DomainRelation(Enum):
 
 @dataclass
 class Domain:
-    """
-    A Domain is a class representing an internet domain,
-    here you can get information about the target domain
+    """A Domain is a class representing an internet domain, here you can get
+    information about the target domain.
 
     The constructor resolves any domain alias to the real domain name:
     in fact common domain names are aliases for more complex server names
@@ -44,9 +41,8 @@ class Domain:
 
     @staticmethod
     def from_string(domain_str: str):
-        """
-        Instantiate a Domain object from string,
-        it is a wrapper of the `self.__init__` method
+        """Instantiate a Domain object from string, it is a wrapper of the
+        `self.__init__` method.
 
         Args:
             domain_str (str): a string containing a domain to be parsed
@@ -58,9 +54,8 @@ class Domain:
 
     @staticmethod
     async def from_ip(ip_addr: str):
-        """Create a Domain object from an ip address.
-        It translate the ip address to its domain name via the
-        `socket.gethostbyaddr` method
+        """Create a Domain object from an ip address. It translate the ip
+        address to its domain name via the `socket.gethostbyaddr` method.
 
         Args:
             ip_addr (str): the targetted ip address
@@ -75,8 +70,7 @@ class Domain:
             return Domain("unknown")
 
     async def get_ip_address(self) -> str:
-        """
-        Translate the domain name to its ip address querying the DNS server
+        """Translate the domain name to its ip address querying the DNS server.
 
         Returns:
             str: the ip address of the domain
@@ -87,8 +81,7 @@ class Domain:
         return name[0].to_text()
 
     def is_subdomain(self, domain: "Domain") -> bool:
-        """
-        Is the domain a subdomain of the given domain?
+        """Is the domain a subdomain of the given domain?
 
         Args:
             domain (Domain): the reference domain
@@ -106,8 +99,7 @@ class Domain:
         return self.name.is_subdomain(domain.name)
 
     def is_superdomain(self, domain: "Domain") -> bool:
-        """
-        Is the domain a superdomain of the given domain?
+        """Is the domain a superdomain of the given domain?
 
         Args:
             domain (Domain): the reference domain
@@ -130,8 +122,7 @@ class Domain:
         raise TypeError("Cannot compare Domain with other types")
 
     def relation(self, domain: "Domain") -> DomainRelation:
-        """
-        Define the relation between two domains
+        """Define the relation between two domains.
 
         Args:
             domain (Domain): the domain to compare with

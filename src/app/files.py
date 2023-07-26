@@ -54,7 +54,8 @@ def handle_configuration_files():
             shutil.copy(wordlist, wordlist_path)
     except Exception as e:
         raise Exception(
-            "Error while loading wordlist at the file path specified in the config file") from e
+            "Error while loading wordlist at the file path specified in the config file"
+        ) from e
 
     try:
         classifier_path = path.expanduser(config["files"]["classifier"])

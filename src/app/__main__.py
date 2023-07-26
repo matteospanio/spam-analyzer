@@ -48,7 +48,7 @@ pass_args = click.make_pass_decorator(Args, ensure=True)
 @click.option("-v", "--verbose", help="More program output", is_flag=True)
 @pass_args
 def cli(config: Args, verbose: bool) -> None:
-    """A simple program to analyze emails"""
+    """A simple program to analyze emails."""
     config.verbose = verbose
 
 
@@ -73,10 +73,15 @@ def cli(config: Args, verbose: bool) -> None:
     help="Write output to a file (works only for json format)",
     type=click.File("w"),
 )
-@click.option("--destination-dir", help="The directory where copy your classified emails")
+@click.option("--destination-dir",
+              help="The directory where copy your classified emails")
 @click.argument(
     "input",
-    type=click.Path(exists=True, file_okay=True, dir_okay=True, readable=True, resolve_path=True),
+    type=click.Path(exists=True,
+                    file_okay=True,
+                    dir_okay=True,
+                    readable=True,
+                    resolve_path=True),
     required=True,
 )
 @async_command
@@ -89,7 +94,7 @@ async def analyze(
     destination_dir: str,
     input: str,
 ) -> None:
-    """Analyze emails from a file or directory"""
+    """Analyze emails from a file or directory."""
 
     # The tool entry point, in order it:
     # 1. loads the configuration
@@ -143,13 +148,13 @@ async def analyze(
 @cli.group()
 @click.help_option()
 def config():
-    """Configure the program"""
+    """Configure the program."""
     pass
 
 
 @config.command()
 def edit():
-    """Edit the configuration file"""
+    """Edit the configuration file."""
 
     click.edit(filename=os.path.expanduser("~/.config/spamanalyzer/config.yaml"))
 
@@ -158,7 +163,7 @@ def edit():
 
 @config.command()
 def show():
-    """Show the configuration file"""
+    """Show the configuration file."""
 
     conf_file = os.path.expanduser("~/.config/spamanalyzer/config.yaml")
     with click.open_file(conf_file, "r", encoding="utf-8") as f:
@@ -168,9 +173,10 @@ def show():
 
 
 @config.command()
-@click.confirmation_option(prompt="Are you sure you want to reset the configuration file?")
+@click.confirmation_option(
+    prompt="Are you sure you want to reset the configuration file?")
 def reset():
-    """Reset the configuration file"""
+    """Reset the configuration file."""
 
     os.remove(os.path.expanduser("~/.config/spamanalyzer/config.yaml"))
     _ = files.handle_configuration_files()

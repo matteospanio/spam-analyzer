@@ -9,8 +9,8 @@ warnings.filterwarnings("ignore")
 
 
 class Date:
-    """A date object, it is used to store the date of the email and to perform some
-    checks on it.
+    """A date object, it is used to store the date of the email and to perform
+    some checks on it.
 
     The focus of the checks is to determine if the date is valid and if it is in the
     correct format.
@@ -86,9 +86,8 @@ class Date:
 
     @property
     def year(self) -> int:
-        """Get the year of the date.
-        It raises a ValueError if the year is less than 1971 since the first email
-        was sent in 1971.
+        """Get the year of the date. It raises a ValueError if the year is less
+        than 1971 since the first email was sent in 1971.
 
         !!! see
             [history of email](https://en.wikipedia.org/wiki/History_of_email) to know

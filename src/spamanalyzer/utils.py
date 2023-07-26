@@ -14,10 +14,13 @@ class Regex(Enum):
     IP = re.compile(r"(?:\d{1,3}\.){3}\d{1,3}")
     MAILTO = re.compile(r"mailto:(\w+@\w+\.\w+)(\?subject=(.+))?")
     HTTP_LINK = re.compile(
-        r"(http://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)")
+        r"(http://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)"
+    )
     HTTPS_LINK = re.compile(
-        r"(https://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)")
-    SHORT_LINK = re.compile(r"(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)")
+        r"(https://([A-Za-z0-9]+\.)+[A-Za-z0-9]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.&=\?]*)?)"
+    )
+    SHORT_LINK = re.compile(
+        r"(([A-Za-z0-9]+\.)+[A-Za-z]{2,6}(:[\d]{1,5})?([/A-Za-z0-9\.=&\?]*)?)")
     GAPPY_WORDS = re.compile(r"([A-Za-z0-9]+(<!--*-->|\*|\-))+")
     HTML_FORM = re.compile(r"<\s*form", re.DOTALL)
     HTML_TAG = re.compile(r"<[^>]+>")
@@ -26,7 +29,7 @@ class Regex(Enum):
 
 
 async def inspect_headers(email: MailParser, wordlist):
-    """A detailed analysis of the email headers
+    """A detailed analysis of the email headers.
 
     Args:
         headers (dict): a dictionary containing parsed email headers
@@ -68,7 +71,7 @@ async def inspect_headers(email: MailParser, wordlist):
 
 
 def spf_pass(headers: dict) -> bool:
-    """Checks if the email has a SPF record"""
+    """Checks if the email has a SPF record."""
     spf = (headers.get("Received-SPF") or headers.get("Authentication-Results")
            or headers.get("Authentication-results"))
     if spf is not None and "pass" in spf.lower():
@@ -77,34 +80,35 @@ def spf_pass(headers: dict) -> bool:
 
 
 def dkim_pass(headers: dict) -> bool:
-    """Checks if the email has a DKIM record"""
+    """Checks if the email has a DKIM record."""
     if headers.get("DKIM-Signature") is not None:
         return True
-    dkim = headers.get("Authentication-Results") or headers.get("Authentication-results")
+    dkim = headers.get("Authentication-Results") or headers.get(
+        "Authentication-results")
     if dkim is not None and "dkim=pass" in dkim.lower():
         return True
     return False
 
 
 def dmarc_pass(headers: dict) -> bool:
-    """Checks if the email has a DMARC record"""
-    dmarc = headers.get("Authentication-Results") or headers.get("Authentication-results")
+    """Checks if the email has a DMARC record."""
+    dmarc = headers.get("Authentication-Results") or headers.get(
+        "Authentication-results")
     if dmarc is not None and "dmarc=pass" in dmarc.lower():
         return True
     return False
 
 
 def has_auth_warning(headers: dict) -> bool:
-    """Checks if the email has an authentication warning, usually it means that the
-    sender claimed to be someone else
-    """
+    """Checks if the email has an authentication warning, usually it means that
+    the sender claimed to be someone else."""
     if headers.get("X-Authentication-Warning") is not None:
         return True
     return False
 
 
 def analyze_subject(headers: dict, wordlist) -> tuple[bool, bool]:
-    """Checks if the email has gappy words or forbidden words in the subject
+    """Checks if the email has gappy words or forbidden words in the subject.
 
     Args:
         headers (dict): a dictionary containing parsed email headers
@@ -161,7 +165,7 @@ async def from_domain_matches_received(email: MailParser) -> bool:
 
 
 async def get_domain(field: str):
-    """Extracts the domain from a field
+    """Extracts the domain from a field.
 
     Args:
         field (str): a string expected to contain a domain
@@ -189,8 +193,7 @@ async def get_domain(field: str):
 
 
 def inspect_body(body: str, wordlist, domain):
-    """
-    A detailed analysis of the email body
+    """A detailed analysis of the email body.
 
     Args:
         body (str): the body of the email
@@ -205,7 +208,6 @@ def inspect_body(body: str, wordlist, domain):
     - forbidden_words_percentage (float): the percentage of forbidden words in the body
     - has_form (bool): True if the email has a form
     - contains_html (bool): True if the email contains html tags
-
     """
     from textblob import TextBlob  # FIXME: moved here for testing purposes
 
@@ -262,7 +264,7 @@ def parse_html(body: str) -> str:
 
 
 def has_html(body: str) -> bool:
-    """Checks if the email contains html tags
+    """Checks if the email contains html tags.
 
     Args:
         body (str): the body of the email
@@ -270,11 +272,12 @@ def has_html(body: str) -> bool:
     Returns:
         bool: True if the email contains html tags
     """
-    return bool(Regex.HTML_TAG.value.search(body)) or bool(Regex.HTML_PAIR_TAG.value.search(body))
+    return bool(Regex.HTML_TAG.value.search(body)) or bool(
+        Regex.HTML_PAIR_TAG.value.search(body))
 
 
 def has_images(body: str) -> bool:
-    """Checks if the email contains images
+    """Checks if the email contains images.
 
     Args:
         body (str): the body of the email
@@ -286,7 +289,7 @@ def has_images(body: str) -> bool:
 
 
 def has_html_form(body: str) -> bool:
-    """Checks if the email has a form
+    """Checks if the email has a form.
 
     Args:
         body (str): the body of the email
@@ -298,7 +301,7 @@ def has_html_form(body: str) -> bool:
 
 
 def percentage_of_bad_words(body: str, wordlist: List[str]) -> float:
-    """Calculates the percentage of forbidden words in the body
+    """Calculates the percentage of forbidden words in the body.
 
     Args:
         body (str): the body of the email
@@ -336,7 +339,7 @@ def get_links_from_str(body: str) -> List[str]:
 
 
 def has_mailto_links(body) -> bool:
-    """Checks if the email has mailto links
+    """Checks if the email has mailto links.
 
     Args:
         body (str): the body of the email
@@ -368,7 +371,7 @@ def https_only(links: List[str]) -> bool:
 
 
 def has_script_tag(body: str) -> bool:
-    """Checks if the email has script tags or javascript code
+    """Checks if the email has script tags or javascript code.
 
     Args:
         body (str): the body of the email
@@ -384,7 +387,7 @@ def has_script_tag(body: str) -> bool:
 
 
 def inspect_attachments(attachments: List) -> dict:
-    """A detailed analysis of the email attachments
+    """A detailed analysis of the email attachments.
 
     Args:
         attachments (List):  a list of attachments
@@ -398,7 +401,6 @@ def inspect_attachments(attachments: List) -> dict:
             "attachment_is_executable": bool # True if the email has
                                              # an attachment in executable format
         }
-
     """
     has_attachments = len(attachments) > 0
     is_executable = False
