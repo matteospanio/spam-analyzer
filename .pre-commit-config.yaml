@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v4.4.0
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
@@ -16,12 +16,12 @@ repos:
         name: isort (python)
 
 -   repo: https://github.com/google/yapf
-    rev: v0.40.1
+    rev: v0.40.0
     hooks:
     -   id: yapf
 
 -   repo: https://github.com/PyCQA/docformatter
-    rev: v1.6.1
+    rev: v1.7.5
     hooks:
     -   id: docformatter
         additional_dependencies: [tomli]
