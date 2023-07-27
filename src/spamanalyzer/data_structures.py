@@ -3,7 +3,6 @@ import sys
 from dataclasses import dataclass
 from functools import wraps
 from importlib import resources
-from os import path
 from typing import List, Optional
 
 import mailparser
@@ -173,6 +172,7 @@ class SpamAnalyzer:
     The analysis is based on separated checks for the headers, body and attachments and
     each check is implemented in a separated function: this make the analysis modular
     and easy to extend in future versions.
+
     """
 
     __model: str
@@ -225,6 +225,7 @@ class SpamAnalyzer:
         Returns:
             list: a list of boolean values, `True` if the mail is spam, `False`
             otherwise
+
         """
 
         model = SpamClassifier(self.__model)

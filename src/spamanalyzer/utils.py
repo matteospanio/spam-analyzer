@@ -49,6 +49,7 @@ async def inspect_headers(email: MailParser, wordlist):
       in the subject
     - send_year (int): the year in which the email was sent (in future versions should
       be a datetime object)
+
     """
 
     headers = email.headers
@@ -114,6 +115,7 @@ def analyze_subject(headers: dict, wordlist) -> tuple[bool, bool]:
         headers (dict): a dictionary containing parsed email headers
         wordlist (list[str]): a list of words to be used as a spam filter in the subject
         field
+
     """
     subject: str = headers.get("Subject")  # type: ignore
     if subject is not None:
@@ -172,6 +174,7 @@ async def get_domain(field: str):
 
     Returns:
         Domain: a Domain object containing the domain name and the TLD
+
     """
     # TODO: should take in consideration only the string before 'by word'
 
@@ -208,6 +211,7 @@ def inspect_body(body: str, wordlist, domain):
     - forbidden_words_percentage (float): the percentage of forbidden words in the body
     - has_form (bool): True if the email has a form
     - contains_html (bool): True if the email contains html tags
+
     """
     from textblob import TextBlob  # FIXME: moved here for testing purposes
 
@@ -271,6 +275,7 @@ def has_html(body: str) -> bool:
 
     Returns:
         bool: True if the email contains html tags
+
     """
     return bool(Regex.HTML_TAG.value.search(body)) or bool(
         Regex.HTML_PAIR_TAG.value.search(body))
@@ -284,6 +289,7 @@ def has_images(body: str) -> bool:
 
     Returns:
         bool: True if the email contains images
+
     """
     return bool(Regex.IMAGE_TAG.value.search(body))
 
@@ -296,6 +302,7 @@ def has_html_form(body: str) -> bool:
 
     Returns:
         bool: True if the email has a form
+
     """
     return bool(Regex.HTML_FORM.value.search(body))
 
@@ -309,6 +316,7 @@ def percentage_of_bad_words(body: str, wordlist: List[str]) -> float:
 
     Returns:
         float: the percentage of forbidden words in the body
+
     """
     bad_words = 0
     for word in wordlist:
@@ -346,6 +354,7 @@ def has_mailto_links(body) -> bool:
 
     Returns:
         bool: True if the email has mailto links
+
     """
     return bool(Regex.MAILTO.value.search(body))
 
@@ -378,6 +387,7 @@ def has_script_tag(body: str) -> bool:
 
     Returns:
         bool: True if the email has script tags or javascript code
+
     """
     unsecure_tags = ["<script>", "</script>", "onload", "onerror"]
     for tag in unsecure_tags:
@@ -401,6 +411,7 @@ def inspect_attachments(attachments: List) -> dict:
             "attachment_is_executable": bool # True if the email has
                                              # an attachment in executable format
         }
+
     """
     has_attachments = len(attachments) > 0
     is_executable = False

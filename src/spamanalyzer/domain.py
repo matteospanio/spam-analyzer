@@ -28,6 +28,7 @@ class Domain:
     aliases, we use the `gethostbyname` chained with the `gethostbyaddr` methods
     this way makes the instatiation of the class slower, but it is the only way to
     get the real domain name.
+
     """
 
     name: dns.name.Name
@@ -49,19 +50,21 @@ class Domain:
 
         Returns:
             Domain: the domain obtained from the string
+
         """
         return Domain(domain_str)
 
     @staticmethod
     async def from_ip(ip_addr: str):
-        """Create a Domain object from an ip address. It translate the ip
-        address to its domain name via the `socket.gethostbyaddr` method.
+        """Create a Domain object from an ip address. It translate the ip address
+        to its domain name via the `socket.gethostbyaddr` method.
 
         Args:
             ip_addr (str): the targetted ip address
 
         Returns:
             Domain: the domain obtained from the ip address
+
         """
         try:
             domain_name, _, _ = await asyncio.to_thread(socket.gethostbyaddr, ip_addr)
@@ -76,6 +79,7 @@ class Domain:
             str: the ip address of the domain
 
         Note: this method is async since it performs a network request
+
         """
         name = await asyncio.to_thread(dns.resolver.resolve, self.name, "A")
         return name[0].to_text()
@@ -93,6 +97,7 @@ class Domain:
             TypeError: if the given object is not a Domain
 
         Note: a domain is a subdomain of itself
+
         """
         if not isinstance(domain, Domain):
             raise TypeError("Cannot compare Domain with other types")
@@ -111,6 +116,7 @@ class Domain:
             TypeError: if the given object is not a Domain
 
         Note: a domain is a superdomain of itself
+
         """
         if not isinstance(domain, Domain):
             raise TypeError("Cannot compare Domain with other types")
@@ -132,6 +138,7 @@ class Domain:
 
         Raises:
             TypeError: if the given object is not a Domain
+
         """
 
         if not isinstance(domain, Domain):

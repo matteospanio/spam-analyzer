@@ -65,7 +65,7 @@ deploy: build ## Deploy package to PyPI
 
 format: ## Format code with yapf, comments with docformatter and sort imports with isort
 	$(POETRY) yapf --in-place --recursive ./src ./tests
-	$(POETRY) docformatter --config .pyproject.toml --in-place --recursive ./src ./tests
+	$(POETRY) docformatter --config ./pyproject.toml --in-place --recursive ./src ./tests
 	$(POETRY) isort .
 
 lint: format ## Lint code with pylint

@@ -147,7 +147,7 @@ def __stringify_email(email: dict):
 
         attachments += f"{k}: [bold]{v}[/bold]\n"
 
-    score = f"\nspam: 0\n"
+    score = "\nspam: 0\n"
 
     return (score, headers, body, attachments)
 

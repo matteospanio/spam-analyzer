@@ -26,7 +26,6 @@ in this way we can also parallelize the analysis of multiple emails.
 
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as package_version
-from os import path
 
 from spamanalyzer.data_structures import MailAnalysis, SpamAnalyzer
 from spamanalyzer.date import Date

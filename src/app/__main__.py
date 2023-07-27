@@ -6,8 +6,8 @@ from io import TextIOWrapper
 from typing import List
 
 import click
-from click import Context, pass_context
-from click_extra import config_option
+from click import Context
+from click_extra import config_option, pass_context
 from rich.console import Console
 
 from app import files

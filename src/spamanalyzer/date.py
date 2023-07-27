@@ -25,6 +25,7 @@ class Date:
       the timezone of the date. We included this check since often malicious emails
       can have a weird behavior, it is not uncommon to see a not existing timezone
       in the headers of the mail (valid timezones are from -12 to +14).
+
     """
 
     __raw_date: str
@@ -44,6 +45,7 @@ class Date:
 
         Returns:
             int: The timezone of the date, if the timezone is not found it returns 0
+
         """
         if self.__tz is not None:
             return self.__tz
@@ -57,7 +59,7 @@ class Date:
         if clean_tz == "":
             return 0
 
-        return int(str(clean_tz).replace("UTC", "").split(":")[0])
+        return int(str(clean_tz).replace("UTC", "").split(":", maxsplit=1)[0])
 
     @property
     def seconds(self) -> int:
@@ -95,6 +97,7 @@ class Date:
 
         Raises:
             ValueError: If the year is less than 1971
+
         """
         if self.date.year < 1971:
             raise ValueError("Year cannot be less than 1971")
