@@ -2,7 +2,7 @@ import json
 from io import TextIOWrapper
 from typing import List, Optional
 
-import rich
+from rich.box import ROUNDED
 from rich.columns import Columns
 from rich.console import Console, Group
 from rich.panel import Panel
@@ -19,8 +19,8 @@ def print_output(
     analyzer: SpamAnalyzer,
     output_file=None,
 ) -> None:
-    """Prints the output of the `MailAnalysis` in the specified format (csv,
-    json or default).
+    """Prints the output of the `MailAnalysis` in the specified format (csv, json
+    or default).
 
     Args:
         data (list): a list of data to output
@@ -36,6 +36,7 @@ def print_output(
     are reported the number of spam and ham emails and the mean score of each class.
 
     > Return later: future versions of spamanalyzer will support csv output format
+
     """
     if output_format == "csv":
         __print_to_csv(data, output_file)
@@ -90,7 +91,7 @@ def __print_default(data: List[MailAnalysis], analyzer: SpamAnalyzer, verbose: b
 
 
 def __print_summary(ok_count, spam_count) -> None:
-    table = Table(title="Summary", box=rich.box.ROUNDED, highlight=True)
+    table = Table(title="Summary", box=ROUNDED, highlight=True)
 
     table.add_column("Email class", justify="center")
     table.add_column("Quantity", justify="center")
@@ -115,15 +116,14 @@ def __print_details(email: MailAnalysis):
 
     return Panel(
         panel_group,
-        title=f"[bold]{mail_dict['file_name'].split('/')[-1][0:20]}[/bold]",
         border_style="cyan",
     )
 
 
 def __stringify_email(email: dict):
-    header = email["headers"]
-    bd = email["body"]
-    att = email["attachments"]
+    header: dict = email["headers"]
+    bd: dict = email["body"]
+    att: dict = email["attachments"]
 
     headers = ""
     body = ""
@@ -147,7 +147,7 @@ def __stringify_email(email: dict):
 
         attachments += f"{k}: [bold]{v}[/bold]\n"
 
-    score = f"\nspam: {email['is_spam']}\n"
+    score = f"\nspam: 0\n"
 
     return (score, headers, body, attachments)
 

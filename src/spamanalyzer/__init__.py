@@ -1,5 +1,4 @@
-"""The package contains the main classes and functions used to analyze the
-emails.
+"""The package contains the main classes and functions used to analyze the emails.
 
 ## Abstraction
 
@@ -22,6 +21,7 @@ analysis.is_spam()
 we istantiate the `MailAnalyzer` class and pass the wordlist to it. Then we call the
 `analyze` method to get the analysis of the email:
 in this way we can also parallelize the analysis of multiple emails.
+
 """
 
 from importlib.metadata import PackageNotFoundError
@@ -44,9 +44,3 @@ def __get_package_version__():
 
 
 __all__ = ["SpamAnalyzer", "MailAnalysis", "Domain", "Date", "utils"]
-__config_path__ = path.join(path.expanduser("~"), ".config", "spamanalyzer")
-
-__defaults__ = {
-    "SPAMANALYZER_CONF_PATH": __config_path__,
-    "SPAMANALYZER_CONF_FILE": path.join(__config_path__, "config.yaml"),
-}

@@ -14,11 +14,15 @@ repos:
     hooks:
     -   id: isort
         name: isort (python)
+        stages:
+          - "commit"
 
 -   repo: https://github.com/google/yapf
     rev: v0.40.0
     hooks:
     -   id: yapf
+        stages:
+          - "commit"
 
 -   repo: https://github.com/PyCQA/docformatter
     rev: v1.7.5

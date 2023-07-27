@@ -3,9 +3,11 @@ import functools
 import os
 import sys
 from io import TextIOWrapper
-from typing import List, Optional
+from typing import List
 
 import click
+from click import Context, pass_context
+from click_extra import config_option
 from rich.console import Console
 
 from app import files
@@ -13,6 +15,7 @@ from app.io import print_output
 from spamanalyzer.data_structures import SpamAnalyzer
 
 conf, _, _ = files.handle_configuration_files()
+config_dir = click.get_app_dir("spam-analyzer")
 
 
 def async_command(coro_func):
@@ -24,33 +27,17 @@ def async_command(coro_func):
     return sync_func
 
 
-class Args:
-    destination_dir: Optional[str]
-    input: Optional[str]
-    output_file: Optional[click.File]
-    output_format: Optional[str]
-    verbose: bool
-    wordlist: TextIOWrapper
-
-    def __init__(self):
-        self.verbose = False
-        self.output_format = None
-        self.output_file = None
-        self.destination_dir = None
-        self.input = None
-
-
-pass_args = click.make_pass_decorator(Args, ensure=True)
-
-
 @click.group()
 @click.version_option(package_name="spam-analyzer")
 @click.option("-v", "--verbose", help="More program output", is_flag=True)
-@pass_args
-def cli(config: Args, verbose: bool) -> None:
+@config_option
+@pass_context
+def cli(ctx: Context, verbose: bool) -> None:
     """A simple program to analyze emails."""
-    config.verbose = verbose
-    os.makedirs(click.get_app_dir("spam-analyzer"), exist_ok=True)
+    # ctx.verbose = verbose
+    ctx.ensure_object(dict)
+    ctx.obj["verbose"] = verbose
+    os.makedirs(config_dir, exist_ok=True)
 
 
 @cli.command()
@@ -58,8 +45,6 @@ def cli(config: Args, verbose: bool) -> None:
     "-l",
     "--wordlist",
     help="A file containing the spam wordlist",
-    default=lambda: os.path.expanduser(conf["files"]["wordlist"]),
-    show_default="standard wordlist",
     type=click.File("r"),
 )
 @click.option(
@@ -86,9 +71,9 @@ def cli(config: Args, verbose: bool) -> None:
     required=True,
 )
 @async_command
-@pass_args
+@pass_context
 async def analyze(
-    args: Args,
+    ctx: Context,
     wordlist: TextIOWrapper,
     output_format: str,
     output_file: click.File,
@@ -101,13 +86,6 @@ async def analyze(
     # 1. loads the configuration
     # 2. starts the application
 
-    args.wordlist = wordlist
-    args.output_format = output_format
-    args.output_file = output_file
-    args.destination_dir = destination_dir
-    args.input = input
-    verbose = args.verbose
-
     wordlist_content: List[str] = wordlist.read().splitlines()  # type: ignore
     data = []
 
@@ -117,7 +95,7 @@ async def analyze(
 
     if os.path.isdir(input):
         with console.status("[bold]Reading files...", spinner="dots"):
-            file_list = files.get_files_from_dir(input, verbose)
+            file_list = files.get_files_from_dir(input, ctx.obj["verbose"])
         with console.status("[bold]Analyzing emails...", spinner="dots"):
             for mail_path in file_list:
                 analysis = analyzer.analyze(mail_path)
@@ -129,14 +107,14 @@ async def analyze(
         data.append(analysis)
 
     else:
-        if verbose:
+        if ctx.obj["verbose"]:
             click.echo("The file is not analyzable")
         sys.exit(1)
 
     print_output(
         data,
         output_format=output_format,
-        verbose=verbose,
+        verbose=ctx.obj["verbose"],
         analyzer=analyzer,
         output_file=output_file,
     )
@@ -148,38 +126,45 @@ async def analyze(
 
 @cli.group()
 @click.help_option()
-def config():
+def configure():
     """Configure the program."""
     pass
 
 
-@config.command()
+@configure.command()
 def edit():
     """Edit the configuration file."""
 
-    click.edit(filename=os.path.expanduser("~/.config/spamanalyzer/config.yaml"))
-
+    click.edit(filename=os.path.join(config_dir, "config.yaml"))
     sys.exit(0)
 
 
-@config.command()
+@configure.command()
 def show():
     """Show the configuration file."""
 
-    conf_file = os.path.expanduser("~/.config/spamanalyzer/config.yaml")
+    conf_file = os.path.join(config_dir, "config.yaml")
     with click.open_file(conf_file, "r", encoding="utf-8") as f:
         click.echo(f.read())
 
     sys.exit(0)
 
 
-@config.command()
+@configure.command()
 @click.confirmation_option(
     prompt="Are you sure you want to reset the configuration file?")
 def reset():
     """Reset the configuration file."""
 
-    os.remove(os.path.expanduser("~/.config/spamanalyzer/config.yaml"))
+    os.remove(os.path.join(config_dir, "config.yaml"))
     _ = files.handle_configuration_files()
 
     sys.exit(0)
+
+
+@cli.command()
+@click.option("-o", "--output-dir", help="Where to create the email archive")
+@pass_context
+def sort(ctx: Context):
+    """Sort emails in spam/ham folders."""
+    pass

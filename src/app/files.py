@@ -2,8 +2,9 @@ import os
 import shutil
 import sys
 from importlib.resources import files
-from os import listdir, makedirs, path
+from os import listdir, path
 
+import click
 import yaml
 
 
@@ -30,26 +31,34 @@ def file_is_valid_email(file_path: str) -> bool:
 
 
 def handle_configuration_files():
-    from spamanalyzer import __defaults__
+    config_dir = click.get_app_dir("spam-analyzer")
 
     config_file = str(files(__package__).joinpath("conf/config.yaml"))
     wordlist = str(files(__package__).joinpath("conf/word_blacklist.txt"))
     model = str(files("spamanalyzer.ml").joinpath("classifier.pkl"))
 
-    if not path.exists(__defaults__["SPAMANALYZER_CONF_PATH"]):
-        makedirs(__defaults__["SPAMANALYZER_CONF_PATH"], exist_ok=True)
+    os.makedirs(config_dir, exist_ok=True)
 
-    if not path.exists(__defaults__["SPAMANALYZER_CONF_FILE"]):
-        shutil.copy(config_file, __defaults__["SPAMANALYZER_CONF_FILE"])
+    if not path.exists(path.join(config_dir, "config.yaml")):
+        with open(config_file, "r", encoding="utf-8") as f:
+            config_dict: dict = yaml.safe_load(f)
+        config_dict["cli"]["analyze"]["wordlist"] = path.join(
+            config_dir, "word_blacklist.txt")
+        config_dict["cli"]["analyze"]["classifier"] = path.join(
+            config_dir, "classifier.pkl")
+        with open(config_file, "w", encoding="utf-8") as f:
+            yaml.dump(config_dict, f, default_flow_style=False)
+        shutil.copy(config_file, path.join(config_dir, "config.yaml"))
 
-    with open(__defaults__["SPAMANALYZER_CONF_FILE"], encoding="utf-8") as f:
+    with open(path.join(config_dir, "config.yaml"), encoding="utf-8") as f:
         try:
             config: dict = yaml.safe_load(f)
         except Exception as e:
             raise Exception("Error while loading config file") from e
 
     try:
-        wordlist_path = path.expanduser(config["files"]["wordlist"])
+        wordlist_path = path.expanduser(
+            path.expandvars(config["cli"]["analyze"]["wordlist"]))
         if not path.exists(wordlist_path):
             shutil.copy(wordlist, wordlist_path)
     except Exception as e:
@@ -58,7 +67,8 @@ def handle_configuration_files():
         ) from e
 
     try:
-        classifier_path = path.expanduser(config["files"]["classifier"])
+        classifier_path = path.expanduser(
+            path.expandvars(config["cli"]["analyze"]["classifier"]))
         if not path.exists(classifier_path):
             shutil.copy(model, classifier_path)
     except Exception as e:
@@ -70,9 +80,9 @@ def handle_configuration_files():
 
 def sort_emails(expanded_dest, file_list):
     if not path.exists(path.join(expanded_dest, "ham")):
-        makedirs(path.join(expanded_dest, "ham"))
+        os.makedirs(path.join(expanded_dest, "ham"))
     if not path.exists(path.join(expanded_dest, "spam")):
-        makedirs(path.join(expanded_dest, "spam"))
+        os.makedirs(path.join(expanded_dest, "spam"))
 
     for mail in file_list:
         if mail.is_spam():
