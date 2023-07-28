@@ -3,9 +3,12 @@ import shutil
 import sys
 from importlib.resources import files
 from os import listdir, path
+from typing import List
 
 import click
 import yaml
+
+from spamanalyzer import MailAnalysis, SpamAnalyzer
 
 
 def get_files_from_dir(directory: str, verbose: bool = False) -> list[str]:
@@ -76,25 +79,3 @@ def handle_configuration_files():
                         "the file path specified in the config file") from e
 
     return (config, wordlist_path, classifier_path)
-
-
-def sort_emails(expanded_dest, file_list):
-    if not path.exists(path.join(expanded_dest, "ham")):
-        os.makedirs(path.join(expanded_dest, "ham"))
-    if not path.exists(path.join(expanded_dest, "spam")):
-        os.makedirs(path.join(expanded_dest, "spam"))
-
-    for mail in file_list:
-        if mail.is_spam():
-            shutil.copy(mail.file_path, path.join(expanded_dest, "spam"))
-        else:
-            shutil.copy(mail.file_path, path.join(expanded_dest, "ham"))
-
-
-def expand_destination_dir(destination_dir: str) -> str:
-    expanded_dest = path.expandvars(destination_dir)
-    if not path.isdir(expanded_dest):
-        print("The destination directory does not exist or is not a directory")
-        sys.exit(1)
-
-    return expanded_dest

@@ -6,8 +6,8 @@ from io import TextIOWrapper
 from typing import List
 
 import click
+import click_extra
 from click import Context
-from click_extra import config_option, pass_context
 from rich.console import Console
 
 from app import files
@@ -28,10 +28,11 @@ def async_command(coro_func):
 
 
 @click.group()
-@click.version_option(package_name="spam-analyzer")
-@click.option("-v", "--verbose", help="More program output", is_flag=True)
-@config_option
-@pass_context
+@click_extra.help_option
+@click_extra.option("-v", "--verbose", is_flag=True, help="Enables verbose mode.")
+@click_extra.extra_version_option(package_name="spam-analyzer")
+@click_extra.config_option
+@click_extra.pass_context
 def cli(ctx: Context, verbose: bool) -> None:
     """A simple program to analyze emails."""
     # ctx.verbose = verbose
@@ -41,27 +42,25 @@ def cli(ctx: Context, verbose: bool) -> None:
 
 
 @cli.command()
-@click.option(
+@click_extra.option(
     "-l",
     "--wordlist",
     help="A file containing the spam wordlist",
     type=click.File("r"),
 )
-@click.option(
+@click_extra.option(
     "-fmt",
     "--output-format",
     help="Format output in a different way",
     type=click.Choice(["json"]),
 )
-@click.option(
+@click_extra.option(
     "-o",
     "--output-file",
     help="Write output to a file (works only for json format)",
     type=click.File("w"),
 )
-@click.option("--destination-dir",
-              help="The directory where copy your classified emails")
-@click.argument(
+@click_extra.argument(
     "input",
     type=click.Path(exists=True,
                     file_okay=True,
@@ -71,13 +70,12 @@ def cli(ctx: Context, verbose: bool) -> None:
     required=True,
 )
 @async_command
-@pass_context
+@click_extra.pass_context
 async def analyze(
     ctx: Context,
     wordlist: TextIOWrapper,
     output_format: str,
     output_file: click.File,
-    destination_dir: str,
     input: str,
 ) -> None:
     """Analyze emails from a file or directory."""
@@ -111,6 +109,8 @@ async def analyze(
             click.echo("The file is not analyzable")
         sys.exit(1)
 
+    results = analyzer.classify_multiple_input(data)
+
     print_output(
         data,
         output_format=output_format,
@@ -119,13 +119,9 @@ async def analyze(
         output_file=output_file,
     )
 
-    if destination_dir is not None:
-        expanded_dest_dir = files.expand_destination_dir(destination_dir)
-        files.sort_emails(expanded_dest_dir, data)
-
 
 @cli.group()
-@click.help_option()
+@click_extra.help_option
 def configure():
     """Configure the program."""
     pass
@@ -160,11 +156,3 @@ def reset():
     _ = files.handle_configuration_files()
 
     sys.exit(0)
-
-
-@cli.command()
-@click.option("-o", "--output-dir", help="Where to create the email archive")
-@pass_context
-def sort(ctx: Context):
-    """Sort emails in spam/ham folders."""
-    pass

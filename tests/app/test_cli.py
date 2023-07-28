@@ -1,5 +1,5 @@
 import tomli
-from click.testing import CliRunner
+from click_extra import ExtraCliRunner as CliRunner
 
 from app import __main__, files
 
@@ -23,8 +23,16 @@ class TestCLI:
             assert config["tool"]["poetry"]["version"] in output
 
     def test_verbose_with_not_analyzable_single_file(self):
-        result = self.runner.invoke(__main__.cli,
-                                    ["-v", "analyze", "tests/samples/invalid_file.txt"])
+        result = self.runner.invoke(
+            __main__.cli,
+            [
+                "-v",
+                "analyze",
+                "-l",
+                "src/app/conf/word_blacklist.txt",
+                "tests/samples/invalid_file.txt",
+            ],
+        )
         assert result.exit_code == 1
         assert "The file is not analyzable" in result.output
 
@@ -33,10 +41,13 @@ class TestCLI:
             __main__.cli,
             [
                 "analyze",
+                "-l",
+                "src/app/conf/word_blacklist.txt",
                 "tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email",
             ],
         )
         output = result.output
+        assert result.exit_code == 0
         assert "Summary" in output
         assert "SPAM" in output
 
@@ -45,6 +56,8 @@ class TestCLI:
             __main__.cli,
             [
                 "analyze",
+                "-l",
+                "src/app/conf/word_blacklist.txt",
                 "tests/samples",
             ],
         )
