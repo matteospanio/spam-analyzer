@@ -1,5 +1,5 @@
 import tomli
-from click_extra import ExtraCliRunner as CliRunner
+from click.testing import CliRunner
 
 from app import __main__, files
 
