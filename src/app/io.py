@@ -16,7 +16,7 @@ def print_output(
     data: List[MailAnalysis],
     output_format: str,
     verbose: bool,
-    analyzer: SpamAnalyzer,
+    results: List[bool],
     output_file=None,
 ) -> None:
     """Prints the output of the `MailAnalysis` in the specified format (csv, json
@@ -41,38 +41,39 @@ def print_output(
     if output_format == "csv":
         __print_to_csv(data, output_file)
     elif output_format == "json":
-        __print_to_json(data, output_file)
+        __print_to_json(data, results, output_file)
     else:
-        __print_default(data, analyzer, verbose)
+        __print_default(data, results, verbose)
 
 
 def __print_to_csv(data, output_file):
     raise NotImplementedError
 
 
-def __print_to_json(data: List[MailAnalysis], output_file: Optional[TextIOWrapper]):
+def __print_to_json(data: List[MailAnalysis], results: List[bool],
+                    output_file: Optional[TextIOWrapper]):
     dict_data = [analysis.to_dict() for analysis in data]
-    for analysis in dict_data:
+    for analysis, origin, is_spam in zip(dict_data, data, results):
         if analysis["headers"]["send_date"] is not None:
             analysis["headers"]["send_date"] = analysis["headers"]["send_date"].to_dict(
             )
         if analysis["headers"]["received_date"] is not None:
             analysis["headers"]["received_date"] = analysis["headers"][
                 "received_date"].to_dict()
+        analysis["filename"] = origin.file_path
+        analysis["is_spam"] = str(is_spam).lower()
     if output_file is not None:
         json.dump(dict_data, output_file, indent=4)
     else:
         print(json.dumps(dict_data, indent=4))
 
 
-def __print_default(data: List[MailAnalysis], analyzer: SpamAnalyzer, verbose: bool):
+def __print_default(data: List[MailAnalysis], labels: List[bool], verbose: bool):
     classifier_spam = 0
     classifier_ham = 0
 
     console = Console()
     renderables = []
-
-    labels = analyzer.classify_multiple_input(data)
 
     for analysis, label in zip(data, labels):
         if label:
@@ -81,7 +82,7 @@ def __print_default(data: List[MailAnalysis], analyzer: SpamAnalyzer, verbose: b
             classifier_ham += 1
 
         if verbose:
-            renderables.append(__print_details(analysis))
+            renderables.append(__print_details(analysis, label))
 
     if verbose and len(renderables) > 0:
         with console.pager(styles=True):
@@ -103,9 +104,9 @@ def __print_summary(ok_count, spam_count) -> None:
     console.print(table)
 
 
-def __print_details(email: MailAnalysis):
+def __print_details(email: MailAnalysis, result: bool):
     mail_dict = email.to_dict()
-    score, headers, body, attachments = __stringify_email(mail_dict)
+    score, headers, body, attachments = __stringify_email(mail_dict, result)
 
     panel_group = Group(
         Text(score, justify="center"),
@@ -120,7 +121,7 @@ def __print_details(email: MailAnalysis):
     )
 
 
-def __stringify_email(email: dict):
+def __stringify_email(email: dict, result: bool):
     header: dict = email["headers"]
     bd: dict = email["body"]
     att: dict = email["attachments"]
@@ -147,7 +148,7 @@ def __stringify_email(email: dict):
 
         attachments += f"{k}: [bold]{v}[/bold]\n"
 
-    score = "\nspam: 0\n"
+    score = f"\nspam: {result}\n"
 
     return (score, headers, body, attachments)
 

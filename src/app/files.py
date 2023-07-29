@@ -1,14 +1,10 @@
 import os
 import shutil
-import sys
 from importlib.resources import files
 from os import listdir, path
-from typing import List
 
 import click
 import yaml
-
-from spamanalyzer import MailAnalysis, SpamAnalyzer
 
 
 def get_files_from_dir(directory: str, verbose: bool = False) -> list[str]:

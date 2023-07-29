@@ -111,18 +111,41 @@ class Date:
         raise TypeError(f"Cannot compare Date with {type(other)}")
 
     def to_dict(self) -> dict:
-        return {
-            "is_RFC_2822": self.is_RFC2822_formatted(),
-            "is_tz_valid": self.is_tz_valid(),
-            "date": self.date.isoformat(),
-            "posix": self.date.timestamp(),
-            "year": self.year,
-            "month": self.month,
-            "day": self.day,
-            "hour": self.hour,
-            "minute": self.minutes,
-            "second": self.seconds,
-        }
+        try:
+            return {
+                "is_RFC_2822": self.is_RFC2822_formatted(),
+                "is_tz_valid": self.is_tz_valid(),
+                "is_valid": self.is_valid(),
+                "date": self.date.isoformat(),
+                "posix": self.date.timestamp(),
+                "year": self.year,
+                "month": self.month,
+                "day": self.day,
+                "hour": self.hour,
+                "minute": self.minutes,
+                "second": self.seconds,
+            }
+        except:
+            return {
+                "is_RFC_2822": self.is_RFC2822_formatted(),
+                "is_tz_valid": self.is_tz_valid(),
+                "is_valid": self.is_valid(),
+                "date": self.date.isoformat(),
+                "posix": self.date.timestamp(),
+                "year": self.date.year,
+                "month": self.month,
+                "day": self.day,
+                "hour": self.hour,
+                "minute": self.minutes,
+                "second": self.seconds,
+            }
+
+    def is_valid(self) -> bool:
+        try:
+            return (self.is_RFC2822_formatted() and self.is_tz_valid()
+                    and self.year >= 1971)
+        except ValueError:
+            return False
 
     def __parse(self) -> tuple[datetime, bool]:
         try:

@@ -115,7 +115,7 @@ async def analyze(
         data,
         output_format=output_format,
         verbose=ctx.obj["verbose"],
-        analyzer=analyzer,
+        results=results,
         output_file=output_file,
     )
 
