@@ -26,6 +26,12 @@ def async_command(coro_func):
     return sync_func
 
 
+def main():
+    if not os.path.exists(config_dir):
+        _ = files.handle_configuration_files()
+    cli()
+
+
 @click.group()
 @click_extra.help_option
 @click_extra.option("-v", "--verbose", is_flag=True, help="Enables verbose mode.")
@@ -37,9 +43,6 @@ def cli(ctx: Context, verbose: bool) -> None:
     # ctx.verbose = verbose
     ctx.ensure_object(dict)
     ctx.obj["verbose"] = verbose
-
-    if not os.path.exists(config_dir):
-        _ = files.handle_configuration_files()
 
 
 @cli.command()

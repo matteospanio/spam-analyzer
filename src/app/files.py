@@ -32,33 +32,27 @@ def file_is_valid_email(file_path: str) -> bool:
 
 def handle_configuration_files() -> Tuple[Dict, str, str]:
     config_dir = click.get_app_dir("spam-analyzer")
+    os.makedirs(config_dir)
 
     config_file = str(files(__package__).joinpath("conf/config.yaml"))
+    dest_config_file = path.join(config_dir, "config.yaml")
+    shutil.copy(config_file, dest_config_file)
+
+    with open(dest_config_file, "r", encoding="utf-8") as f:
+        config_dict: dict = yaml.safe_load(f)
+
+    config_dict["cli"]["analyze"]["wordlist"] = path.join(config_dir,
+                                                          "word_blacklist.txt")
+    config_dict["cli"]["analyze"]["classifier"] = path.join(config_dir,
+                                                            "classifier.pkl")
+
+    with open(dest_config_file, "w", encoding="utf-8") as f:
+        yaml.dump(config_dict, f, default_flow_style=False)
+
     wordlist = str(files(__package__).joinpath("conf/word_blacklist.txt"))
-    model = str(files("spamanalyzer.ml").joinpath("classifier.pkl"))
-
-    os.makedirs(config_dir, exist_ok=True)
-
-    if not path.exists(path.join(config_dir, "config.yaml")):
-        with open(config_file, "r", encoding="utf-8") as f:
-            config_dict: dict = yaml.safe_load(f)
-        config_dict["cli"]["analyze"]["wordlist"] = path.join(
-            config_dir, "word_blacklist.txt")
-        config_dict["cli"]["analyze"]["classifier"] = path.join(
-            config_dir, "classifier.pkl")
-        with open(config_file, "w", encoding="utf-8") as f:
-            yaml.dump(config_dict, f, default_flow_style=False)
-        shutil.copy(config_file, path.join(config_dir, "config.yaml"))
-
-    with open(path.join(config_dir, "config.yaml"), encoding="utf-8") as f:
-        try:
-            config: dict = yaml.safe_load(f)
-        except Exception as e:
-            raise Exception("Error while loading config file") from e
-
     try:
-        wordlist_path = path.expanduser(
-            path.expandvars(config["cli"]["analyze"]["wordlist"]))
+        wordlist_path: str = path.expanduser(
+            path.expandvars(config_dict["cli"]["analyze"]["wordlist"]))
         if not path.exists(wordlist_path):
             shutil.copy(wordlist, wordlist_path)
     except Exception as e:
@@ -66,13 +60,14 @@ def handle_configuration_files() -> Tuple[Dict, str, str]:
             "Error while loading wordlist at the file path specified in the config file"
         ) from e
 
+    model = str(files("spamanalyzer.ml").joinpath("classifier.pkl"))
     try:
-        classifier_path = path.expanduser(
-            path.expandvars(config["cli"]["analyze"]["classifier"]))
+        classifier_path: str = path.expanduser(
+            path.expandvars(config_dict["cli"]["analyze"]["classifier"]))
         if not path.exists(classifier_path):
             shutil.copy(model, classifier_path)
     except Exception as e:
         raise Exception("Error while loading the classifier model at"
                         "the file path specified in the config file") from e
 
-    return (config, wordlist_path, classifier_path)
+    return (config_dict, wordlist_path, classifier_path)
