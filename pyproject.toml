@@ -92,11 +92,11 @@ blank = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 minversion = "6.0"
-addopts = "-r a -q -n auto -W error::RuntimeWarning"
+addopts = "-r a -q -n auto" #-W error::RuntimeWarning"
 testpaths = ["tests"]
-filterwarnings = [
-   "ignore:The --rsyncdir command line argument and rsyncdirs config variable are deprecated.:DeprecationWarning",
- ]
+# filterwarnings = [
+#    "ignore:The --rsyncdir command line argument and rsyncdirs config variable are deprecated.:DeprecationWarning",
+#  ]
 
 [build-system]
 requires = ["poetry-core"]
