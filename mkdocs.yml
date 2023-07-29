@@ -8,6 +8,9 @@ nav:
     - Getting Started: getting_started.md
     - Installation: installation.md
     - Usage: usage.md
+    - Data Analysis:
+      - data_analysis/index.md
+      - data_analysis/SpamAnalysis.ipynb
     - API Reference:
       - api/reference.md
       - api/utils.md
@@ -19,7 +22,7 @@ nav:
 
 theme:
   icon:
-    edit: material/pencil 
+    edit: material/pencil
     view: material/eye
   name: material
   logo: assets/images/logo_transparent.png
@@ -56,7 +59,7 @@ theme:
 
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
-      scheme: default 
+      scheme: default
 
 
       toggle:
@@ -72,6 +75,9 @@ theme:
 
 plugins:
   - search
+  - mkdocs-jupyter:
+      execute: false
+      include_source: True
   - mkdocstrings:
       enabled: !ENV [ENABLE_MKDOCSTRINGS, true]
       default_handler: python

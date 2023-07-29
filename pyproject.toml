@@ -61,6 +61,7 @@ mkdocs = "^1.4.3"
 mkdocs-material = "^9.1.19"
 mkdocs-git-revision-date-localized-plugin = "^1.2.0"
 mkdocstrings = {version = "^0.20.0", extras = ["python"] }
+mkdocs-jupyter = "^0.24.2"
 
 [tool.pylint]
 max-line-length = 88
