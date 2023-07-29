@@ -1,13 +1,7 @@
-import os
-
-import click
 import tomli
 from click.testing import CliRunner
 
-from app import __main__, files
-
-if not os.path.exists(click.get_app_dir("spam-analyzer")):
-    _ = files.handle_configuration_files()
+from app import __main__
 
 
 class TestCLI:

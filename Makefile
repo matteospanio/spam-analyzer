@@ -54,7 +54,7 @@ test: ## Run tests quickly with the default Python
 	$(POETRY) pytest
 
 coverage: ## Run tests with coverage
-	$(POETRY) pytest -n auto --cov=src --cov-report=term-missing --cov-report=html
+	$(POETRY) pytest --cov=src --cov-report=term-missing --cov-report=html
 
 build: clean setup ## Build package and check with pyroma
 	poetry build
