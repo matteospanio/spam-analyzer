@@ -14,7 +14,7 @@ jobs:
           command: poetry install
       - run:
           name: Run tests
-          command: poetry run pytest --asyncio-mode=auto --cov=src/ --cov-report=xml
+          command: make coverage
       - run:
           name: Send coverage to Coveralls
           command: poetry run coveralls
