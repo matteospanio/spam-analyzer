@@ -1,11 +1,13 @@
 [tool.poetry]
 name = "spam-analyzer"
-version = "0.2.1"
+version = "1.0.0b"
 description = "A simple email analyzer"
 authors = ["Matteo Spanio <matteo.spanio97@gmail.com>"]
 license = "GPLv3"
 readme = "README.md"
-packages = [{include = "spamanalyzer"}]
+packages = [
+    {include = "spamanalyzer", from = "src"}
+    ]
 homepage = "http://matteospanio.me/spam-analyzer/"
 repository = "https://github.com/matteospanio/spam-analyzer"
 keywords = ["spam", "spam-analyzer", "cybersecurity"]
@@ -20,7 +22,7 @@ classifiers = [
 include = ["*.yaml", "*.txt", "*/*.yaml", "*/*.txt", "conf/*"]
 
 [tool.poetry.scripts]
-spam-analyzer = "spamanalyzer.cli.run:main"
+spam-analyzer = "app.__main__:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -35,6 +37,8 @@ pandas = "^2.0.3"
 beautifulsoup4 = "^4.12.2"
 dnspython = "^2.4.0"
 textblob = "^0.17.1"
+click = "^8.1.6"
+click-extra = "^4.6.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
@@ -43,6 +47,13 @@ pylint = "^2.17.4"
 pytest-cov = "^4.1.0"
 pytest-xdist = "^3.3.1"
 coveralls = "^3.3.1"
+tomli = "^2.0.1"
+pytest-asyncio = "^0.21.1"
+pytest-mock = "^3.11.1"
+isort = "^5.12.0"
+pre-commit = "^3.3.3"
+pyroma = "^4.2"
+docformatter = "^1.7.5"
 
 
 [tool.poetry.group.docs.dependencies]
@@ -50,6 +61,7 @@ mkdocs = "^1.4.3"
 mkdocs-material = "^9.1.19"
 mkdocs-git-revision-date-localized-plugin = "^1.2.0"
 mkdocstrings = {version = "^0.20.0", extras = ["python"] }
+mkdocs-jupyter = "^0.24.2"
 
 [tool.pylint]
 max-line-length = 88
@@ -64,13 +76,27 @@ disable = [
 ]
 
 [tool.yapf]
+based_on_style = "pep8"
 blank_line_before_nested_class_or_def = true
 column_limit = 88
 
+[tool.isort]
+profile = "hug"
+src_paths = ["src", "tests"]
+
+[tool.docformatter]
+resucrsive = true
+wrap-summaries = 82
+blank = true
+
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
 minversion = "6.0"
-addopts = "-ra -q -n auto -W error::RuntimeWarning"
+addopts = "-r a -q -n auto" #-W error::RuntimeWarning"
 testpaths = ["tests"]
+# filterwarnings = [
+#    "ignore:The --rsyncdir command line argument and rsyncdirs config variable are deprecated.:DeprecationWarning",
+#  ]
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,0 +1,8 @@
+cli:
+  analyze:
+    classifier: /home/matteo/.config/spam-analyzer/classifier.pkl
+    output-format: json
+    wordlist: /home/matteo/.config/spam-analyzer/word_blacklist.txt
+  sort:
+    output-dir: ''
+  verbose: false

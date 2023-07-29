@@ -1,9 +1,14 @@
-from spamanalyzer.analyzer import MailAnalysis, MailAnalyzer
+import asyncio
 
-# create a MailAnalysis object passing a wordlist of forbidden words
-# to detect in the mail body and subject
-analysis_factory = MailAnalyzer(wordlist=['spam', 'phishing', 'malware'])
+from spamanalyzer import MailAnalysis, SpamAnalyzer
 
-# the MailAnalyzer outputs a MailAnalysis storing all
-# the information from headers, body and attachments inspection
-analysis: MailAnalysis = analysis_factory.analyze('path/to/mail')
+
+async def spam_analysis():
+    analysis_factory = SpamAnalyzer(wordlist=["spam", "phishing", "malware"])
+    analysis: MailAnalysis = await analysis_factory.analyze("path/to/mail")
+
+    return analysis
+
+
+analysis = asyncio.run(spam_analysis())
+print(analysis)

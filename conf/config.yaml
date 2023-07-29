@@ -1,6 +1,0 @@
-# constants values used across the app
-files:
-  # absolute path to the spam words file
-  # wordlist source: https://gist.github.com/prasidhda/13c9303be3cbc4228585a7f1a06040a3
-  wordlist: '~/.config/spamanalyzer/word_blacklist.txt'
-  classifier: '~/.config/spamanalyzer/classifier.pkl'

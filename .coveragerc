@@ -1,11 +1,12 @@
 [run]
-source = spamanalyzer/
+source = src/
 
 [report]
 show_missing = True
 omit =
-    spamanalyzer/__main__.py
-    spamanalyzer/display.py
+    src/app/io.py
+    **/__init__.py
+    src/spamanalyzer/errors.py
 
 exclude_lines =
     pragma: no cover

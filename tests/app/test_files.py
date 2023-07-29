@@ -1,6 +1,6 @@
 import os
 
-from spamanalyzer.files import get_files_from_dir, file_is_valid_email
+from app.files import file_is_valid_email, get_files_from_dir
 
 
 def test_get_files_from_directory():

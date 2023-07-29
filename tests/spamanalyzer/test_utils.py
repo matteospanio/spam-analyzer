@@ -1,7 +1,10 @@
+import asyncio
+
 import mailparser
 import pytest
-from spamanalyzer.analyzer import utils
-from spamanalyzer.analyzer.data_structures import Domain
+
+from spamanalyzer import utils
+from spamanalyzer.domain import Domain
 
 trustable_mail = mailparser.parse_from_file(
     "tests/samples/97.47949e45691dd7a024dcfaacef4831461bf5d5f09c85a6e44ee478a5bcaf8539.email"
@@ -10,40 +13,68 @@ spam = mailparser.parse_from_file(
     "tests/samples/00.1d30d499c969369915f69e7cf1f5f5e3fdd567d41e8721bf8207fa52a78aff9a.email"
 )
 
+with open("src/app/conf/word_blacklist.txt", encoding="utf-8") as f:
+    wordlist = f.read().splitlines()
+
+
+@pytest.fixture
+async def mail_headers():
+    return await asyncio.gather(
+        utils.inspect_headers(trustable_mail, wordlist),
+        utils.inspect_headers(spam, wordlist),
+    )
+
 
 class TestInspectHeaders:
-    with open("conf/word_blacklist.txt") as f:
-        wordlist = f.read().splitlines()
 
-    headers_ok = utils.inspect_headers(trustable_mail, wordlist)
-    bad_headers = utils.inspect_headers(spam, wordlist)
-
-    def test_inspect_headers_method(self):
-        assert isinstance(self.headers_ok, dict)
+    def test_inspect_headers_method(self, mail_headers):
+        ok, _ = mail_headers
+        assert isinstance(ok, dict)
         with pytest.raises(KeyError):
-            self.headers_ok[7]
+            assert ok[7] is None
 
-    def test_inspect_headers_in_secure_email(self):
-        assert self.headers_ok["has_spf"] is True
-        assert self.headers_ok["has_dkim"] is True
-        assert self.headers_ok["has_dmarc"] is True
-        assert self.headers_ok["domain_matches"] is False
-        assert self.headers_ok["auth_warn"] is False
-        assert self.headers_ok["has_suspect_subject"] is True
-        assert self.headers_ok["send_date"].date.year == 2021
+    def test_inspect_headers_in_secure_email(self, mail_headers):
+        ok, _ = mail_headers
+        assert ok["has_spf"] is True
+        assert ok["has_dkim"] is True
+        assert ok["has_dmarc"] is True
+        assert ok["domain_matches"] is False
+        assert ok["auth_warn"] is False
+        assert ok["has_suspect_subject"] is True
+        assert ok["send_date"].date.year == 2021
 
-    def test_inspect_headers_in_spam(self):
-        assert self.bad_headers["has_spf"] is False
-        assert self.bad_headers["has_dkim"] is False
-        assert self.bad_headers["has_dmarc"] is False
-        assert self.bad_headers["domain_matches"] is False
-        assert self.bad_headers["auth_warn"] is False
-        assert self.bad_headers["has_suspect_subject"] is False
-        assert self.bad_headers["send_date"].date.year < 2015
+    def test_inspect_headers_in_spam(self, mail_headers):
+        _, bad_headers = mail_headers
+        assert bad_headers["has_spf"] is False
+        assert bad_headers["has_dkim"] is False
+        assert bad_headers["has_dmarc"] is False
+        assert bad_headers["domain_matches"] is False
+        assert bad_headers["auth_warn"] is False
+        assert bad_headers["has_suspect_subject"] is False
+        assert bad_headers["send_date"].date.year < 2015
+
+    def test_gappy_words(self):
+        gappy_mail = mailparser.parse_from_file(
+            "tests/samples/04.eeb4f91379a00b071515c5190e870901b7f4b80bcd1e00fe6da472b173509191.email"
+        )
+        none_subject = mailparser.parse_from_file("tests/samples/none_subject.email")
+        assert utils.analyze_subject(trustable_mail.headers, ["cactus"]) == (
+            False,
+            False,
+        )
+        assert utils.analyze_subject(gappy_mail.headers, wordlist) == (True, False)
+        assert utils.analyze_subject(none_subject.headers, wordlist) == (
+            False,
+            False,
+        )
+
+    def test_parse_date(self):
+        none_date = mailparser.parse_from_file("tests/samples/none_date.email")
+        assert utils.parse_date(none_date.headers, none_date.timezone) is None
 
 
 class TestInspectBody:
-    with open("conf/word_blacklist.txt") as f:
+    with open("src/app/conf/word_blacklist.txt", encoding="utf-8") as f:
         wordlist = f.read().splitlines()
 
     body_ok = utils.inspect_body(trustable_mail.body,
@@ -53,7 +84,7 @@ class TestInspectBody:
     def test_inspect_body_method(self):
         assert isinstance(self.body_ok, dict)
         with pytest.raises(KeyError):
-            self.body_ok[5]
+            assert self.body_ok[5] is None
 
     def test_inspect_body_in_secure_email(self):
         assert self.body_ok["has_links"] is True
@@ -80,14 +111,23 @@ def test_dmarc_pass():
     assert utils.dmarc_pass(spam.headers) is False
 
 
-def test_get_domain():
+def test_x_warning():
+    warn_mail = mailparser.parse_from_file(
+        "tests/samples/01.78e91e824c22fd2292633f7c8f0fff34d2a4d0b0bafbb2ba1fbb10d9bc06fcbb.email"
+    )
+    assert utils.has_auth_warning(trustable_mail.headers) is False
+    assert utils.has_auth_warning(warn_mail.headers) is True
+
+
+@pytest.mark.asyncio
+async def test_get_domain():
     unknown_domain = "the domain is unknown"
     real_domain = "the domain is google.com"
     ip_address = "127.0.0.1"
 
-    assert utils.get_domain(unknown_domain) == Domain("unknown")
-    assert utils.get_domain(real_domain) == Domain("google.com")
-    assert utils.get_domain(ip_address) == Domain("localhost")
+    assert await utils.get_domain(unknown_domain) == Domain("unknown")
+    assert await utils.get_domain(real_domain) == Domain("google.com")
+    assert await utils.get_domain(ip_address) == Domain("localhost")
 
 
 class TestStringAnalysis:
@@ -168,10 +208,10 @@ class TestLinks:
 def test_forbidden_words():
     forbidden_words = ["egg", "spam"]
     body = "a string of trustable words"
-    spam = "spam is not a funny thing"
+    spam_text = "spam is not a funny thing"
 
     assert utils.percentage_of_bad_words(body, forbidden_words) == 0
-    assert utils.percentage_of_bad_words(spam, forbidden_words) > 0
+    assert utils.percentage_of_bad_words(spam_text, forbidden_words) > 0
 
 
 def test_inspect_attachments():
