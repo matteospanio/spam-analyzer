@@ -14,7 +14,6 @@ from app import files
 from app.io import print_output
 from spamanalyzer.data_structures import SpamAnalyzer
 
-conf, _, _ = files.handle_configuration_files()
 config_dir = click.get_app_dir("spam-analyzer")
 
 
@@ -38,7 +37,9 @@ def cli(ctx: Context, verbose: bool) -> None:
     # ctx.verbose = verbose
     ctx.ensure_object(dict)
     ctx.obj["verbose"] = verbose
-    os.makedirs(config_dir, exist_ok=True)
+
+    if not os.path.exists(config_dir):
+        _ = files.handle_configuration_files()
 
 
 @cli.command()

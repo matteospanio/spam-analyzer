@@ -2,6 +2,7 @@ import os
 import shutil
 from importlib.resources import files
 from os import listdir, path
+from typing import Dict, Tuple
 
 import click
 import yaml
@@ -29,7 +30,7 @@ def file_is_valid_email(file_path: str) -> bool:
             and mail.headers.get("From") is not None)
 
 
-def handle_configuration_files():
+def handle_configuration_files() -> Tuple[Dict, str, str]:
     config_dir = click.get_app_dir("spam-analyzer")
 
     config_file = str(files(__package__).joinpath("conf/config.yaml"))
