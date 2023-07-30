@@ -2,19 +2,22 @@ import tomli
 from click.testing import CliRunner
 
 from app import __main__
+from app.__analyzer import analyze
 
 
 class TestCLI:
     runner = CliRunner()
+    cli = __main__.cli
+    cli.add_command(analyze)
 
     def test_help(self):
-        result = self.runner.invoke(__main__.cli, ["--help"])
+        result = self.runner.invoke(self.cli, ["--help"])
         assert result.exit_code == 0
         assert "A simple" in result.output
         assert "Usage" in result.output
 
     def test_version(self):
-        result = self.runner.invoke(__main__.cli, ["--version"])
+        result = self.runner.invoke(self.cli, ["--version"])
         output = result.output
         with open("pyproject.toml", "rb") as f:
             config = tomli.load(f)
@@ -22,7 +25,7 @@ class TestCLI:
 
     def test_verbose_with_not_analyzable_single_file(self):
         result = self.runner.invoke(
-            __main__.cli,
+            self.cli,
             [
                 "-v",
                 "analyze",
@@ -31,12 +34,12 @@ class TestCLI:
                 "tests/samples/invalid_file.txt",
             ],
         )
-        assert result.exit_code == 1
         assert "The file is not analyzable" in result.output
+        assert result.exit_code == 1
 
     def test_integration_single_email(self):
         result = self.runner.invoke(
-            __main__.cli,
+            self.cli,
             [
                 "analyze",
                 "-l",
@@ -51,7 +54,7 @@ class TestCLI:
 
     def test_integration_folder(self):
         result = self.runner.invoke(
-            __main__.cli,
+            self.cli,
             [
                 "analyze",
                 "-l",

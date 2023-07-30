@@ -2,7 +2,7 @@ import asyncio
 import functools
 from typing import List
 
-from click import Command, command
+from click_extra import Command, command
 
 # The list to hold registered plugin commands
 plugin_commands: List[Command] = []
