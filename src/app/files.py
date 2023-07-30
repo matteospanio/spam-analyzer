@@ -30,13 +30,17 @@ def file_is_valid_email(file_path: str) -> bool:
             and mail.headers.get("From") is not None)
 
 
+def copy_config_file(dst: str) -> None:
+    config_file = str(files(__package__).joinpath("conf/config.yaml"))
+    shutil.copy(config_file, dst)
+
+
 def handle_configuration_files() -> Tuple[Dict, str, str]:
     config_dir = click.get_app_dir("spam-analyzer")
     os.makedirs(config_dir)
 
-    config_file = str(files(__package__).joinpath("conf/config.yaml"))
     dest_config_file = path.join(config_dir, "config.yaml")
-    shutil.copy(config_file, dest_config_file)
+    copy_config_file(dest_config_file)
 
     with open(dest_config_file, "r", encoding="utf-8") as f:
         config_dict: dict = yaml.safe_load(f)
