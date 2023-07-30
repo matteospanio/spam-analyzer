@@ -2,8 +2,7 @@ import asyncio
 import functools
 from typing import List
 
-import click
-from click import Command
+from click import Command, command
 
 # The list to hold registered plugin commands
 plugin_commands: List[Command] = []
@@ -16,10 +15,10 @@ def plugin(func):
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
 
-    command = click.command(name=func.__name__)(wrapper)
-    plugin_commands.append(command)
+    _command = command(name=func.__name__)(wrapper)
+    plugin_commands.append(_command)
 
-    return command
+    return _command
 
 
 def async_command(coro_func):
