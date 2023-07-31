@@ -12,6 +12,7 @@
 [![Python version](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue)](https://img.shields.io/badge/python-3.10%20%7C%203.7%20%7C%203.11-blue)
 [![Downloads](https://pepy.tech/badge/spam-analyzer)](https://pepy.tech/project/spam-analyzer)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![Dependencies](https://img.shields.io/librariesio/github/matteospanio/spam-analyzer)
 
 # Table of Contents
 
