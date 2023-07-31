@@ -12,7 +12,7 @@
 [![Python version](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue)](https://img.shields.io/badge/python-3.10%20%7C%203.7%20%7C%203.11-blue)
 [![Downloads](https://pepy.tech/badge/spam-analyzer)](https://pepy.tech/project/spam-analyzer)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-![Dependencies](https://img.shields.io/librariesio/github/matteospanio/spam-analyzer)
+[![Dependencies](https://img.shields.io/librariesio/github/matteospanio/spam-analyzer)](https://libraries.io/github/matteospanio/spam-analyzer)
 
 # Table of Contents
 
@@ -39,6 +39,7 @@ The main features of spam-analyzer are:
 3. it can be used as a library in your Python project to extract features from an email
 4. it is written in Python with its most modern features to ensure software correctness
 5. extensible with plugins
+6. 100% containerized with Docker
 
 ## What is spam and how does spam-analyzer know it?
 

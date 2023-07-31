@@ -13,7 +13,7 @@ Run `spam-analyzer --help` to see the available options.
 ### Example
 
 ```bash
-spam-analyzer -f email.txt
+spam-analyzer analyze email.txt
 ```
 
 ## Python library
