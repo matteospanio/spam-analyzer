@@ -1,35 +1,16 @@
-import asyncio
-import functools
+import importlib.util
 import os
 import sys
-from io import TextIOWrapper
-from typing import List
 
 import click
 import click_extra
 from click import Context
-from rich.console import Console
 
-from app import files
-from app.io import print_output
-from spamanalyzer.data_structures import SpamAnalyzer
+import app.files as files
+import spamanalyzer.plugins as plugins
+from app.__analyzer import analyze
 
 config_dir = click.get_app_dir("spam-analyzer")
-
-
-def async_command(coro_func):
-
-    @functools.wraps(coro_func)
-    def sync_func(*args, **kwargs):
-        return asyncio.run(coro_func(*args, **kwargs))
-
-    return sync_func
-
-
-def main():
-    if not os.path.exists(config_dir):
-        _ = files.handle_configuration_files()
-    cli()
 
 
 @click.group()
@@ -45,83 +26,11 @@ def cli(ctx: Context, verbose: bool) -> None:
     ctx.obj["verbose"] = verbose
 
 
-@cli.command()
-@click_extra.option(
-    "-l",
-    "--wordlist",
-    help="A file containing the spam wordlist",
-    type=click.File("r"),
-)
-@click_extra.option(
-    "-fmt",
-    "--output-format",
-    help="Format output in a different way",
-    type=click.Choice(["json"]),
-)
-@click_extra.option(
-    "-o",
-    "--output-file",
-    help="Write output to a file (works only for json format)",
-    type=click.File("w"),
-)
-@click_extra.argument(
-    "input",
-    type=click.Path(exists=True,
-                    file_okay=True,
-                    dir_okay=True,
-                    readable=True,
-                    resolve_path=True),
-    required=True,
-)
-@async_command
+@cli.group(name="plugins")
 @click_extra.pass_context
-async def analyze(
-    ctx: Context,
-    wordlist: TextIOWrapper,
-    output_format: str,
-    output_file: click.File,
-    input: str,
-) -> None:
-    """Analyze emails from a file or directory."""
-
-    # The tool entry point, in order it:
-    # 1. loads the configuration
-    # 2. starts the application
-
-    wordlist_content: List[str] = wordlist.read().splitlines()  # type: ignore
-    data = []
-
-    console = Console()
-
-    analyzer = SpamAnalyzer(wordlist_content)
-
-    if os.path.isdir(input):
-        with console.status("[bold]Reading files...", spinner="dots"):
-            file_list = files.get_files_from_dir(input, ctx.obj["verbose"])
-        with console.status("[bold]Analyzing emails...", spinner="dots"):
-            for mail_path in file_list:
-                analysis = analyzer.analyze(mail_path)
-                data.append(analysis)
-            data = await asyncio.gather(*data)
-
-    elif os.path.isfile(input) and files.file_is_valid_email(input):
-        analysis = await analyzer.analyze(input)
-        data.append(analysis)
-
-    else:
-        if ctx.obj["verbose"]:
-            click.echo("The file is not analyzable")
-        sys.exit(1)
-
-    results = analyzer.classify_multiple_input(data)
-
-    print_output(
-        data,
-        output_format=output_format,
-        verbose=ctx.obj["verbose"],
-        results=results,
-        output_file=output_file,
-    )
+def show_plugins(ctx: Context) -> None:
+    """Show all available plugins."""
+    pass
 
 
 @cli.group()
@@ -157,6 +66,34 @@ def reset():
     """Reset the configuration file."""
 
     os.remove(os.path.join(config_dir, "config.yaml"))
-    _ = files.handle_configuration_files()
+    files.copy_config_file(config_dir)
 
     sys.exit(0)
+
+
+def load_plugins():
+    plugin_folder = os.path.join(config_dir, "plugins")
+    if os.path.exists(plugin_folder):
+        for filename in os.listdir(plugin_folder):
+            if filename.endswith(".py"):
+                module_name = filename[:-3]
+                module_path = os.path.join(plugin_folder, filename)
+                spec = importlib.util.spec_from_file_location(module_name, module_path)
+                if spec is not None:
+                    module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(module)  ## type: ignore
+
+
+def main():
+    # Create the configuration directory if it doesn't exist
+    if not os.path.exists(config_dir):
+        _ = files.handle_configuration_files()
+
+    # Load the plugins and add them to the Click app
+    load_plugins()
+
+    for command in plugins.plugin_commands:
+        show_plugins.add_command(command)
+
+    cli.add_command(analyze)
+    cli()

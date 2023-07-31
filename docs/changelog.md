@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - docker image for the CLI application
 - has been added the `parse` method to the `SpamAnalyzer` class to parse a single mail, use that instead of the mailparser library to don't see unwanted logs
 - pre-commit hooks to check the code before committing
+- plugin system to extend the CLI application
 
 ### Changed
 
