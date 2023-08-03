@@ -9,35 +9,32 @@ date: 2023-07-18
 # Usage
 
 ## CLI
-
 spam-analyzer can be used as a CLI application:
 
 ```
-usage: spam-analyzer [-h] -f FILE [-l WORDLIST] [-v] [-V] [-fmt FORMAT] [-o FILE] [--destination-dir DIRECTORY]
+Usage: spam-analyzer [OPTIONS] COMMAND [ARGS]...
 
-A simple program to analyzer emails
+  A simple program to analyze emails.
 
-options:
-  -h, --help            show this help message and exit
-  -f FILE, --file FILE  The file or directory to analyze
-  -l WORDLIST, --wordlist WORDLIST
-                        A file containing the spam wordlist
-  -v, --verbose         More program output
-  -V, --version         Show program version
-  -fmt FORMAT, --output-format FORMAT
-                        Format output in a different way
-  -o FILE, --output-file FILE
-                        Write output to a file (works only for json format)
-  --destination-dir DIRECTORY
-                        The directory where copy your classified emails
+Options:
+  -h, --help                Show this message and exit.
+  -v, --verbose             Enables verbose mode.
+  --version                 Show the version and exit.
+  -C, --config CONFIG_PATH  Location of the configuration file. Supports glob
+                            pattern of local path and remote URL.
+
+Commands:
+  analyze    Analyze emails from a file or directory.
+  configure  Configure the program.
+  plugins    Show all available plugins.
 ```
 
--  `spam-analyzer -f <file>`: classify the email given in input
--  `spam-analyzer -f <file> -v`: classify the email given in input and display a detailed analysis[^1]
--  `spam-analyzer -f <file> -fmt json`: classify the email given in input and display the result in JSON format (useful for integration with other programs)
--  `spam-analyzer -f <file> -fmt json -o <file>`: classify the email given in input and write the result in JSON format in the file given in input[^2]
--  `spam-analyzer -f <file> -l <file>`: classify the email given in input using the wordlist given in input
--  `spam-analyzer -f <directory> --destination-dir <directory>`: classify all the emails in the directory given in input and copy them in the directory given in input splitted in spam and non-spam folders
+-  `spam-analyzer analyze <file>`: classify the email given in input
+-  `spam-analyzer -v analyze <file>`: classify the email given in input and display a detailed analysis[^1]
+-  `spam-analyzer analyze -fmt json <file>`: classify the email given in input and display the result in JSON format (useful for integration with other programs)
+-  `spam-analyzer analyze -fmt json -o <outpath> <file> `: classify the email given in input and write the result in JSON format in the file given in input[^2]
+-  `spam-analyzer analyze -l <wordlist> <file>`: classify the email given in input using the wordlist given in input
+
 
 ### Configuration
 
@@ -50,12 +47,9 @@ options:
 ## Python library
 
 ```python
-from spamanalyzer import MailAnalyzer
-
-analyzer = MailAnalyzer(wordlist_path="path/to/wordlist.txt")
-analysis = analyzer.analyze("path/to/email.txt")
+--8<-- "examples/analyzer.py"
 ```
 
-The `spamanalyzer` library provides a really simple interface to extract features from an email. The `MailAnalyzer` class provides the `analyze` method that takes in input the path to the email and returns a `MailAnalysis` object containing the analysis of the email.
+The `spamanalyzer` library provides a really simple interface to extract features from an email. The `SpamAnalyzer` class provides the `analyze` method that takes in input the path to the email and returns a `MailAnalysis` object containing the analysis of the email.
 
 Furthermore, the `MailAnalysis` class provides the `is_spam` method that returns `True` if the email is spam, `False` otherwise. Further examples are available in the folder `examples` of the source code.
