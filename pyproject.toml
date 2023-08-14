@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [
     {include = "spamanalyzer", from = "src"}
     ]
-homepage = "http://matteospanio.me/spam-analyzer/"
+homepage = "http://docs.spamanalyzer.tech/"
 repository = "https://github.com/matteospanio/spam-analyzer"
 keywords = ["spam", "spam-analyzer", "cybersecurity"]
 classifiers = [
