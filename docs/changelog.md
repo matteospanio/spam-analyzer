@@ -13,6 +13,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.0.1]
+
+### Fixed
+
+- updated dependencies to fix security vulnerabilities
+
+## [1.0.0]
+
+### Added
+
 - new specific domain for github pages docs, go to https://docs.spamanalyzer.tech
 - getting_started.md page
 - installation.md page
