@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spam-analyzer"
-version = "1.0.5"
+version = "1.0.6"
 description = "A simple email analyzer"
 authors = ["Matteo Spanio <matteo.spanio97@gmail.com>"]
 license = "GPLv3"
