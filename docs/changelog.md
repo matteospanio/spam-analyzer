@@ -9,15 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     The *Unreleased* section is for changes that are not yet released, but are
     going to be released in the next version.
 
+
 ## [Unreleased]
 
 ### Added
 
 ### Changed
 
-- add multithreading to the CLI application
+### Fixed
+
+## [1.0.8]
 
 ### Fixed
+
+- update gitpython to fix security vulnerabilities
+- update dependencies
 
 ## [1.0.1..7]
 
