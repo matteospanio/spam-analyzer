@@ -3,7 +3,7 @@ import sys
 from dataclasses import dataclass
 from functools import wraps
 from importlib import resources
-from typing import Any, Iterable, List, Optional, Sequence
+from typing import Any, Iterable, List, Optional
 
 import mailparser
 import numpy as np

@@ -1,6 +1,6 @@
 import json
 from io import TextIOWrapper
-from typing import List, Optional, Sequence
+from typing import Optional, Sequence
 
 from rich.box import ROUNDED
 from rich.columns import Columns
@@ -9,7 +9,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from spamanalyzer.data_structures import MailAnalysis, SpamAnalyzer
+from spamanalyzer.data_structures import MailAnalysis
 
 
 def print_output(
