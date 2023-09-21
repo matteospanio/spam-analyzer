@@ -1,6 +1,7 @@
 import re
 import warnings
 from datetime import datetime
+from functools import lru_cache
 from typing import Optional
 
 from dateutil.parser import ParserError, parse
@@ -110,7 +111,7 @@ class Date:
             return self.date.isoformat() == other.isoformat()
         raise TypeError(f"Cannot compare Date with {type(other)}")
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, bool | str | float | int]:
         try:
             return {
                 "is_RFC_2822": self.is_RFC2822_formatted(),
@@ -164,9 +165,13 @@ class Date:
         """
         return self.__parse()[1]
 
+    @lru_cache(maxsize=32)
     def is_tz_valid(self) -> bool:
         """The timezone is valid if it is in the range [-12, 14]"""
         return -12 <= self.timezone <= 14
 
     def __repr__(self) -> str:
         return f"{self.date.isoformat()}"
+
+    def __hash__(self) -> int:
+        return hash(self.__raw_date)

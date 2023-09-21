@@ -5,6 +5,7 @@ from enum import Enum
 
 import dns.name
 import dns.resolver
+from typing_extensions import Self
 
 
 class DomainRelation(Enum):
@@ -40,8 +41,8 @@ class Domain:
     def __init__(self, name: str) -> None:
         self.name = dns.name.from_text(name)
 
-    @staticmethod
-    def from_string(domain_str: str):
+    @classmethod
+    def from_string(cls, domain_str: str) -> Self:
         """Instantiate a Domain object from string, it is a wrapper of the
         `self.__init__` method.
 
@@ -52,10 +53,10 @@ class Domain:
             Domain: the domain obtained from the string
 
         """
-        return Domain(domain_str)
+        return cls(domain_str)
 
-    @staticmethod
-    async def from_ip(ip_addr: str):
+    @classmethod
+    async def from_ip(cls, ip_addr: str) -> Self:
         """Create a Domain object from an ip address. It translate the ip address
         to its domain name via the `socket.gethostbyaddr` method.
 
@@ -68,9 +69,9 @@ class Domain:
         """
         try:
             domain_name, _, _ = await asyncio.to_thread(socket.gethostbyaddr, ip_addr)
-            return Domain(domain_name)
+            return cls(domain_name)
         except Exception:
-            return Domain("unknown")
+            return cls("unknown")
 
     async def get_ip_address(self) -> str:
         """Translate the domain name to its ip address querying the DNS server.
@@ -82,9 +83,9 @@ class Domain:
 
         """
         name = await asyncio.to_thread(dns.resolver.resolve, self.name, "A")
-        return name[0].to_text()
+        return name[0].to_text()  # type: ignore
 
-    def is_subdomain(self, domain: "Domain") -> bool:
+    def is_subdomain(self, domain: Self) -> bool:
         """Is the domain a subdomain of the given domain?
 
         Args:
@@ -103,7 +104,7 @@ class Domain:
             raise TypeError("Cannot compare Domain with other types")
         return self.name.is_subdomain(domain.name)
 
-    def is_superdomain(self, domain: "Domain") -> bool:
+    def is_superdomain(self, domain: Self) -> bool:
         """Is the domain a superdomain of the given domain?
 
         Args:
@@ -127,7 +128,7 @@ class Domain:
             return self.name == __o.name
         raise TypeError("Cannot compare Domain with other types")
 
-    def relation(self, domain: "Domain") -> DomainRelation:
+    def relation(self, domain: Self) -> DomainRelation:
         """Define the relation between two domains.
 
         Args:

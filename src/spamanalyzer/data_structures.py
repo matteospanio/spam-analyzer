@@ -87,7 +87,7 @@ class MailAnalysis:
     """
 
     # data from body
-    body: dict
+    body: dict[str, bool | float]
     """
     It is a dictionaty containing a detailed analysis of the mail's body.
     It contains the following keys:
@@ -108,7 +108,7 @@ class MailAnalysis:
     """
 
     # attachments
-    attachments: dict
+    attachments: dict[str, bool]
     """
     It is a dictionary containing a detailed analysis of the mail's attachments.
     It contains the following keys:
@@ -216,7 +216,7 @@ class SpamAnalyzer:
         array = np.array(email.to_list())
         return True if model.predict(array.reshape(1, -1)) == 1 else False
 
-    def classify_multiple_input(self, mails: List["MailAnalysis"]) -> List[bool]:
+    def classify_multiple_input(self, mails: Iterable[MailAnalysis]) -> List[bool]:
         """Classify a list of mails.
 
         Args:

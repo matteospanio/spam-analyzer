@@ -1,6 +1,6 @@
 import re
 from enum import Enum
-from typing import Any, Iterable, List, Literal, Sequence, Union
+from typing import Any, Iterable, List, Literal, Mapping, Sequence, Union
 
 from bs4 import BeautifulSoup
 from mailparser import MailParser
@@ -71,7 +71,7 @@ async def inspect_headers(email: MailParser, wordlist: Iterable[str]):
     }
 
 
-def spf_pass(headers: dict) -> bool:
+def spf_pass(headers: Mapping[str, Any]) -> bool:
     """Checks if the email has a SPF record."""
     spf = (headers.get("Received-SPF") or headers.get("Authentication-Results")
            or headers.get("Authentication-results"))
@@ -80,7 +80,7 @@ def spf_pass(headers: dict) -> bool:
     return False
 
 
-def dkim_pass(headers: dict) -> bool:
+def dkim_pass(headers: Mapping[str, Any]) -> bool:
     """Checks if the email has a DKIM record."""
     if headers.get("DKIM-Signature") is not None:
         return True
@@ -91,7 +91,7 @@ def dkim_pass(headers: dict) -> bool:
     return False
 
 
-def dmarc_pass(headers: dict) -> bool:
+def dmarc_pass(headers: Mapping[str, Any]) -> bool:
     """Checks if the email has a DMARC record."""
     dmarc = headers.get("Authentication-Results") or headers.get(
         "Authentication-results")
@@ -100,7 +100,7 @@ def dmarc_pass(headers: dict) -> bool:
     return False
 
 
-def has_auth_warning(headers: dict) -> bool:
+def has_auth_warning(headers: Mapping[str, Any]) -> bool:
     """Checks if the email has an authentication warning, usually it means that
     the sender claimed to be someone else."""
     if headers.get("X-Authentication-Warning") is not None:
@@ -108,7 +108,8 @@ def has_auth_warning(headers: dict) -> bool:
     return False
 
 
-def analyze_subject(headers: dict, wordlist: Iterable[str]) -> tuple[bool, bool]:
+def analyze_subject(headers: Mapping[str, Any],
+                    wordlist: Iterable[str]) -> tuple[bool, bool]:
     """Checks if the email has gappy words or forbidden words in the subject.
 
     Args:
@@ -132,7 +133,7 @@ def analyze_subject(headers: dict, wordlist: Iterable[str]) -> tuple[bool, bool]
     return False, False
 
 
-def parse_date(headers: dict, timezone: Union[str, Literal[0]]):
+def parse_date(headers: Mapping[str, Any], timezone: Union[str, Literal[0]]):
     """Date format should follow RFC 2822, this function expects a date in the format:
     "Wed, 21 Oct 2015 07:28:00 -0700", and returns a tuple where:
     1. the first element is the parsed date or `None` if the date is not in the correct
@@ -369,7 +370,7 @@ def check_links(body):
     }
 
 
-def https_only(links: Sequence[str]) -> bool:
+def https_only(links: Iterable[str]) -> bool:
     if links == []:
         return False
 
