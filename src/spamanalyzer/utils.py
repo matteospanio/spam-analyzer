@@ -1,6 +1,6 @@
 import re
 from enum import Enum
-from typing import List, Literal, Union
+from typing import Any, Iterable, List, Literal, Sequence, Union
 
 from bs4 import BeautifulSoup
 from mailparser import MailParser
@@ -28,12 +28,12 @@ class Regex(Enum):
     IMAGE_TAG = re.compile(r"<\s*img", re.DOTALL)
 
 
-async def inspect_headers(email: MailParser, wordlist):
+async def inspect_headers(email: MailParser, wordlist: Iterable[str]):
     """A detailed analysis of the email headers.
 
     Args:
         headers (dict): a dictionary containing parsed email headers
-        wordlist (list[str]): a list of words to be used as a spam filter in the
+        wordlist (Iterable[str]): a list of words to be used as a spam filter in the
         subject field
 
     Returns:
@@ -108,7 +108,7 @@ def has_auth_warning(headers: dict) -> bool:
     return False
 
 
-def analyze_subject(headers: dict, wordlist) -> tuple[bool, bool]:
+def analyze_subject(headers: dict, wordlist: Iterable[str]) -> tuple[bool, bool]:
     """Checks if the email has gappy words or forbidden words in the subject.
 
     Args:
@@ -195,7 +195,7 @@ async def get_domain(field: str):
     return Domain("unknown")
 
 
-def inspect_body(body: str, wordlist, domain):
+def inspect_body(body: str, wordlist: Iterable[str], domain) -> dict[str, Any]:
     """A detailed analysis of the email body.
 
     Args:
@@ -204,7 +204,7 @@ def inspect_body(body: str, wordlist, domain):
         domain (Domain): the domain of the sender
 
     Returns:
-        tuple: a tuple containing the following information:
+        dict: a dictionary containing the following information:
 
     - has_http_links (bool): True if the email has http links
     - has_script (bool): True if the email has script tags or javascript code
@@ -307,7 +307,7 @@ def has_html_form(body: str) -> bool:
     return bool(Regex.HTML_FORM.value.search(body))
 
 
-def percentage_of_bad_words(body: str, wordlist: List[str]) -> float:
+def percentage_of_bad_words(body: str, wordlist: Iterable[str]) -> float:
     """Calculates the percentage of forbidden words in the body.
 
     Args:
@@ -369,7 +369,7 @@ def check_links(body):
     }
 
 
-def https_only(links: List[str]) -> bool:
+def https_only(links: Sequence[str]) -> bool:
     if links == []:
         return False
 
@@ -396,7 +396,7 @@ def has_script_tag(body: str) -> bool:
     return False
 
 
-def inspect_attachments(attachments: List) -> dict:
+def inspect_attachments(attachments: Sequence) -> dict[str, bool]:
     """A detailed analysis of the email attachments.
 
     Args:

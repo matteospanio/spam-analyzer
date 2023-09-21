@@ -2,6 +2,7 @@ import asyncio
 import os
 import sys
 from io import TextIOWrapper
+from typing import List
 
 import click
 import click_extra
@@ -57,7 +58,7 @@ async def analyze(
     # 1. loads the configuration
     # 2. starts the application
 
-    wordlist_content: List[str] = wordlist.read().splitlines()  # type: ignore
+    wordlist_content: List[str] = wordlist.read().splitlines()
     data = []
 
     console = Console()

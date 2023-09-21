@@ -6,7 +6,8 @@ authors = ["Matteo Spanio <matteo.spanio97@gmail.com>"]
 license = "GPLv3"
 readme = "README.md"
 packages = [
-    {include = "spamanalyzer", from = "src"}
+    {include = "spamanalyzer", from = "src"},
+    {include = "spamanalyzer/py.typed", from = "src"}
     ]
 homepage = "http://docs.spamanalyzer.tech/"
 repository = "https://github.com/matteospanio/spam-analyzer"

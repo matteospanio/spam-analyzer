@@ -1,6 +1,6 @@
 import json
 from io import TextIOWrapper
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 from rich.box import ROUNDED
 from rich.columns import Columns
@@ -13,10 +13,10 @@ from spamanalyzer.data_structures import MailAnalysis, SpamAnalyzer
 
 
 def print_output(
-    data: List[MailAnalysis],
+    data: Sequence[MailAnalysis],
     output_format: str,
     verbose: bool,
-    results: List[bool],
+    results: Sequence[bool],
     output_file=None,
 ) -> None:
     """Prints the output of the `MailAnalysis` in the specified format (csv, json
@@ -50,8 +50,11 @@ def __print_to_csv(data, output_file):
     raise NotImplementedError
 
 
-def __print_to_json(data: List[MailAnalysis], results: List[bool],
-                    output_file: Optional[TextIOWrapper]):
+def __print_to_json(
+    data: Sequence[MailAnalysis],
+    results: Sequence[bool],
+    output_file: Optional[TextIOWrapper],
+):
     dict_data = [analysis.to_dict() for analysis in data]
     for analysis, origin, is_spam in zip(dict_data, data, results):
         if analysis["headers"]["send_date"] is not None:
@@ -68,7 +71,8 @@ def __print_to_json(data: List[MailAnalysis], results: List[bool],
         print(json.dumps(dict_data, indent=4))
 
 
-def __print_default(data: List[MailAnalysis], labels: List[bool], verbose: bool):
+def __print_default(data: Sequence[MailAnalysis], labels: Sequence[bool],
+                    verbose: bool):
     classifier_spam = 0
     classifier_ham = 0
 

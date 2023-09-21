@@ -84,7 +84,7 @@ class TestInspectBody:
     def test_inspect_body_method(self):
         assert isinstance(self.body_ok, dict)
         with pytest.raises(KeyError):
-            assert self.body_ok[5] is None
+            assert self.body_ok["5"] is None
 
     def test_inspect_body_in_secure_email(self):
         assert self.body_ok["has_links"] is True

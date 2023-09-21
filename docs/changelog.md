@@ -18,6 +18,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [1.0.9]
+
+### Added
+
+- py.typed file to make the package PEP 561 compliant
+- missing type annotations
+
+### Fixed
+
+- type annotations typos
+- update dependencies
+- erroneous docstrings
+
 ## [1.0.8]
 
 ### Fixed

@@ -3,7 +3,7 @@ import sys
 from dataclasses import dataclass
 from functools import wraps
 from importlib import resources
-from typing import List, Optional
+from typing import Any, Iterable, List, Optional, Sequence
 
 import mailparser
 import numpy as np
@@ -119,14 +119,14 @@ class MailAnalysis:
     | `attachment_is_executable` | bool | flag that indicates if the mail has an attachment in executable format |
     """
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "headers": self.headers,
             "body": self.body,
             "attachments": self.attachments,
         }
 
-    def to_list(self) -> List:
+    def to_list(self) -> List[Any]:
         return [
             self.headers["has_spf"],
             self.headers["has_dkim"],
@@ -176,9 +176,9 @@ class SpamAnalyzer:
     """
 
     __model: str
-    __wordlist: List[str]
+    __wordlist: Iterable[str]
 
-    def __init__(self, wordlist: List[str], model: Optional[str] = None):
+    def __init__(self, wordlist: Iterable[str], model: Optional[str] = None):
         self.__wordlist = wordlist
 
         if model is None:
