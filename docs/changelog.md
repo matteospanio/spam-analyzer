@@ -10,13 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     going to be released in the next version.
 
 
-## [Unreleased]
-
-### Added
+## [1.0.10]
 
 ### Changed
 
-### Fixed
+- update dependencies
+- add python 3.12 to the supported versions
+- update the documentation
+- refactor coverage configuration inside pyproject.toml
 
 ## [1.0.9]
 

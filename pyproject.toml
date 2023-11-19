@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "spam-analyzer"
-version = "1.0.9"
+version = "1.0.10"
 description = "A simple email analyzer"
-authors = ["Matteo Spanio <matteo.spanio97@gmail.com>"]
+authors = ["Matteo Spanio <spanio@dei.unipd.it>"]
 license = "GPLv3"
 readme = "README.md"
 packages = [
@@ -19,6 +19,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 include = ["*.yaml", "*.txt", "*/*.yaml", "*/*.txt", "conf/*"]
 
@@ -93,11 +94,33 @@ blank = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 minversion = "6.0"
-addopts = "-r a -q"#-W error::RuntimeWarning"
+addopts = "-ra -q"
 testpaths = ["tests"]
 filterwarnings = [
    "ignore:The --rsyncdir command line argument and rsyncdirs config variable are deprecated.:DeprecationWarning",
  ]
+
+[tool.coverage.run]
+source = ["src"]
+
+[tool.coverage.report]
+show_missing = true
+omit = [
+    "src/app/io.py",
+    "**/__init__.py",
+    "src/spamanalyzer/errors.py",
+]
+exclude_lines = [
+    "pragma: no cover",
+    "except OSError",
+    "def __repr__",
+    "def __str__",
+    "def __get_package_version",
+    "if self.debug",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
 
 [build-system]
 requires = ["poetry-core"]
