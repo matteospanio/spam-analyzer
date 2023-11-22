@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     going to be released in the next version.
 
 
+## [1.0.11]
+
+### Changed
+
+- update dependencies
+- update test gh workflow
+
 ## [1.0.10]
 
 ### Changed
