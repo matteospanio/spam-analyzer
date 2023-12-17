@@ -13,6 +13,7 @@
 [![Downloads](https://pepy.tech/badge/spam-analyzer)](https://pepy.tech/project/spam-analyzer)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Dependencies](https://img.shields.io/librariesio/github/matteospanio/spam-analyzer)](https://libraries.io/github/matteospanio/spam-analyzer)
+[![DOI](https://zenodo.org/badge/565609735.svg)](https://zenodo.org/doi/10.5281/zenodo.10198893)
 
 # Table of Contents
 

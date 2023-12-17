@@ -9,7 +9,7 @@ from spamanalyzer.domain import Domain
 
 SAMPLES_FOLDER = "tests/samples"
 
-trustable_mail = os.path.join(
+ham = os.path.join(
     SAMPLES_FOLDER,
     "97.47949e45691dd7a024dcfaacef4831461bf5d5f09c85a6e44ee478a5bcaf8539.email",
 )
@@ -26,8 +26,7 @@ with open("src/app/conf/word_blacklist.txt", "r", encoding="utf-8") as f:
 async def analysis() -> Tuple[MailAnalysis, MailAnalysis]:
     analyzer = SpamAnalyzer(wordlist)
 
-    return await asyncio.gather(analyzer.analyze(trustable_mail),
-                                analyzer.analyze(spam))
+    return await asyncio.gather(analyzer.analyze(ham), analyzer.analyze(spam))
 
 
 class TestSpamAnalyzer:
@@ -35,7 +34,7 @@ class TestSpamAnalyzer:
 
     @pytest.mark.asyncio
     async def test_get_domain(self):
-        assert (await self.analyzer.get_domain(trustable_mail)
+        assert (await self.analyzer.get_domain(ham)
                 ) == Domain("github-lowworker-5fb2734.va3-iad.github.net")
 
     @pytest.mark.asyncio
@@ -60,7 +59,7 @@ class TestMailAnalysis:
 
     @pytest.mark.asyncio
     async def test_mail_analysis_file_path(self, analysis):
-        assert analysis[0].file_path == trustable_mail
+        assert analysis[0].file_path == ham
 
     @pytest.mark.asyncio
     async def test_to_dict(self, analysis):

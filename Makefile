@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help
+.PHONY: clean clean-test clean-pyc clean-build docs help activate
 .DEFAULT_GOAL := help
 POETRY := poetry run
 
@@ -49,6 +49,9 @@ clean-docs:
 
 setup: clean ## Install dependencies
 	poetry install
+
+activate: ## Activate virtual environment
+	poetry shell
 
 test: ## Run tests quickly with the default Python
 	$(POETRY) pytest
