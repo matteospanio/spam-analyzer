@@ -41,6 +41,7 @@ dnspython = "^2.4.0"
 textblob = "^0.17.1"
 click = "^8.1.6"
 click-extra = "^4.6.3"
+typing-extensions = "^4.9.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
