@@ -1,0 +1,4 @@
+# API
+
+::: spamanalyzer
+    handler: python
